@@ -2,4 +2,6 @@ using Test
 
 using SatelliteAnalysis
 
-include("./beta_angle.jl")
+@testset "Beta angle" verbose = true begin
+    include("./beta_angle.jl")
+end

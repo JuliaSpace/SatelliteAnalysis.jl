@@ -13,7 +13,7 @@
 # Function: beta_angle
 # ------------------------------------------------------------------------------
 
-@testset "Beta angle" begin
+@testset "Function beta_angle" begin
   jd₀ = SatelliteAnalysis.date_to_jd(2021, 1, 1, 0, 0, 0)
 
   β = beta_angle(
@@ -53,4 +53,26 @@
   ]
 
   @test β ≈ β_expected
+end
+
+@testset "Function beta_angle (errors)" begin
+  jd₀ = SatelliteAnalysis.date_to_jd(2021, 1, 1, 0, 0, 0)
+
+  @test_throws Exception beta_angle(
+      jd₀,
+      7130.982e3,
+      0.001111,
+      deg2rad(98.405),
+      SatelliteAnalysis.compute_RAAN_lt(jd₀, 22.5),
+      0
+  )
+
+  @test_throws Exception beta_angle(
+      jd₀,
+      7130.982e3,
+      0.001111,
+      deg2rad(98.405),
+      SatelliteAnalysis.compute_RAAN_lt(jd₀, 22.5),
+      -5
+  )
 end
