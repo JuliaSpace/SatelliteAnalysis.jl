@@ -3,7 +3,7 @@ SatelliteAnalysis
 
 This package contains several functions to perform analysis related to
 satellites. Those functions were split from the package
-[SatelliteToolbox.jl](https://gitub.com/JuliaSpace/SatelliteToolbox.jl).
+[SatelliteToolbox.jl](https://github.com/JuliaSpace/SatelliteToolbox.jl).
 
 ## Instalation
 
