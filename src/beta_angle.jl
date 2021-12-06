@@ -50,8 +50,8 @@ begin, is `jd₀` [Julian Day]. The analysis will be performed for each day duri
 
 # Extended help
 
-The beta angle is defined as the angle between the orbit plane and the Sun. The
-former is aligned with the orbit angular momentum vector.
+The beta angle is the angle between the orbit plane and the Sun. The positive
+direction is defined as that of the orbit angular momentum.
 
 The beta angle is useful when computing the mean amount of solar radiation a
 satellite receives in a particular orbit.
@@ -133,7 +133,7 @@ function beta_angle(
 
         # Compute the beta angle, which is the angle between the Sun vector and
         # the orbit plane.
-        β[d] = abs(π / 2 - acos(n̄_tod ⋅ s̄_tod))
+        β[d] = π / 2 - acos(n̄_tod ⋅ s̄_tod)
     end
 
     return β
