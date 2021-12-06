@@ -104,7 +104,7 @@ function beta_angle(
     pert::Symbol = :J2
 )
     # Check the input.
-    Δt < 0 && error("The number of days for the analysis `Δt` must be equal or higher than 0")
+    Δt ≤ 0 && error("The number of days for the analysis `Δt` must be equal or higher than 0")
 
     # Vector of the days in which the beta angle will be computed.
     days = 1:1:Δt
