@@ -122,7 +122,7 @@ function beta_angle(
 
         # Compute the unit vector aligned with the orbit normal `n` represented
         # in the TOD reference frame.
-        D_tod_o = angle_to_dcm(-i, -Ω, :XZ)
+        D_tod_o = angle_to_dcm(-i, -Ω, 0, :XZX)
         n̄_tod   = D_tod_o * (@SVector [0, 0, 1])
 
         # Compute the Sun position at noon (UT) represented in the TOD reference
