@@ -1,5 +1,6 @@
 using Test
 
+using LinearAlgebra
 using StaticArrays
 using SatelliteAnalysis
 import SatelliteToolbox: date_to_jd, sun_position_i

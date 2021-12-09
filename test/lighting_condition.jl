@@ -28,4 +28,7 @@
     r_i = SVector(3.9575e6, 5.91988e6, -489577.0)
     lc = lighting_condition(r_i, s_i)
     @test lc === :umbra
+
+    lc = lighting_condition(s_i / norm(s_i) * 7000e3, s_i)
+    @test lc === :sunlight
 end
