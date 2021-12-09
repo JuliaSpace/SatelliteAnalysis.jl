@@ -10,6 +10,7 @@ using SatelliteToolbox
 ################################################################################
 
 include("./beta_angle.jl")
+include("./eclipse_time.jl")
 include("./lighting_condition.jl")
 include("./misc/find_crossing.jl")
 
