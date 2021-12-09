@@ -10,7 +10,7 @@ using SatelliteToolbox
 ################################################################################
 
 include("./beta_angle.jl")
-
+include("./lighting_condition.jl")
 include("./misc/find_crossing.jl")
 
 end # module
