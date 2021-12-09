@@ -11,4 +11,6 @@ using SatelliteToolbox
 
 include("./beta_angle.jl")
 
+include("./misc/find_crossing.jl")
+
 end # module
