@@ -1,9 +1,13 @@
 module SatelliteAnalysis
 
+using Dates
 using LinearAlgebra
+using PrettyTables
 using ReferenceFrameRotations
 using StaticArrays
 using SatelliteToolbox
+using Statistics
+using TerminalPager
 
 ################################################################################
 #                                   Includes

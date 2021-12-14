@@ -16,6 +16,46 @@
 
 export eclipse_time_summary
 
+"""
+    eclipse_time_summary([io::IO,] orbp::OrbitPropagator; kwargs...)
+
+Compute the eclipse time summary for the orbit propagator `orbp`. The summary is
+computed as the total time the object stays in the sunlight, penumbra, and umbra
+regions per day.
+
+# Returns
+
+If the `io` parameter **is not** present, then the function returns three
+vectors:
+
+- The total sunlight time per day [s].
+- The total penumbra time per day [s].
+- The total umbra time per day [s].
+
+If the `io` parameter **is** present, then the function prints to `io` the
+results in table format.
+
+# Keywords
+
+- `num_days::Number`: Number of days in which the analysis will be performed.
+    (**Default** = 365)
+- `step::Number`: The step in which the propagation will occur. Notice that this
+    function has a crossing estimation to accurately estimate the transition
+    between the regions. However, if this step is very large, we may miss some
+    small regions. If it is negative, then it will be selected as the time in
+    which the mean anomaly advances 0.5°.
+
+If the parameter `io` is passed, then the following additional keywords are
+available:
+
+- `unit::Symbol`: Select the unit in which the results will be printed. The
+    possible values are:
+    - `:s` for seconds (**Default**);
+    - `:m` for minutes; or
+    - `:h` for hours.
+- `use_pager::Bool`: If `true`, then the result will be printed using
+    **TerminalPager.jl**.
+"""
 function eclipse_time_summary(
     orbp::OrbitPropagator;
     num_days::Number = 365,
@@ -127,6 +167,97 @@ function eclipse_time_summary(
 
     return sunlight_time, penumbra_time, umbra_time
 end
+
+function eclipse_time_summary(
+    io::IO,
+    orbp::OrbitPropagator;
+    num_days::Number = 365,
+    step::Number = -1,
+    unit::Symbol = :s,
+    use_pager::Bool = false
+)
+    # Compute the summary.
+    sunlight_time, penumbra_time, umbra_time = eclipse_time_summary(
+        orbp;
+        num_days,
+        step
+    )
+
+    # Get the date vector.
+    vjd = get_epoch(orbp) .+ collect(0:1:num_days-1)
+    vdate = string.(jd_to_date.(DateTime, vjd))
+
+    # Obtain the conversion given the unit selection.
+    if unit == :h
+        unit_label = "h"
+        unit_factor = 3600
+    elseif unit == :m
+        unit_label = "min"
+        unit_factor = 60
+    else
+        unit_label = "s"
+        unit_factor = 1
+    end
+
+    sunlight_time ./= unit_factor
+    penumbra_time ./= unit_factor
+    umbra_time ./= unit_factor
+
+    str = pretty_table(
+        String,
+        vcat(
+            hcat(vdate, sunlight_time, penumbra_time, umbra_time),
+            hcat(
+                AnsiTextCell(string(crayon"red bold") * "Maximum"),
+                maximum(sunlight_time),
+                maximum(penumbra_time),
+                maximum(umbra_time)
+            ),
+            hcat(
+                AnsiTextCell(string(crayon"yellow bold") * "Mean"),
+                mean(sunlight_time),
+                mean(penumbra_time),
+                mean(umbra_time)
+            ),
+            hcat(
+                AnsiTextCell(string(crayon"blue bold") * "Minimum"),
+                minimum(sunlight_time),
+                minimum(penumbra_time),
+                minimum(umbra_time)
+            ),
+        );
+        color = get(stdout, :color, false),
+        crop = use_pager ? :none : :horizontal,
+        display_size = use_pager ? (-1, -1) : displaysize(stdout),
+        header = [
+            "Day",
+            "Sunlight time [$unit_label]",
+            "Penumbra time [$unit_label]",
+            "Umbra time [$unit_label]"
+        ],
+        hlines = [:header, num_days + 1],
+        alignment_anchor_regex = Dict(
+            2 => [r"\."],
+            3 => [r"\."],
+            4 => [r"\."]
+        ),
+        vlines = [1]
+    )
+
+    # Check if we need to use the pager.
+    if use_pager
+        pager(
+            str;
+            freeze_columns = max(length.(vdate)..., 6) + 3,
+            freeze_rows = 2
+        )
+    else
+        println(str)
+    end
+
+    return nothing
+end
+
 
 #                              Private functions
 # ==============================================================================
