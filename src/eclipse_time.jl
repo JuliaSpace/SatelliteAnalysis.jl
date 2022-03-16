@@ -28,9 +28,9 @@ regions per day.
 If the `io` parameter **is not** present, then the function returns three
 vectors:
 
-- The total sunlight time per day [s].
-- The total penumbra time per day [s].
-- The total umbra time per day [s].
+- The total sunlight time per orbit at each day [s].
+- The total penumbra time per orbit at each day [s].
+- The total umbra time per orbit at each day [s].
 
 If the `io` parameter **is** present, then the function prints to `io` the
 results in table format.
