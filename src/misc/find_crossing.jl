@@ -8,13 +8,14 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 """
-    find_crossing(f::Function, t₀::Number, t₁::Number, s₀, s₁, vargs...; Δ = 1e-3, max = 100)
+    find_crossing(f::Function, t₀::Number, t₁::Number, s₀, s₁, vargs...; Δ = 1e-3, max = 100, kwargs...)
 
 Return the crossing time `tc` in which the function `f(t)` goes from the state
 `s₀` to the state `s₁`. It is assumed that `f(t₀) = s₀` and `f(t₁) = s₁`.
 
-The parameters in `vargs...` are passed to the function `f` after `t`. Hence, it
-will always be called as `f(t, vargs...)`.
+The parameters in `vargs...` are passed to the function `f` after `t`, and the
+keywords `kwargs...` are also passed to `f`. Hence, it will always be called as
+`f(t, vargs...; kwargs...)`.
 
 If the computed interval is smaller than `Δ`, or if the number of iterations is
 higher than `max`, then the algorithm stops.
@@ -41,7 +42,8 @@ function find_crossing(
     s₁,
     vargs...;
     Δ = 1e-3,
-    max = 100
+    max = 100,
+    kwargs...
 )
     it = 0
 
@@ -53,7 +55,7 @@ function find_crossing(
     while it <= max
         # Call the function at the middle of the interval.
         ti = (ti₁ + ti₀) / 2
-        si = f(ti, vargs...)
+        si = f(ti, vargs...; kwargs...)
 
         # Compute the new interval.
         if si == s₀

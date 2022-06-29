@@ -18,4 +18,7 @@ include("./eclipse_time.jl")
 include("./lighting_condition.jl")
 include("./misc/find_crossing.jl")
 
+include("./ground_stations/is_ground_station_visible.jl")
+include("./ground_stations/ground_station_accesses_and_gaps.jl")
+
 end # module
