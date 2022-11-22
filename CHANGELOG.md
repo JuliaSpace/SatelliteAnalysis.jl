@@ -1,6 +1,12 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.2.0
+-------------
+
+- ![Feature][badge-feature] The lightning analysis (eclipse) was added.
+- ![Feature][badge-feature] Initial support for ground facility analysis.
+
 Version 0.1.0
 -------------
 
