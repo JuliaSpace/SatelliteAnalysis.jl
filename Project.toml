@@ -16,7 +16,7 @@ TerminalPager = "0c614874-6106-40ed-a7c2-2f1cd0bff883"
 
 [compat]
 ReferenceFrameRotations = "1, 2, 3"
-SatelliteToolbox = "0.9"
+SatelliteToolbox = "0.10"
 StaticArrays = "1"
 julia = "1"
 
