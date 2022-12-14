@@ -1,7 +1,7 @@
 name = "SatelliteAnalysis"
 uuid = "101040f3-2a13-4d8c-b9b0-4a720fa906ce"
 authors = ["Ronan Arraes Jardim Chagas <ronisbr@gmail.com>"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
