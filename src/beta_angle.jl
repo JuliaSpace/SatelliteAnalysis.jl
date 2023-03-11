@@ -115,7 +115,7 @@ function beta_angle(
     β = Vector{Float64}(undef, Δt)
 
     # RAAN rotation rate [rad/day].
-    δΩ = 86400 * dRAAN(a, e, i, pert)
+    δΩ = 86400 * draan(a, e, i, pert)
 
     # Loop
     @inbounds for d in days

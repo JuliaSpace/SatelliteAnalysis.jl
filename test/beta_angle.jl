@@ -21,7 +21,7 @@
       7130.982e3,
       0.001111,
       deg2rad(98.405),
-      SatelliteAnalysis.compute_RAAN_lt(jd₀, 22.5),
+      SatelliteAnalysis.ltan_to_raan(jd₀, 22.5),
       5
   )
 
@@ -40,7 +40,7 @@
       7130.982e3,
       0.001111,
       deg2rad(98.405),
-      SatelliteAnalysis.compute_RAAN_lt(jd₀, 22.5) + π,
+      SatelliteAnalysis.ltan_to_raan(jd₀, 22.5) + π,
       5
   )
 
@@ -63,7 +63,7 @@ end
       7130.982e3,
       0.001111,
       deg2rad(98.405),
-      SatelliteAnalysis.compute_RAAN_lt(jd₀, 22.5),
+      SatelliteAnalysis.ltan_to_raan(jd₀, 22.5),
       0
   )
 
@@ -72,7 +72,7 @@ end
       7130.982e3,
       0.001111,
       deg2rad(98.405),
-      SatelliteAnalysis.compute_RAAN_lt(jd₀, 22.5),
+      SatelliteAnalysis.ltan_to_raan(jd₀, 22.5),
       -5
   )
 end
