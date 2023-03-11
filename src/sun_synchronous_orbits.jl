@@ -17,12 +17,14 @@ period is in the interval `[minimum_repetition, maximum_repetition]` days.
 
 This function returns a `DataFrame` with the following columns:
 
-- `semi_major_axis`: The orbit semi-major axis.
-- `altitude`: The orbit altitude above the Equator `(a - R0)`.
-- `inclination`: The orbit inclination.
-- `period`: The orbital period.
-- `rev_per_days`: A `Tuple` with the integer and rational parts of the number of
-    revolutions per day.
+- `semi_major_axis`: Orbit semi-major axis.
+- `altitude`: Orbit altitude above the Equator `(a - R0)`.
+- `inclination`: Orbit inclination.
+- `period`: Orbital period.
+- `rev_per_days`: If the keyword `pretify_rev_per_days` is `false`, this column
+    contains `Tuple`s with the integer and rational parts of the number of
+    revolutions per day. Otherwise, it contains a string with a prety
+    representation of the number of revolutions per day.
 
 !!! note
     The units of those columns depends on the keywords.
@@ -39,6 +41,9 @@ This function returns a `DataFrame` with the following columns:
 - `e::Number`: Orbit eccentricity. (**Default**: 0)
 - `int_rev_per_day::Tuple`: `Tuple` with the integer parts of the number of
     revolutions per day to be analyzed. (**Default** = `(13, 14, 15, 16, 17)`)
+- `pretity_rev_per_days::Bool`: If `true`, the column with the revolutions per
+    day will be conveted to a string with a pretty representation of this
+    information. (**Default**: `true`)
 - `maximum_altitude::Union{Nothing, Number}`: Maximum altitude [m] of the orbits
     in the output `DataFrame`. If it is `nothing`, the algorithm will not apply
     a higher limit to the orbital altitude. (**Default** = `nothing`)
@@ -57,6 +62,7 @@ function design_sun_sync_ground_repeating_orbit(
     distance_unit::Symbol = :km,
     e::Number = 0,
     int_rev_per_day::Tuple = (13, 14, 15, 16, 17),
+    pretify_rev_per_days::Bool = true,
     maximum_altitude::Union{Nothing, Number} = nothing,
     minimum_altitude::Union{Nothing, Number} = nothing,
     time_unit::Symbol = :m
@@ -84,7 +90,7 @@ function design_sun_sync_ground_repeating_orbit(
         altitude = Float64[],
         inclination = Float64[],
         period = Float64[],
-        rev_per_days = Tuple{Int, Rational}[]
+        rev_per_days = pretify_rev_per_days ? String[] : Tuple{Int, Rational}[]
     )
 
     # Check the units for the values.
@@ -128,7 +134,9 @@ function design_sun_sync_ground_repeating_orbit(
                     (a - R0) * dunit,
                     i * angunit,
                     orbit_period * tunit,
-                    (int, num // den)
+                    pretify_rev_per_days ?
+                        _pretify_rev_per_days(int, num, den) :
+                        (int, num // den)
                 ))
             end
         end
@@ -154,4 +162,16 @@ function design_sun_sync_ground_repeating_orbit(
     sort!(df, :semi_major_axis)
 
     return df
+end
+
+################################################################################
+#                              Private functions
+################################################################################
+
+function _pretify_rev_per_days(i::Int, num::Int, den::Int)
+    if num == 0
+        return string(i)
+    else
+        return string(i) * " + " * pretty_number(String, num // den)
+    end
 end

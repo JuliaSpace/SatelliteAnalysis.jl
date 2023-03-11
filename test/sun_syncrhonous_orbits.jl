@@ -26,13 +26,13 @@
     @test df[begin, :altitude]        ≈    4.269  (atol = 1e-3)
     @test df[begin, :inclination]     ≈   95.6904 (atol = 1e-4)
     @test df[begin, :period]          ≈   84.706  (atol = 1e-3)
-    @test df[begin, :rev_per_days]   == (17, 0 // 1)
+    @test df[begin, :rev_per_days]   == "17"
 
     @test df[end,   :semi_major_axis] ≈ 7635.250  (atol = 1e-3)
     @test df[end,   :altitude]        ≈ 1257.113  (atol = 1e-3)
     @test df[end,   :inclination]     ≈  100.7002 (atol = 1e-4)
     @test df[end,   :period]          ≈  110.769  (atol = 1e-3)
-    @test df[end,   :rev_per_days]   == (13, 0 // 1)
+    @test df[end,   :rev_per_days]   == "13"
 
     # Altitude filter
     # ==========================================================================
@@ -42,6 +42,24 @@
         5;
         minimum_altitude = 750e3,
         maximum_altitude = 760e3
+    )
+
+    @test size(df) == (1, 5)
+    @test df[begin, :semi_major_axis] ≈ 7130.982 (atol = 1e-3)
+    @test df[begin, :altitude]        ≈ 752.845  (atol = 1e-3)
+    @test df[begin, :inclination]     ≈ 98.4055  (atol = 1e-4)
+    @test df[begin, :period]          ≈ 100.000  (atol = 1e-3)
+    @test df[begin, :rev_per_days]   == "14 + ²/₅"
+
+    # Revolution per days
+    # ==========================================================================
+
+    df = design_sun_sync_ground_repeating_orbit(
+        5,
+        5;
+        minimum_altitude = 750e3,
+        maximum_altitude = 760e3,
+        pretify_rev_per_days = false
     )
 
     @test size(df) == (1, 5)

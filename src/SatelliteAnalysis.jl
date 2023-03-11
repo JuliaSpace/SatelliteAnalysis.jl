@@ -3,6 +3,7 @@ module SatelliteAnalysis
 using Dates
 using DataFrames
 using LinearAlgebra
+using PrettyNumbers
 using PrettyTables
 using ReferenceFrameRotations
 using StaticArrays
