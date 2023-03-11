@@ -5,6 +5,8 @@
 #
 #   Compute the satellite lighting condition considering the Earth eclipse.
 #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
 # References
 # ==============================================================================
 #
