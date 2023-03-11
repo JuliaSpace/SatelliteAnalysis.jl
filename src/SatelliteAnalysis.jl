@@ -17,6 +17,8 @@ using TerminalPager
 include("./beta_angle.jl")
 include("./eclipse_time.jl")
 include("./lighting_condition.jl")
+include("./sun_synchronous_orbits.jl")
+
 include("./misc/find_crossing.jl")
 
 include("./ground_facilities/is_ground_facility_visible.jl")
