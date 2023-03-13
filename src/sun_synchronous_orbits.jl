@@ -25,6 +25,10 @@ This function returns a `DataFrame` with the following columns:
     contains `Tuple`s with the integer and rational parts of the number of
     revolutions per day. Otherwise, it contains a string with a prety
     representation of the number of revolutions per day.
+- `adjacent_gt_distance`: Distance between two adjacent ground tracks at
+    Equator.
+- `adjacent_gt_angle`: Angle between two adjacent ground tracks at Equator
+    measured from the satellite position.
 
 !!! note
     The units of those columns depends on the keywords.
@@ -90,7 +94,9 @@ function design_sun_sync_ground_repeating_orbit(
         altitude = Float64[],
         inclination = Float64[],
         period = Float64[],
-        rev_per_days = pretify_rev_per_days ? String[] : Tuple{Int, Rational}[]
+        rev_per_days = pretify_rev_per_days ? String[] : Tuple{Int, Rational}[],
+        adjacent_gt_distance = Float64[],
+        adjacent_gt_angle = Float64[]
     )
 
     # Check the units for the values.
@@ -128,15 +134,30 @@ function design_sun_sync_ground_repeating_orbit(
 
                 # If we reach this point, add the orbit to the `DataFrame`.
                 orbit_period = period(a, e, i, :J2)
+                orbit_cycle = num == 0 ? 1 : den
+                h = a - R0
 
                 push!(df, (
                     a * dunit,
-                    (a - R0) * dunit,
+                    h * dunit,
                     i * angunit,
                     orbit_period * tunit,
                     pretify_rev_per_days ?
                         _pretify_rev_per_days(int, num, den) :
-                        (int, num // den)
+                        (int, num // den),
+                    ground_repeating_orbit_adjacent_track_distance(
+                        orbit_period,
+                        i,
+                        orbit_cycle;
+                        R0 = R0
+                    ) * dunit,
+                    ground_repeating_orbit_adjacent_track_angle(
+                        h,
+                        orbit_period,
+                        i,
+                        orbit_cycle;
+                        R0 = R0
+                    ) * angunit
                 ))
             end
         end
