@@ -61,7 +61,7 @@ This function returns a `DataFrame` with the following columns:
 function design_sun_sync_ground_repeating_orbit(
     minimum_repetition::Int,
     maximum_repetition::Int;
-    R0::Number = R0,
+    R0::Number = WGS84_ELLIPSOID.a,
     angle_unit::Symbol = :deg,
     distance_unit::Symbol = :km,
     e::Number = 0,
@@ -130,7 +130,8 @@ function design_sun_sync_ground_repeating_orbit(
 
                 # If the algorithm has not converged or if the orbit is not
                 # valid, skip this value.
-                (!converged || !@check_orbit(a, e)) && continue
+                orbit_valid = a * (1 - e) > R0
+                (!converged || !orbit_valid) && continue
 
                 # If we reach this point, add the orbit to the `DataFrame`.
                 orbit_period = period(a, e, i, :J2)
