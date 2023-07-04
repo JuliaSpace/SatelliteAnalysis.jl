@@ -14,65 +14,20 @@
 # ------------------------------------------------------------------------------
 
 @testset "Function beta_angle" begin
-  jd₀ = SatelliteAnalysis.date_to_jd(2021, 1, 1, 0, 0, 0)
+    jd₀ = SatelliteAnalysis.date_to_jd(2021, 1, 1, 0, 0, 0)
+    orb = KeplerianElements(
+        jd₀,
+        7130.982e3,
+        0.001111,
+        98.405 |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90     |> deg2rad,
+        0
+    )
 
-  β = beta_angle(
-      jd₀,
-      7130.982e3,
-      0.001111,
-      deg2rad(98.405),
-      SatelliteAnalysis.ltan_to_raan(jd₀, 22.5),
-      5
-  )
+    β = beta_angle(orb, 5)
+    @test β ≈ 0.44026044605171655
 
-  β_expected = [
-      0.43291445352510594
-      0.43481148866086317
-      0.43668726746800246
-      0.4385397145910499
-      0.44036676126144947
-  ]
-
-  @test β ≈ β_expected
-
-  β = beta_angle(
-      jd₀,
-      7130.982e3,
-      0.001111,
-      deg2rad(98.405),
-      SatelliteAnalysis.ltan_to_raan(jd₀, 22.5) + π,
-      5
-  )
-
-  β_expected = [
-      -0.31068187881262466
-      -0.31295402147649054
-      -0.31524372027870284
-      -0.3175489312409039
-      -0.3198676044177273
-  ]
-
-  @test β ≈ β_expected
-end
-
-@testset "Function beta_angle (errors)" begin
-  jd₀ = SatelliteAnalysis.date_to_jd(2021, 1, 1, 0, 0, 0)
-
-  @test_throws Exception beta_angle(
-      jd₀,
-      7130.982e3,
-      0.001111,
-      deg2rad(98.405),
-      SatelliteAnalysis.ltan_to_raan(jd₀, 22.5),
-      0
-  )
-
-  @test_throws Exception beta_angle(
-      jd₀,
-      7130.982e3,
-      0.001111,
-      deg2rad(98.405),
-      SatelliteAnalysis.ltan_to_raan(jd₀, 22.5),
-      -5
-  )
+    β_max = beta_angle.(orb, 0:1:364) |> maximum
+    @test β ≈ 0.4746822398784829
 end

@@ -5,11 +5,13 @@ using DataFrames
 using LinearAlgebra
 using PrettyNumbers
 using PrettyTables
-using ReferenceFrameRotations
+using Reexport
 using StaticArrays
-using SatelliteToolbox
 using Statistics
 using TerminalPager
+
+@reexport using ReferenceFrameRotations
+@reexport using SatelliteToolbox
 
 ################################################################################
 #                                   Includes
