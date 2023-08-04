@@ -8,9 +8,9 @@ using SatelliteAnalysis
     include("./beta_angle.jl")
 end
 
-# @testset "Lighting condition" verbose = true begin
-#     include("./lighting_condition.jl")
-# end
+@testset "Lighting condition" verbose = true begin
+    include("./lighting_condition.jl")
+end
 
 # @testset "Miscellaneous" verbose = true begin
 #     include("./misc.jl")
