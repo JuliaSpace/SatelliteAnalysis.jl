@@ -16,6 +16,6 @@ end
 #     include("./misc.jl")
 # end
 
-# @testset "Orbits" verbose = true begin
-#     include("./sun_syncrhonous_orbits.jl")
-# end
+@testset "Orbits" verbose = true begin
+    include("./sun_syncrhonous_orbits.jl")
+end

@@ -20,6 +20,7 @@ using TerminalPager
 include("./beta_angle.jl")
 include("./eclipse_time.jl")
 include("./lighting_condition.jl")
+include("./ground_repeating_orbits.jl")
 include("./sun_synchronous_orbits.jl")
 
 include("./misc/find_crossing.jl")
