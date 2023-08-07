@@ -1,11 +1,19 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 # Description
-# ==============================================================================
+# ==========================================================================================
 #
 #   Functions to design Sun synchronous orbits.
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+# References
+# ==========================================================================================
+#
+#   [1] Kozai, Y (1959). The Motion of a Close Earth Satellite. The Astronomical Journal,
+#       v. 64, no. 1274, pp. 367 -- 377.
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 export design_sun_sync_ground_repeating_orbit
 export sun_sync_orbit_from_angular_velocity
@@ -218,7 +226,7 @@ A Sun-synchronous orbit is defined as an orbit in which the precession of the ri
 ascension of the ascending node (RAAN) equals the Earth's orbit mean motion. In this case,
 the orbit plane will have the same orientation to the Sun at the ascending node.
 
-The RAAN time-derivative considering only the terms up to J₂ is:
+The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372] is:
 
 ```
 ∂Ω      3                       n
@@ -226,18 +234,7 @@ The RAAN time-derivative considering only the terms up to J₂ is:
 ∂t      2                       p²
 ```
 
-However, this value is obtained multiplying `n` by the average RAAN variation over one
-orbit:
-
-```
-∂Ω │
-── │    ,
-∂θ │ av
-```
-
-where `θ = ω + f` and `av` means an average value obtained by integrating the equation over
-the interval `θ ∈ (0, 2π)`. Thus, `n` here must be the "mean" mean motion, which is given
-by:
+where:
 
 ```
          ┌                                                ┐
@@ -260,8 +257,8 @@ angvel = n + n . ─── . ─── . J₂ . (4 - 5sin²(i)),
                   4     p²
 ```
 
-where `n` is also the "mean" mean motion due to the same consideration as presented for the
-RAAN time-derivative.
+where `n` is the "mean" mean motion due to the same consideration as presented for the RAAN
+time-derivative.
 
 Finally, this function finds the pair `(a, i)` that simultaneously solves the equations:
 
@@ -331,6 +328,11 @@ julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
 └ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:394
 (7.130983932846816e6, 1.7175898375139984, true)
 ```
+
+## References
+
+- **[1]** Kozai, Y (1959). The Motion of a Close Earth Satellite. The Astronomical Journal,
+    v. 64, no. 1274, pp. 367 -- 377.
 """
 function sun_sync_orbit_from_angular_velocity(
     angvel::T1,
@@ -520,7 +522,7 @@ A Sun-synchronous orbit is defined as an orbit in which the precession of the ri
 ascension of the ascending node (RAAN) equals the Earth's orbit mean motion. In this case,
 the orbit plane will have the same orientation to the Sun at the ascending node.
 
-The RAAN time-derivative considering only the terms up to J₂ is:
+The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372] is:
 
 ```
 ∂Ω      3                       n
@@ -528,18 +530,7 @@ The RAAN time-derivative considering only the terms up to J₂ is:
 ∂t      2                       p²
 ```
 
-However, this value is obtained multiplying `n` by the average RAAN variation over one
-orbit:
-
-```
-∂Ω │
-── │    ,
-∂θ │ av
-```
-
-where `θ = ω + f` and `av` means an average value obtained by integrating the equation over
-the interval `θ ∈ (0, 2π)`. Thus, `n` here must be the "mean" mean motion, which is given
-by:
+where:
 
 ```
          ┌                                                ┐
@@ -593,6 +584,11 @@ julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
 └ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:559
 (7.130982250931845e6, true)
 ```
+
+## References
+
+- **[1]** Kozai, Y (1959). The Motion of a Close Earth Satellite. The Astronomical Journal,
+    v. 64, no. 1274, pp. 367 -- 377.
 """
 function sun_sync_orbit_semi_major_axis(
     i::T1,
@@ -612,20 +608,13 @@ function sun_sync_orbit_semi_major_axis(
     # Obtain the tolerance.
     tol = isnothing(tolerance) ? √(eps(T)) : T(tolerance)
 
-    # The RAAN time-derivative considering only the terms up to J₂ is:
+    # The RAAN time-derivative considering only the terms up to J₂ is [1, p. 372]:
     #
     #   ∂Ω      3                       n
     #   ── = - ─── R₀² . J₂ . cos(i) . ─── .
     #   ∂t      2                       p²
     #
-    # However, this value is obtained multiplying `n` by the average RAAN variation over one
-    # orbit:
-    #
-    #   ∂Ω │
-    #   ── │    ,
-    #   ∂θ │ av
-    #
-    # where `θ = ω + f`. Thus, `n` here must be the "mean" mean motion, which is given by:
+    # where:
     #
     #             ┌                                                ┐
     #             │      3    R₀²                                  │
@@ -754,7 +743,7 @@ A Sun-synchronous orbit is defined as an orbit in which the precession of the ri
 ascension of the ascending node (RAAN) equals the Earth's orbit mean motion. In this case,
 the orbit plane will have the same orientation to the Sun at the ascending node.
 
-The RAAN time-derivative considering only the terms up to J₂ is:
+The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372] is:
 
 ```
 ∂Ω      3                       n
@@ -762,18 +751,7 @@ The RAAN time-derivative considering only the terms up to J₂ is:
 ∂t      2                       p²
 ```
 
-However, this value is obtained multiplying `n` by the average RAAN variation over one
-orbit:
-
-```
-∂Ω │
-── │    ,
-∂θ │ av
-```
-
-where `θ = ω + f` and `av` means an average value obtained by integrating the equation over
-the interval `θ ∈ (0, 2π)`. Thus, `n` here must be the "mean" mean motion, which is given
-by:
+where:
 
 ```
          ┌                                                ┐
@@ -823,6 +801,11 @@ julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
 └ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:686
 (1.7175896973066611, true)
 ```
+
+## References
+
+- **[1]** Kozai, Y (1959). The Motion of a Close Earth Satellite. The Astronomical Journal,
+    v. 64, no. 1274, pp. 367 -- 377.
 """
 function sun_sync_orbit_inclination(
     a::T1,
@@ -842,20 +825,13 @@ function sun_sync_orbit_inclination(
     # Obtain the tolerance.
     tol = isnothing(tolerance) ? √(eps(T)) : T(tolerance)
 
-    # The RAAN time-derivative considering only the terms up to J₂ is:
+    # The RAAN time-derivative considering only the terms up to J₂ is [1, p. 372]:
     #
     #   ∂Ω      3                       n
     #   ── = - ─── R₀² . J₂ . cos(i) . ─── .
     #   ∂t      2                       p²
     #
-    # However, this value is obtained multiplying `n` by the average RAAN variation over one
-    # orbit:
-    #
-    #   ∂Ω │
-    #   ── │    ,
-    #   ∂θ │ av
-    #
-    # where `θ = ω + f`. Thus, `n` here must be the "mean" mean motion, which is given by:
+    # where:
     #
     #             ┌                                                ┐
     #             │      3    R₀²                                  │
