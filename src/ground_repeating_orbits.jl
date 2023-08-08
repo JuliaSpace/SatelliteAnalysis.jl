@@ -22,9 +22,9 @@ export ground_repeating_orbit_adjacent_track_distance
 """
     ground_repeating_orbit_adjacent_track_angle(h::T1, orbit_period::T2, i::T3, orbit_cycle::Integer) where {T1 <: Number, T2 <: Number, T3 <: Number} -> T
 
-Compute the adjacent track distance [m] at Equator in a ground repeating orbit.  The orbit
-is described by its altitude at Equator `h` [m], orbital period `orbit_period` [s],
-inclination `i` [rad], and orbit cycle `orbit_cyle` [day].
+Compute the adjacent track angle [rad] at Equator in a ground repeating orbit measured from
+the satellite position. The orbit is described by its altitude at Equator `h` [m], orbital
+period `orbit_period` [s], inclination `i` [rad], and orbit cycle `orbit_cyle` [day].
 
 !!! warning
     The code does not check if the altitude `h` is correct for the orbit with the period
@@ -61,13 +61,14 @@ function ground_repeating_orbit_adjacent_track_angle(
     # the two adjacent tracks.
     β = asin(sin(θ) * sin(T(i)))
 
-    # Compute the angle between the two ground tracks measured from the satellite. α is an
-    # auxiliary angle and γ is the angle we are looking for.
+    # Compute the angle between the two ground tracks measured from the satellite. `a` is an
+    # auxiliary distance and `γ` is the angle we are looking for.
     sin_βo2, cos_βo2 = sincos(β / 2)
     α = √(R₀^2 + (R₀ + T(h))^2 - 2R₀ * (R₀ + T(h)) * cos_βo2)
     γ = asin(R₀ / α * sin_βo2)
 
-    return γ
+    # Finally, the adjacent track distance is two times `γ`.
+    return 2γ
 end
 
 """
