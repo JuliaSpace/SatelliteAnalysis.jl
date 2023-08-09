@@ -63,15 +63,15 @@ function eclipse_time_summary(
     num_days::Number = 365,
     step::Number = -1
 )
-    jd₀ = get_epoch(orbp)
+    jd₀ = Propagators.epoch(orbp)
 
     # TODO: Improve how the orbit period is computed.
     # We must obtain the mean elements to compute the orbit period. Maybe there
     # is a better way to do this.
-    mean_elements = get_mean_elements(orbp)
+    mean_elements = Propagators.mean_elements(orbp)
 
     # We need the orbit period because we will propagate one orbit per day.
-    orbit_period = period(mean_elements)
+    orbit_period = orbital_period(mean_elements)
 
     # Check the propagation step we need to use.
     Δt₀ = step < 0 ? orbit_period * 0.5 / 360 : Float64(step)
@@ -90,7 +90,7 @@ function eclipse_time_summary(
     @inbounds for d in days
         # TODO: Should we transform between MOD => TOD/TEME?
         # Get the Sun position represented in the inertial reference frame.
-        s_i = sun_position_i(jd₀ + d)
+        s_i = sun_position_mod(jd₀ + d)
 
         # Initial state.
         old_state = _get_lighting_condition(orbp, 0, d, s_i)
@@ -291,7 +291,7 @@ end
     d::Number,
     s_i::AbstractVector
 )
-    r_i, ~ = propagate!(orbp, 86400d + t)
+    r_i, ~ = Propagators.propagate!(orbp, 86400d + t)
     return lighting_condition(r_i, s_i)
 end
 

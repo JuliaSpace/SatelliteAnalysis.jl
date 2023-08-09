@@ -124,7 +124,7 @@ function ground_facility_accesses(
     t = float(t_0):float(step):float(Δt + t_0)
 
     # Get the epoch of the propagator.
-    jd₀ = get_epoch(orbp)
+    jd₀ = Propagators.epoch(orbp)
 
     # Convert the ground facilities positions to an ECEF vector to save
     # computational burden.
@@ -141,7 +141,7 @@ function ground_facility_accesses(
 
     # Lambda function to check the reduced visibility.
     function f(t)::Bool
-        r_i, v_i  = propagate!(orbp, t)
+        r_i, v_i  = Propagators.propagate!(orbp, t)
         r_e       = r_eci_to_ecef(DCM, eci, ecef, jd₀ + t / 86400, vargs...) * r_i
 
         @inbounds for i in eachindex(visibility)
@@ -279,7 +279,7 @@ function ground_facility_gaps(
 ) where T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}
 
     # Get the epoch of the propagator.
-    jd₀ = get_epoch(orbp)
+    jd₀ = Propagators.epoch(orbp)
     dt₀ = jd_to_date(DateTime, jd₀) + Dates.Second(t_0)
 
     # Compute the list of ground facility accesses.
