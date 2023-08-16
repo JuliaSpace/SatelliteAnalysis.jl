@@ -213,6 +213,10 @@ The algorithm here considers only the perturbation terms up to J₂.
     numerical method has converged. If it is `nothing`, `(√eps(T), √eps(T))` will be used,
     where `T` is the internal type for the computations. Notice that the residue function
     `f₁` unit is [deg / day], whereas the `f₂` unit is [deg / min]. (**Default** = 1e-18)
+- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
+    (**Default** = `GM_EARTH`)
+- `J2::Number`: J₂ perturbation term. (**Default** = EGM_2008_J2)
+- `R0::Number`: Earth's equatorial radius [m]. (**Default** = EARTH_EQUATORIAL_RADIUS)
 
 # Returns
 
@@ -229,7 +233,7 @@ the orbit plane will have the same orientation to the Sun at the ascending node.
 The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372] is:
 
 ```
-∂Ω      3                       n
+∂Ω      3                       n̄
 ── = - ─── R₀² . J₂ . cos(i) . ─── .
 ∂t      2                       p²
 ```
@@ -239,7 +243,7 @@ where:
 ```
          ┌                                                ┐
          │      3    R₀²                                  │
-n = n₀ . │ 1 + ─── . ─── . J₂ . √(1 - e²) . (2 - 3sin²(i))│.
+n̄ = n₀ . │ 1 + ─── . ─── . J₂ . √(1 - e²) . (2 - 3sin²(i))│.
          │      4     p²                                  │
          └                                                ┘
 ```
@@ -253,12 +257,12 @@ angvel = ──── + ────,
           ∂t     ∂t
 
                   3    R₀²
-angvel = n + n . ─── . ─── . J₂ . (4 - 5sin²(i)),
+angvel = n̄ + n̄ . ─── . ─── . J₂ . (4 - 5sin²(i)),
                   4     p²
 ```
 
-where `n` is the "mean" mean motion due to the same consideration as presented for the RAAN
-time-derivative.
+where `n` is the perturbed mean motion due to the same consideration as presented for the
+RAAN time-derivative.
 
 Finally, this function finds the pair `(a, i)` that simultaneously solves the equations:
 
@@ -339,7 +343,11 @@ function sun_sync_orbit_from_angular_velocity(
     e::T2 = 0;
     max_iterations::Number = 30,
     no_warnings::Bool = false,
-    tolerance::Union{Nothing, NTuple{2, Number}} = nothing
+    tolerance::Union{Nothing, NTuple{2, Number}} = nothing,
+    # Constants.
+    J2::Number = EGM_2008_J2,
+    m0::Number = GM_EARTH,
+    R0::Number = EARTH_EQUATORIAL_RADIUS
 ) where {T1 <: Number, T2 <: Number}
 
     T = float(promote_type(T1, T2))
@@ -358,16 +366,16 @@ function sun_sync_orbit_from_angular_velocity(
     tol = isnothing(tolerance) ? (√eps(T), √eps(T)) : (T(tolerance[1]), T(tolerance[2]))
 
     # Auxiliary variables.
-    μ     = T(GM_EARTH)
-    R₀    = T(EARTH_EQUATORIAL_RADIUS)
-    J₂    = T(EGM08_J2)
-    β     = √(1 - T(e)^2)
-    β²    = β * β
-    β³    = β² * β
-    β⁴    = β² * β²
+    μ  = T(m0)
+    R₀ = T(R0)
+    J₂ = T(J2)
+    β² = 1 - T(e)^2
+    β  = √β²
+    β³ = β² * β
+    β⁴ = β² * β²
 
     # Auxiliary constant to compute the functions.
-    k₅ = √(μ / (R₀ * R₀ * R₀))
+    k₅ = √(μ / R₀^3)
     k₁ = -(3 // 2) * J₂ * k₅ / β⁴
     k₂ = +(3 // 4) * J₂ / β³
     k₄ = -k₁ / 2
@@ -396,11 +404,11 @@ function sun_sync_orbit_from_angular_velocity(
 
     # Initial guess based on the unperturbed model. Notice that we will estimate
     # `1 / √(a / R₀)` and `cos(i)`
-    isqrt_ā = (ω_d / k₅)^T(1 / 3)
+    isqrt_ā = (ω_d / k₅)^(1 // 3)
     cos_i   = -Ω̇_d / isqrt_ā^7 / k₁
 
-    # By setting the initial values of `f1` and `f2` to `10tol`, we assure that
-    # the loop will be executed at least one time.
+    # By setting the initial values of `f1` and `f2` to `10tol`, we assure that the loop
+    # will be executed at least one time.
     f₁ = 10T(tol[1])
     f₂ = 10T(tol[2])
 
@@ -409,12 +417,12 @@ function sun_sync_orbit_from_angular_velocity(
     converged = true
 
     while (abs(f₁) > tol[1]) || (abs(f₂) > tol[2])
-        isqrt_ā²  = isqrt_ā  * isqrt_ā
-        isqrt_ā³  = isqrt_ā² * isqrt_ā
-        isqrt_ā⁴  = isqrt_ā² * isqrt_ā²
-        isqrt_ā⁶  = isqrt_ā³ * isqrt_ā³
-        isqrt_ā⁷  = isqrt_ā⁴ * isqrt_ā³
-        isqrt_ā⁸  = isqrt_ā⁴ * isqrt_ā⁴
+        isqrt_ā² = isqrt_ā  * isqrt_ā
+        isqrt_ā³ = isqrt_ā² * isqrt_ā
+        isqrt_ā⁴ = isqrt_ā² * isqrt_ā²
+        isqrt_ā⁶ = isqrt_ā³ * isqrt_ā³
+        isqrt_ā⁷ = isqrt_ā⁴ * isqrt_ā³
+        isqrt_ā⁸ = isqrt_ā⁴ * isqrt_ā⁴
 
         cos²_i = cos_i  * cos_i
         cos³_i = cos²_i * cos_i
@@ -509,6 +517,10 @@ The algorithm here considers only the perturbation terms up to J₂.
     has converged. If it is `nothing`, `√eps(T)` will be used, where `T` is the internal
     type for the computations. Notice that the residue unit is [deg / day].
     (**Default** = nothing)
+- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
+    (**Default** = `GM_EARTH`)
+- `J2::Number`: J₂ perturbation term. (**Default** = EGM_2008_J2)
+- `R0::Number`: Earth's equatorial radius [m]. (**Default** = EARTH_EQUATORIAL_RADIUS)
 
 # Returns
 
@@ -525,7 +537,7 @@ the orbit plane will have the same orientation to the Sun at the ascending node.
 The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372] is:
 
 ```
-∂Ω      3                       n
+∂Ω      3                       n̄
 ── = - ─── R₀² . J₂ . cos(i) . ─── .
 ∂t      2                       p²
 ```
@@ -535,7 +547,7 @@ where:
 ```
          ┌                                                ┐
          │      3    R₀²                                  │
-n = n₀ . │ 1 + ─── . ─── . J₂ . √(1 - e²) . (2 - 3sin²(i))│.
+n̄ = n₀ . │ 1 + ─── . ─── . J₂ . √(1 - e²) . (2 - 3sin²(i))│.
          │      4     p²                                  │
          └                                                ┘
 ```
@@ -595,6 +607,10 @@ function sun_sync_orbit_semi_major_axis(
     e::T2 = 0;
     max_iterations::Number = 30,
     tolerance::Union{Nothing, Number} = nothing,
+    # Constants.
+    J2::Number = EGM_2008_J2,
+    m0::Number = GM_EARTH,
+    R0::Number = EARTH_EQUATORIAL_RADIUS
 ) where {T1 <: Number, T2 <: Number}
 
     T = float(promote_type(T1, T2))
@@ -610,7 +626,7 @@ function sun_sync_orbit_semi_major_axis(
 
     # The RAAN time-derivative considering only the terms up to J₂ is [1, p. 372]:
     #
-    #   ∂Ω      3                       n
+    #   ∂Ω      3                       n̄
     #   ── = - ─── R₀² . J₂ . cos(i) . ─── .
     #   ∂t      2                       p²
     #
@@ -618,17 +634,17 @@ function sun_sync_orbit_semi_major_axis(
     #
     #             ┌                                                ┐
     #             │      3    R₀²                                  │
-    #    n = n₀ . │ 1 + ─── . ─── . J₂ . √(1 - e²) . (2 - 3sin²(i))│.
+    #    n̄ = n₀ . │ 1 + ─── . ─── . J₂ . √(1 - e²) . (2 - 3sin²(i))│.
     #             │      4     p²                                  │
     #             └                                                ┘
 
     # Auxiliary variables.
-    R₀  = T(EARTH_EQUATORIAL_RADIUS)
-    kR₀ = √(R₀ * R₀ * R₀)
-    μ   = T(GM_EARTH)
-    J₂  = T(EGM08_J2)
-    β   = √(1 - T(e)^2)
-    β²  = β  * β
+    R₀  = T(R0)
+    kR₀ = √(R₀^3)
+    μ   = T(m0)
+    J₂  = T(J2)
+    β²  = 1 - T(e)^2
+    β   = √β²
     β³  = β² * β
     β⁴  = β² * β²
 
@@ -730,6 +746,10 @@ The algorithm here considers only the perturbation terms up to J₂.
     has converged. If it is `nothing`, `√eps(T)` will be used, where `T` is the internal
     type for the computations. Notice that the residue unit is [deg / day].
     (**Default** = nothing)
+- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
+    (**Default** = `GM_EARTH`)
+- `J2::Number`: J₂ perturbation term. (**Default** = EGM_2008_J2)
+- `R0::Number`: Earth's equatorial radius [m]. (**Default** = EARTH_EQUATORIAL_RADIUS)
 
 # Returns
 
@@ -746,7 +766,7 @@ the orbit plane will have the same orientation to the Sun at the ascending node.
 The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372] is:
 
 ```
-∂Ω      3                       n
+∂Ω      3                       n̄
 ── = - ─── R₀² . J₂ . cos(i) . ─── .
 ∂t      2                       p²
 ```
@@ -756,7 +776,7 @@ where:
 ```
          ┌                                                ┐
          │      3    R₀²                                  │
-n = n₀ . │ 1 + ─── . ─── . J₂ . √(1 - e²) . (2 - 3sin²(i))│.
+n̄ = n₀ . │ 1 + ─── . ─── . J₂ . √(1 - e²) . (2 - 3sin²(i))│.
          │      4     p²                                  │
          └                                                ┘
 ```
@@ -812,6 +832,10 @@ function sun_sync_orbit_inclination(
     e::T2 = 0;
     max_iterations::Number = 30,
     tolerance::Union{Nothing, Number} = nothing,
+    # Constants.
+    J2::Number = EGM_2008_J2,
+    m0::Number = GM_EARTH,
+    R0::Number = EARTH_EQUATORIAL_RADIUS
 ) where {T1 <: Number, T2 <: Number}
 
     T  = float(promote_type(T1, T2))
@@ -827,7 +851,7 @@ function sun_sync_orbit_inclination(
 
     # The RAAN time-derivative considering only the terms up to J₂ is [1, p. 372]:
     #
-    #   ∂Ω      3                       n
+    #   ∂Ω      3                       n̄
     #   ── = - ─── R₀² . J₂ . cos(i) . ─── .
     #   ∂t      2                       p²
     #
@@ -835,15 +859,15 @@ function sun_sync_orbit_inclination(
     #
     #             ┌                                                ┐
     #             │      3    R₀²                                  │
-    #    n = n₀ . │ 1 + ─── . ─── . J₂ . √(1 - e²) . (2 - 3sin²(i))│.
+    #    n̄ = n₀ . │ 1 + ─── . ─── . J₂ . √(1 - e²) . (2 - 3sin²(i))│.
     #             │      4     p²                                  │
     #             └                                                ┘
 
     # Auxiliary variables.
-    μ  = T(GM_EARTH)
-    J₂ = T(EGM08_J2)
-    β  = √(1 - T(e)^2)
-    β² = β  * β
+    μ  = T(m0)
+    J₂ = T(J2)
+    β² = 1 - T(e)^2
+    β  = √β²
     n₀ = √(μ / a^3)
     p  = a * β²
     k₁ = -(3 // 2) * J₂ * (R₀ / p)^2 * n₀
@@ -921,9 +945,9 @@ function sun_sync_orbit_inclination(
     return i, converged
 end
 
-################################################################################
-#                              Private functions
-################################################################################
+############################################################################################
+#                                    Private Functions
+############################################################################################
 
 function _pretify_rev_per_days(i::Int, num::Int, den::Int)
     if num == 0

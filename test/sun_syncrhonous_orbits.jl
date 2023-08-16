@@ -23,20 +23,20 @@
     @test size(df) == (5, 7)
 
     @test df[begin, :semi_major_axis]       ≈ 6382.409  (atol = 1e-3)
-    @test df[begin, :altitude]              ≈    4.272  (atol = 1e-3)
-    @test df[begin, :inclination]           ≈   95.6949 (atol = 1e-4)
-    @test df[begin, :period]                ≈   84.706  (atol = 1e-3)
+    @test df[begin, :altitude]              ≈ 4.272     (atol = 1e-3)
+    @test df[begin, :inclination]           ≈ 95.6949   (atol = 1e-4)
+    @test df[begin, :period]                ≈ 84.706    (atol = 1e-3)
     @test df[begin, :rev_per_days]         == "17"
-    @test df[begin, :adjacent_gt_distance]  ≈ 2345.165  (atol = 1e-3)
-    @test df[begin, :adjacent_gt_angle]     ≈ 84.5252   (atol = 1e-4)
+    @test df[begin, :adjacent_gt_distance]  ≈ 2345.163  (atol = 1e-3)
+    @test df[begin, :adjacent_gt_angle]     ≈ 169.0503  (atol = 1e-4)
 
     @test df[end,   :semi_major_axis]       ≈ 7635.252  (atol = 1e-3)
     @test df[end,   :altitude]              ≈ 1257.115  (atol = 1e-3)
-    @test df[end,   :inclination]           ≈  100.7057 (atol = 1e-4)
-    @test df[end,   :period]                ≈  110.769  (atol = 1e-3)
+    @test df[end,   :inclination]           ≈ 100.7057  (atol = 1e-4)
+    @test df[end,   :period]                ≈ 110.769   (atol = 1e-3)
     @test df[end,   :rev_per_days]         == "13"
     @test df[end,   :adjacent_gt_distance]  ≈ 3024.567  (atol = 1e-3)
-    @test df[end,   :adjacent_gt_angle]     ≈   46.2222 (atol = 1e-4)
+    @test df[end,   :adjacent_gt_angle]     ≈ 92.4444   (atol = 1e-4)
 
     # Altitude filter
     # ======================================================================================
@@ -49,13 +49,13 @@
     )
 
     @test size(df) == (1, 7)
-    @test df[begin, :semi_major_axis]       ≈ 7130.984  (atol = 1e-3)
-    @test df[begin, :altitude]              ≈  752.847  (atol = 1e-3)
-    @test df[begin, :inclination]           ≈   98.4106 (atol = 1e-4)
-    @test df[begin, :period]                ≈  100.000  (atol = 1e-3)
+    @test df[begin, :semi_major_axis]       ≈ 7130.984   (atol = 1e-3)
+    @test df[begin, :altitude]              ≈ 752.847    (atol = 1e-3)
+    @test df[begin, :inclination]           ≈ 98.4106    (atol = 1e-4)
+    @test df[begin, :period]                ≈ 100.000    (atol = 1e-3)
     @test df[begin, :rev_per_days]         == "14 + ²/₅"
-    @test df[begin, :adjacent_gt_distance]  ≈  550.597  (atol = 1e-3)
-    @test df[begin, :adjacent_gt_angle]     ≈   19.936  (atol = 1e-3)
+    @test df[begin, :adjacent_gt_distance]  ≈ 550.597    (atol = 1e-3)
+    @test df[begin, :adjacent_gt_angle]     ≈ 39.872     (atol = 1e-3)
 
     # Revolution per days
     # ======================================================================================
@@ -70,12 +70,12 @@
 
     @test size(df) == (1, 7)
     @test df[begin, :semi_major_axis]       ≈ 7130.984     (atol = 1e-3)
-    @test df[begin, :altitude]              ≈  752.847     (atol = 1e-3)
-    @test df[begin, :inclination]           ≈   98.4106    (atol = 1e-4)
-    @test df[begin, :period]                ≈  100.000     (atol = 1e-3)
+    @test df[begin, :altitude]              ≈ 752.847      (atol = 1e-3)
+    @test df[begin, :inclination]           ≈ 98.4106      (atol = 1e-4)
+    @test df[begin, :period]                ≈ 100.000      (atol = 1e-3)
     @test df[begin, :rev_per_days]         == (14, 2 // 5)
-    @test df[begin, :adjacent_gt_distance]  ≈  550.597     (atol = 1e-3)
-    @test df[begin, :adjacent_gt_angle]     ≈   19.936     (atol = 1e-3)
+    @test df[begin, :adjacent_gt_distance]  ≈ 550.597      (atol = 1e-3)
+    @test df[begin, :adjacent_gt_angle]     ≈ 39.872       (atol = 1e-3)
 
     # Test units
     # ======================================================================================
@@ -92,7 +92,7 @@
     )
 
     @test df[begin, :inclination]       ≈ 98.4106 |> deg2rad (atol = 2e-6)
-    @test df[begin, :adjacent_gt_angle] ≈ 19.936  |> deg2rad (atol = 8e-5)
+    @test df[begin, :adjacent_gt_angle] ≈ 39.872  |> deg2rad (atol = 8e-5)
 
     # Distance
     # --------------------------------------------------------------------------------------
@@ -120,9 +120,7 @@
         time_unit = :s,
     )
 
-    # The algorithm to compute the orbit angular velocity must be fixed in
-    # SatelliteToolbox.jl.
-    @test_broken df[begin, :period] ≈ 6000.000 (atol = 1e-3)
+    @test df[begin, :period] ≈ 6000.000 (atol = 1e-3)
 
     df = design_sun_sync_ground_repeating_orbit(
         5,
