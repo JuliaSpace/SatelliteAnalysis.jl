@@ -18,11 +18,11 @@
 export eclipse_time_summary
 
 """
-    eclipse_time_summary(orbp::OrbitPropagator; kwargs...) -> Vector{Float64}, Vector{Float64}, Vector{Float64}
-    eclipse_time_summary(io::IO, orbp::OrbitPropagator; kwargs...) -> Nothing
+    eclipse_time_summary(orbp::OrbitPropagator; kwargs...) -> DataFrame
 
 Compute the eclipse time summary for the orbit propagator `orbp`. The summary is computed as
-the total time the object stays in the sunlight, penumbra, and umbra regions per day.
+the total time the object stays in the sunlight, penumbra, and umbra regions per orbit at
+each day.
 
 # Keywords
 
@@ -32,33 +32,74 @@ the total time the object stays in the sunlight, penumbra, and umbra regions per
     has a crossing estimation to accurately estimate the transition between the regions.
     However, if this step is very large, we may miss some small regions. If it is negative,
     it will be selected as the time in which the mean anomaly advances 0.5°.
-
-If the parameter `io` is passed, the following additional keywords are available:
-
-- `unit::Symbol`: Select the unit in which the results will be printed. The possible values
-    are:
+- `unit::Symbol`: Select the unit in which the results will be generated. The possible
+    values are:
     - `:s` for seconds (**Default**);
     - `:m` for minutes; or
     - `:h` for hours.
-- `use_pager::Bool`: If `true`, then the result will be printed using **TerminalPager.jl**.
 
 # Returns
 
-If the `io` parameter **is not** present, the function returns three vectors:
+- `DataFrame`: The function returns a `DataFrame` with three columns:
+    - `sunlight`: Total sunlight time per orbit at each day [`unit`].
+    - `penumbra`: Total penumbra time per orbit at each day [`unit`].
+    - `umbra`: Total umbra time per orbit at each day [`unit`].
+    The unit of each column is stored in the `DataFrame` using metadata.
 
-- `Vector{Float64}`: The total sunlight time per orbit at each day [s].
-- `Vector{Float64}`: The total penumbra time per orbit at each day [s].
-- `Vector{Float64}`: The total umbra time per orbit at each day [s].
+# Extended Help
 
-If the `io` parameter **is** present, the function prints to `io` the results in a table and
-returns `nothing`.
+## Examples
+
+```
+julia> orb = KeplerianElements(
+           date_to_jd(2021, 1, 1, 0, 0, 0),
+           7130.982e3,
+           0.001111,
+           98.405 |> deg2rad,
+           ltdn_to_raan(10.5, jd₀),
+           90     |> deg2rad,
+           0
+       )
+
+julia> orbp = Propagators.init(Val(:J2), orb)
+
+julia> df = eclipse_time_summary(orbp; num_days = 5)
+5×4 DataFrame
+ Row │ date        sunlight  penumbra  umbra
+     │ Date        Float64   Float64   Float64
+─────┼─────────────────────────────────────────
+   1 │ 2021-01-01   3972.63   20.4117  2006.96
+   2 │ 2021-01-02   3973.85   20.4376  2005.71
+   3 │ 2021-01-03   3974.77   20.4575  2004.77
+   4 │ 2021-01-04   3975.74   20.4758  2003.79
+   5 │ 2021-01-05   3976.94   20.5022  2002.55
+
+julia> df = eclipse_time_summary(orbp; num_days = 5, unit = :m)
+5×4 DataFrame
+ Row │ date        sunlight  penumbra  umbra
+     │ Date        Float64   Float64   Float64
+─────┼─────────────────────────────────────────
+   1 │ 2021-01-01   66.2105  0.340195  33.4493
+   2 │ 2021-01-02   66.2308  0.340627  33.4285
+   3 │ 2021-01-03   66.2461  0.340958  33.4129
+   4 │ 2021-01-04   66.2623  0.341263  33.3964
+   5 │ 2021-01-05   66.2824  0.341704  33.3759
+
+julia> colmetadata(df)
+Dict{Symbol, Dict{String, Symbol}} with 3 entries:
+  :penumbra => Dict("Unit"=>:m)
+  :sunlight => Dict("Unit"=>:m)
+  :umbra    => Dict("Unit"=>:m)
+```
 """
 function eclipse_time_summary(
     orbp::OrbitPropagator;
     num_days::Number = 365,
-    step::Number = -1
+    step::Number = -1,
+    unit::Symbol = :s
 )
     jd₀ = Propagators.epoch(orbp)
+    dt₀ = julian2datetime(jd₀)
 
     # TODO: Improve how the orbit period is computed.
     # We must obtain the mean elements to compute the orbit period. Maybe there is a better
@@ -75,6 +116,7 @@ function eclipse_time_summary(
     days = 0:1:num_days-1
 
     # Pre-allocate the output variables.
+    date          = Vector{DateTime}(undef, num_days)
     sunlight_time = zeros(num_days)
     penumbra_time = zeros(num_days)
     umbra_time    = zeros(num_days)
@@ -83,6 +125,8 @@ function eclipse_time_summary(
     # ======================================================================================
 
     @inbounds for d in days
+        date[d + 1] = dt₀ + Day(d)
+
         # TODO: Should we transform between MOD => TOD/TEME?
         # Get the Sun position represented in the inertial reference frame.
         s_i = sun_position_mod(jd₀ + d)
@@ -162,105 +206,35 @@ function eclipse_time_summary(
         end
     end
 
-    return sunlight_time, penumbra_time, umbra_time
-end
-
-function eclipse_time_summary(
-    io::IO,
-    orbp::OrbitPropagator;
-    num_days::Number = 365,
-    step::Number = -1,
-    unit::Symbol = :s,
-    use_pager::Bool = false
-)
-    # Do not use pager if `io` is not `stdout`.
-    if use_pager && (io != stdout)
-        @warn "We can only use the pager if printing to `stdout`."
-        use_pager = false
-    end
-
-    has_color = get(io, :color, false)
-
-    # Compute the summary.
-    sunlight_time, penumbra_time, umbra_time = eclipse_time_summary(
-        orbp;
-        num_days,
-        step
-    )
-
-    # Get the date vector.
-    vjd = Propagators.epoch(orbp) .+ collect(0:1:num_days-1)
-    vdate = string.(jd_to_date.(DateTime, vjd))
-
-    # Obtain the conversion given the unit selection.
+    # Convert to the right units.
     if unit == :h
-        unit_label = "h"
-        unit_factor = 3600
+        sunlight_time ./= 3600
+        penumbra_time ./= 3600
+        umbra_time    ./= 3600
     elseif unit == :m
-        unit_label = "min"
-        unit_factor = 60
+        sunlight_time ./= 60
+        penumbra_time ./= 60
+        umbra_time    ./= 60
     else
-        unit_label = "s"
-        unit_factor = 1
+        # If the symbol is not known, we must use seconds.
+        unit = :s
     end
 
-    sunlight_time ./= unit_factor
-    penumbra_time ./= unit_factor
-    umbra_time ./= unit_factor
-
-    str = pretty_table(
-        String,
-        vcat(
-            hcat(vdate, sunlight_time, penumbra_time, umbra_time),
-            hcat(
-                has_color ? AnsiTextCell(string(crayon"red bold") * "Maximum") : "Maximum",
-                maximum(sunlight_time),
-                maximum(penumbra_time),
-                maximum(umbra_time)
-            ),
-            hcat(
-                has_color ? AnsiTextCell(string(crayon"yellow bold") * "Mean") : "Mean",
-                mean(sunlight_time),
-                mean(penumbra_time),
-                mean(umbra_time)
-            ),
-            hcat(
-                has_color ? AnsiTextCell(string(crayon"blue bold") * "Minimum") : "Minimum",
-                minimum(sunlight_time),
-                minimum(penumbra_time),
-                minimum(umbra_time)
-            ),
-        );
-        color = get(io, :color, false),
-        crop = use_pager ? :none : :horizontal,
-        display_size = (use_pager || (io != stdout)) ? (-1, -1) : displaysize(stdout),
-        header = [
-            "Day",
-            "Sunlight time [$unit_label]",
-            "Penumbra time [$unit_label]",
-            "Umbra time [$unit_label]"
-        ],
-        hlines = [:header, num_days + 1],
-        alignment_anchor_regex = Dict(
-            2 => [r"\."],
-            3 => [r"\."],
-            4 => [r"\."]
-        ),
-        vlines = [1]
+    # Create and returns the DataFrame.
+    df = DataFrame(
+        date = Date.(date),
+        sunlight = sunlight_time,
+        penumbra = penumbra_time,
+        umbra = umbra_time
     )
 
-    # Check if we need to use the pager.
-    if use_pager
-        pager(
-            str;
-            frozen_columns = max(length.(vdate)..., 6) + 3,
-            frozen_rows = 2
-        )
-    else
-        print(io, str)
-    end
+    # Add metadata to the DataFrame.
+    metadata!(df, "Description", "Eclipse time PER ORBIT computed at each day.")
+    colmetadata!(df, :sunlight, "Unit", unit)
+    colmetadata!(df, :penumbra, "Unit", unit)
+    colmetadata!(df, :umbra,    "Unit", unit)
 
-    return nothing
+    return df
 end
 
 #                                    Private Functions
