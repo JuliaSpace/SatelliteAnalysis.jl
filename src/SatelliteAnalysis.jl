@@ -1,7 +1,6 @@
 module SatelliteAnalysis
 
 using Dates
-using DataFrames
 using LinearAlgebra
 using PrettyNumbers
 using PrettyTables
@@ -10,6 +9,7 @@ using StaticArrays
 using Statistics
 using TerminalPager
 
+@reexport using DataFrames
 @reexport using ReferenceFrameRotations
 @reexport using SatelliteToolbox
 
