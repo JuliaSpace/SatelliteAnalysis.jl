@@ -10,7 +10,7 @@
 export ground_facility_accesses, ground_facility_gaps
 
 """
-    ground_facility_accesses(T, orbp, [(WGS84)], Δt, eci, ecef, vargs...; kwargs...) -> [Tuple | DataFrame]
+    ground_facility_accesses(orbp, [(WGS84)], Δt, eci, ecef, vargs...; kwargs...) -> DataFrame
 
 Compute the accesses of a satellite with orbit propagator `orbp` (see `Propagators.init`) to
 the ground facilities defined in the vector `vgs_r_e`. The analysis interval begins in the
@@ -49,64 +49,30 @@ Those geodetic information are transformed to an ECEF vector using the function
     tuning to accurately obtain the access time. However, if an access is lower than the
     step, it can be neglected. (**Default** = 60)
 - `t_0::Number`: Initial time of the analysis after the propagator epoch [s].
+- `unit::Symbol`: Select the unit in which the duration will be computed. The possible
+    values are:
+    - `:s` for seconds (**Default**);
+    - `:m` for minutes; or
+    - `:h` for hours.
 
 # Returns
 
-The return object depends on the parameter `T`:
-
-- `T = Tuple`: The function return a vector of tuples. Each element represent an access
-    between the satellite and the ground facility. The beginning of the access [UTC] is in
-    the first element in the tuple whereas the end is in the second element. Both are
-    represented using `DateTime`.
-- `T = DataFrame`: The function returns a `DataFrame` with three columns:
+- `DataFrame`: The function returns a `DataFrame` with three columns:
     - `access_beginning`: Time of the access beginning [UTC] encoded using `DateTime`.
     - `access_end`: Time of the access end [UTC] encoded using `DateTime`.
     - `duration`: Duration of the access [s].
+    The unit of the column `duration` is stored in the `DataFrame` using metadata.
 """
 function ground_facility_accesses(
-    T::DataType,
     orbp::OrbitPropagator,
     gs_wgs84::Tuple{T1, T2, T3},
     vargs::Vararg{Any, N};
     kwargs...
 ) where {N, T1 <: Number, T2 <: Number, T3 <: Number}
-    return ground_facility_accesses(T, orbp, [gs_wgs84], vargs...; kwargs...)
+    return ground_facility_accesses(orbp, [gs_wgs84], vargs...; kwargs...)
 end
 
 function ground_facility_accesses(
-    ::Type{DataFrame},
-    orbp::OrbitPropagator,
-    vgs_wgs84::AbstractVector{T},
-    Δt::Number,
-    eci::Union{T_ECIs, T_ECIs_IAU_2006},
-    ecef::Union{T_ECEFs, T_ECEFs_IAU_2006},
-    vargs::Vararg{Any, N};
-    kwargs...
-) where {N, T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
-
-    accesses = ground_facility_accesses(
-        Tuple,
-        orbp,
-        vgs_wgs84,
-        Δt,
-        eci,
-        ecef,
-        vargs...;
-        kwargs...
-    )
-
-    access_beginning = map(x -> first(x), accesses)
-    access_end       = map(x -> last(x),  accesses)
-
-    return DataFrame(
-        :access_beginning => access_beginning,
-        :access_end       => access_end,
-        :duration         => Dates.value.(access_end .- access_beginning) ./ 1000
-    )
-end
-
-function ground_facility_accesses(
-    ::Type{Tuple},
     orbp::OrbitPropagator,
     vgs_wgs84::AbstractVector{T},
     Δt::Number,
@@ -116,7 +82,8 @@ function ground_facility_accesses(
     minimum_elevation::Number = 10 |> deg2rad,
     reduction::Function = v -> |(v...),
     step::Number = 60,
-    t_0::Number = 0
+    t_0::Number = 0,
+    unit::Symbol = :s
 ) where {N, T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
 
     # Time vector of the analysis.
@@ -150,8 +117,10 @@ function ground_facility_accesses(
         return reduction(visibility)
     end
 
-    access_beg = DateTime(now())
-    access_end = DateTime(now())
+    access_beg  = DateTime(now())
+    access_end  = DateTime(now())
+    vaccess_beg = DateTime[]
+    vaccess_end = DateTime[]
 
     for k in t
         # Check the initial state of the reduced visibility.
@@ -185,7 +154,8 @@ function ground_facility_accesses(
             state = :not_visible
             access_end = jd_to_date(DateTime, jd₀ + kc / 86400)
 
-            push!(accesses, (access_beg, access_end))
+            push!(vaccess_beg, access_beg)
+            push!(vaccess_end, access_end)
         end
     end
 
@@ -193,10 +163,33 @@ function ground_facility_accesses(
     # interval as the end of the access.
     if state == :visible
         access_end = jd_to_date(DateTime, jd₀ + (Δt + t_0) / 86400)
-        push!(accesses, (access_beg, access_end))
+        push!(vaccess_beg, access_beg)
+        push!(vaccess_end, access_end)
     end
 
-    return accesses
+    # Compute the access duration and convert to the desired unit.
+    duration = Dates.value.(vaccess_end .- vaccess_beg) ./ 1000
+
+    if unit == :h
+        duration ./= 3600
+    elseif unit == :m
+        duration ./= 60
+    else
+        # If the symbol is not known, we must use seconds.
+        unit = :s
+    end
+
+    # Create the DataFrame and write the metadata.
+    df = DataFrame(
+        :access_beginning => vaccess_beg,
+        :access_end       => vaccess_end,
+        :duration         => duration
+    )
+
+    metadata!(df, "Description", "Accesses to the ground facilities.")
+    colmetadata!(df, :duration, "Unit", unit)
+
+    return df
 end
 
 """
@@ -210,61 +203,22 @@ Notice that the gap analysis starts in the orbit propagator epoch plus `t_0` and
 
 # Returns
 
-The return object depends on the parameter `T`:
-
-- `T = Tuple`: The function return a vector of tuples. Each element represent an access gap
-    between the satellite and the ground facility. The beginning of the gap [UTC] is in the
-    first element in the tuple whereas the end is in the second element. Both are
-    represented using `DateTime`.
-- `T = DataFrame`: The function returns a `DataFrame` with three columns:
-    - `gap_beginning`: Time of the gap beginning [UTC] encoded using `DateTime`.
-    - `gap_end`: Time of the gap end [UTC] encoded using `DateTime`.
-    - `duration`: Duration of the gap [s].
+- `DataFrame`: The function returns a `DataFrame` with three columns:
+    - `access_beginning`: Time of the access beginning [UTC] encoded using `DateTime`.
+    - `access_end`: Time of the access end [UTC] encoded using `DateTime`.
+    - `duration`: Duration of the access [s].
+    The unit of the column `duration` is stored in the `DataFrame` using metadata.
 """
 function ground_facility_gaps(
-    T::DataType,
     orbp::OrbitPropagator,
     gs_wgs84::Tuple{T1, T2, T3},
     vargs::Vararg{Any, N};
     kwargs...
 ) where {N, T1 <: Number, T2 <: Number, T3 <: Number}
-    return ground_facility_gaps(T, orbp, [gs_wgs84], vargs...; kwargs...)
+    return ground_facility_gaps(orbp, [gs_wgs84], vargs...; kwargs...)
 end
 
 function ground_facility_gaps(
-    ::Type{DataFrame},
-    orbp::OrbitPropagator,
-    vgs_wgs84::AbstractVector{T},
-    Δt::Number,
-    eci::Union{T_ECIs, T_ECIs_IAU_2006},
-    ecef::Union{T_ECEFs, T_ECEFs_IAU_2006},
-    vargs::Vararg{Any, N};
-    kwargs...
-) where {N, T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
-
-    accesses = ground_facility_gaps(
-        Tuple,
-        orbp,
-        vgs_wgs84,
-        Δt,
-        eci,
-        ecef,
-        vargs...;
-        kwargs...
-    )
-
-    gap_beginning = map(x -> first(x), accesses)
-    gap_end       = map(x -> last(x),  accesses)
-
-    return DataFrame(
-        :gap_beginning => gap_beginning,
-        :gap_end       => gap_end,
-        :duration      => Dates.value.(gap_end .- gap_beginning) ./ 1000
-    )
-end
-
-function ground_facility_gaps(
-    ::Type{Tuple},
     orbp,
     vgs_wgs84::AbstractVector{T},
     Δt::Number,
@@ -274,7 +228,8 @@ function ground_facility_gaps(
     minimum_elevation::Number = 10 |> deg2rad,
     reduction::Function = v -> |(v...),
     step::Number = 60,
-    t_0::Number = 0
+    t_0::Number = 0,
+    unit::Symbol = :s
 ) where {N, T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
 
     # Get the epoch of the propagator.
@@ -282,8 +237,7 @@ function ground_facility_gaps(
     dt₀ = jd_to_date(DateTime, jd₀) + Dates.Second(t_0)
 
     # Compute the list of ground facility accesses.
-    accesses = ground_facility_accesses(
-        Tuple,
+    dfa = ground_facility_accesses(
         orbp,
         vgs_wgs84,
         Δt,
@@ -301,25 +255,58 @@ function ground_facility_gaps(
     dt₁ = jd_to_date(DateTime, jd₁)
 
     # Compute the gaps between accesses.
-    gaps = NTuple{2, DateTime}[]
+    vgap_beg = DateTime[]
+    vgap_end = DateTime[]
 
-    # If the number of accessess is 0, return the entire interval.
-    num_accesses = length(accesses)
+    # If the number of accesses is 0, return the entire interval.
+    num_rows, num_cols = size(dfa)
 
-    if num_accesses == 0
-        push!(gaps, (dt₀, dt₁))
-        return gaps
+    if num_rows == 0
+        push!(vgap_beg, dt₀)
+        push!(vgap_end, dt₁)
+    else
+        # Check if the simulation did not start under the visibility of a ground facility.
+        access_beginning = dfa.access_beginning
+        access_end       = dfa.access_end
+
+        if first(access_beginning) != dt₀
+            push!(vgap_beg, dt₀)
+            push!(vgap_end, access_beginning |> first)
+        end
+
+        @inbounds for k in 1:(num_rows - 1)
+            push!(vgap_beg, access_end[k])
+            push!(vgap_end, access_beginning[k + 1])
+        end
+
+        # Check if the simulation did not end under the visibility of a ground facility.
+        if last(access_end) != dt₁
+            push!(vgap_beg, last(access_end))
+            push!(vgap_end, dt₁)
+        end
     end
 
-    # Check if the simulation did not start under the visibility of a ground facility.
-    accesses[1][1] != dt₀ && push!(gaps, (dt₀, accesses[1][1]))
+    # Compute the access duration and convert to the desired unit.
+    duration = Dates.value.(vgap_end .- vgap_beg) ./ 1000
 
-    @inbounds for k in 1:(length(accesses) - 1)
-        push!(gaps, (accesses[k][2], accesses[k + 1][1]))
+    if unit == :h
+        duration ./= 3600
+    elseif unit == :m
+        duration ./= 60
+    else
+        # If the symbol is not known, we must use seconds.
+        unit = :s
     end
 
-    # Check if the simulation did not end under the visibility of a ground facility.
-    accesses[end][2] != dt₁ && push!(gaps, (accesses[end][2], dt₁))
+    # Create the DataFrame and write the metadata.
+    dfg = DataFrame(
+        :gap_beginning => vgap_beg,
+        :gap_end       => vgap_end,
+        :duration      => duration
+    )
 
-    return gaps
+    metadata!(dfg, "Description", "Gaps to the ground facilities.")
+    colmetadata!(dfg, :duration, "Unit", unit)
+
+    return dfg
 end
