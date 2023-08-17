@@ -1,76 +1,75 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 # Description
-# ==============================================================================
+# ==========================================================================================
 #
-#   Functions to compute the accesses and gaps between the satellite and ground
-#   facilities.
+#   Functions to compute the accesses and gaps between the satellite and ground facilities.
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 export ground_facility_accesses, ground_facility_gaps
 
 """
-    ground_facility_accesses(T, orbp, [(WGS84)], Δt, eci, ecef, vargs...; kwargs...)
+    ground_facility_accesses(T, orbp, [(WGS84)], Δt, eci, ecef, vargs...; kwargs...) -> [Tuple | DataFrame]
 
-Compute the accesses of a satellite with orbit propagator `orbp` (see
-[`init_orbit_propagator`](@ref)) to the ground facilities defined in the vector
-`vgs_r_e`. The analysis interval begins in the propagator epoch plus `t_0` and
-lasts for `Δt` [s].
+Compute the accesses of a satellite with orbit propagator `orbp` (see `Propagators.init`) to
+the ground facilities defined in the vector `vgs_r_e`. The analysis interval begins in the
+propagator epoch plus `t_0` and lasts for `Δt` [s].
 
-The ground facilities are specified using a vector of tuples with three numbers
-(`Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <:
-Number}`) containing the WGS84 position of each ground facility `[(WGS84)]`:
+The ground facilities are specified using a vector of tuples with three numbers:
+
+    Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}
+
+containing the WGS84 position of each ground facility `[(WGS84)]`:
 
     (latitude [rad], longitude [rad], altitude [m])
 
 Those geodetic information are transformed to an ECEF vector using the function
-[`geodetic_to_ecef`](@ref).
-
-The return depends on the parameter `T`:
-
-- `T = Tuple`: The function return a vector of tuples. Each element represent an
-    access between the satellite and the ground facility. The beginning of the
-    access [UTC] is in the first element in the tuple whereas the end is in the
-    second element. Both are represented using [`DateTime`](@ref).
-- `T = DataFrame`: The function returns a `DataFrame` with three columns:
-    - `access_beginning`: Time of the access beginning [UTC] encoded using
-        [`DateTime`](@ref).
-    - `access_end`: Time of the access end [UTC] encoded using
-        [`DateTime`](@ref).
-    - `duration`: Duration of the access [s].
+`geodetic_to_ecef`.
 
 # Arguments
 
-- `eci`: Earth-Centered Inertial frame in which the state vector of the
-    propagator is represented.
-- `ecef`: Earth-Centered, Earth-fixed frame to be used for the analysis. It
-    must be the same frame used to compute the ground facility position.
-- `vargs...`: List of additional arguments to be passed to the function
-    [`r_eci_to_ecef`](@ref) when converting the ECI frame to the ECEF.
+- `eci`: Earth-Centered Inertial frame in which the state vector of the propagator is
+    represented.
+- `ecef`: Earth-Centered, Earth-fixed frame to be used for the analysis. It must be the same
+    frame used to compute the ground facility position.
+- `vargs...`: List of additional arguments to be passed to the function `r_eci_to_ecef` when
+    converting the ECI frame to the ECEF.
 
 # Keywords
 
-- `θ::Number`: Minimum elevation angle for communication between the satellite
-    and the ground facilities [rad]. (**Default** = 10ᵒ)
-- `reduction::Function`: A function that receives a boolean vector with the
-    visibility between the satellite and each ground facility. It must return a
-    boolean value indicating if the access must be computed or not. This is
-    useful to merge access time between two or more facilities.
-    (**Default** = `v -> |(v...)` *i.e.* compute the access if at least one
-    ground facilities is visible)
-- `step::Number`: The step [s] used to propagate the orbit. Notice that we
-    perform a cross tuning to accurately obtain the access time. However, if an
-    access is lower than the step, it can be neglected. (**Default** = 60)
+- `minimum_elevation::Number`: Minimum elevation angle for communication between the
+    satellite and the ground facilities [rad]. (**Default** = 10°)
+- `reduction::Function`: A function that receives a boolean vector with the visibility
+    between the satellite and each ground facility. It must return a boolean value
+    indicating if the access must be computed or not. This is useful to merge access time
+    between two or more facilities. (**Default** = `v -> |(v...)` *i.e.* compute the access
+    if at least one ground facilities is visible)
+- `step::Number`: The step [s] used to propagate the orbit. Notice that we perform a cross
+    tuning to accurately obtain the access time. However, if an access is lower than the
+    step, it can be neglected. (**Default** = 60)
 - `t_0::Number`: Initial time of the analysis after the propagator epoch [s].
+
+# Returns
+
+The return object depends on the parameter `T`:
+
+- `T = Tuple`: The function return a vector of tuples. Each element represent an access
+    between the satellite and the ground facility. The beginning of the access [UTC] is in
+    the first element in the tuple whereas the end is in the second element. Both are
+    represented using `DateTime`.
+- `T = DataFrame`: The function returns a `DataFrame` with three columns:
+    - `access_beginning`: Time of the access beginning [UTC] encoded using `DateTime`.
+    - `access_end`: Time of the access end [UTC] encoded using `DateTime`.
+    - `duration`: Duration of the access [s].
 """
 function ground_facility_accesses(
     T::DataType,
     orbp::OrbitPropagator,
     gs_wgs84::Tuple{T1, T2, T3},
-    vargs...;
+    vargs::Vararg{Any, N};
     kwargs...
-) where {T1 <: Number, T2 <: Number, T3 <: Number}
+) where {N, T1 <: Number, T2 <: Number, T3 <: Number}
     return ground_facility_accesses(T, orbp, [gs_wgs84], vargs...; kwargs...)
 end
 
@@ -81,9 +80,9 @@ function ground_facility_accesses(
     Δt::Number,
     eci::Union{T_ECIs, T_ECIs_IAU_2006},
     ecef::Union{T_ECEFs, T_ECEFs_IAU_2006},
-    vargs...;
+    vargs::Vararg{Any, N};
     kwargs...
-) where T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}
+) where {N, T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
 
     accesses = ground_facility_accesses(
         Tuple,
@@ -113,12 +112,12 @@ function ground_facility_accesses(
     Δt::Number,
     eci::Union{T_ECIs, T_ECIs_IAU_2006},
     ecef::Union{T_ECEFs, T_ECEFs_IAU_2006},
-    vargs...;
-    θ::Number = 10 |> deg2rad,
-    reduction::Function = v->|(v...),
+    vargs::Vararg{Any, N};
+    minimum_elevation::Number = 10 |> deg2rad,
+    reduction::Function = v -> |(v...),
     step::Number = 60,
     t_0::Number = 0
-) where T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}
+) where {N, T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
 
     # Time vector of the analysis.
     t = float(t_0):float(step):float(Δt + t_0)
@@ -145,7 +144,7 @@ function ground_facility_accesses(
         r_e       = r_eci_to_ecef(DCM, eci, ecef, jd₀ + t / 86400, vargs...) * r_i
 
         @inbounds for i in eachindex(visibility)
-            visibility[i] = is_ground_facility_visible(r_e, vgs_r_e[i], θ)
+            visibility[i] = is_ground_facility_visible(r_e, vgs_r_e[i], minimum_elevation)
         end
 
         return reduction(visibility)
@@ -201,34 +200,34 @@ function ground_facility_accesses(
 end
 
 """
-    ground_facility_gaps(T, orbp, args...; t_0::Number = 0, kwargs...)
+    ground_facility_gaps(T, orbp, args...; t_0::Number = 0, kwargs...) -> [Tuple, DataFrame]
 
-Compute the gaps between the accesses of ground facilities. The arguments and
-keywords are the same as the ones used in the function
-[`ground_facility_accesses`](@ref).
+Compute the gaps between the accesses of ground facilities. The arguments and keywords are
+the same as the ones used in the function [`ground_facility_accesses`](@ref).
 
-Notice that the gap analysis starts in the orbit propagator epoch plus `t_0` and
-lasts for `Δt` [s].
+Notice that the gap analysis starts in the orbit propagator epoch plus `t_0` and lasts for
+`Δt` [s].
 
-The return depends on the parameter `T`:
+# Returns
 
-- `T = Tuple`: The function return a vector of tuples. Each element represent an
-    access gap between the satellite and the ground facility. The beginning of
-    the gap [UTC] is in the first element in the tuple whereas the end is in the
-    second element. Both are represented using [`DateTime`](@ref).
+The return object depends on the parameter `T`:
+
+- `T = Tuple`: The function return a vector of tuples. Each element represent an access gap
+    between the satellite and the ground facility. The beginning of the gap [UTC] is in the
+    first element in the tuple whereas the end is in the second element. Both are
+    represented using `DateTime`.
 - `T = DataFrame`: The function returns a `DataFrame` with three columns:
-    - `gap_beginning`: Time of the gap beginning [UTC] encoded using
-        [`DateTime`](@ref).
-    - `gap_end`: Time of the gap end [UTC] encoded using [`DateTime`](@ref).
+    - `gap_beginning`: Time of the gap beginning [UTC] encoded using `DateTime`.
+    - `gap_end`: Time of the gap end [UTC] encoded using `DateTime`.
     - `duration`: Duration of the gap [s].
 """
 function ground_facility_gaps(
     T::DataType,
     orbp::OrbitPropagator,
     gs_wgs84::Tuple{T1, T2, T3},
-    vargs...;
+    vargs::Vararg{Any, N};
     kwargs...
-) where {T1 <: Number, T2 <: Number, T3 <: Number}
+) where {N, T1 <: Number, T2 <: Number, T3 <: Number}
     return ground_facility_gaps(T, orbp, [gs_wgs84], vargs...; kwargs...)
 end
 
@@ -239,9 +238,9 @@ function ground_facility_gaps(
     Δt::Number,
     eci::Union{T_ECIs, T_ECIs_IAU_2006},
     ecef::Union{T_ECEFs, T_ECEFs_IAU_2006},
-    vargs...;
+    vargs::Vararg{Any, N};
     kwargs...
-) where T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}
+) where {N, T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
 
     accesses = ground_facility_gaps(
         Tuple,
@@ -271,12 +270,12 @@ function ground_facility_gaps(
     Δt::Number,
     eci::Union{T_ECIs, T_ECIs_IAU_2006},
     ecef::Union{T_ECEFs, T_ECEFs_IAU_2006},
-    vargs...;
-    θ::Number = 10 |> deg2rad,
-    reduction::Function = v->|(v...),
+    vargs::Vararg{Any, N};
+    minimum_elevation::Number = 10 |> deg2rad,
+    reduction::Function = v -> |(v...),
     step::Number = 60,
     t_0::Number = 0
-) where T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}
+) where {N, T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
 
     # Get the epoch of the propagator.
     jd₀ = Propagators.epoch(orbp)
@@ -291,7 +290,7 @@ function ground_facility_gaps(
         eci,
         ecef,
         vargs...;
-        θ,
+        minimum_elevation,
         reduction,
         step,
         t_0
@@ -304,21 +303,22 @@ function ground_facility_gaps(
     # Compute the gaps between accesses.
     gaps = NTuple{2, DateTime}[]
 
-    # If the number of accessess is 0, then just return.
+    # If the number of accessess is 0, return the entire interval.
     num_accesses = length(accesses)
 
-    num_accesses == 0 && return gaps
+    if num_accesses == 0
+        push!(gaps, (dt₀, dt₁))
+        return gaps
+    end
 
-    # Check if the simulation did not start under the visibility of a ground
-    # facility.
+    # Check if the simulation did not start under the visibility of a ground facility.
     accesses[1][1] != dt₀ && push!(gaps, (dt₀, accesses[1][1]))
 
     @inbounds for k in 1:(length(accesses) - 1)
         push!(gaps, (accesses[k][2], accesses[k + 1][1]))
     end
 
-    # Check if the simulation did not end under the visibility of a ground
-    # facility.
+    # Check if the simulation did not end under the visibility of a ground facility.
     accesses[end][2] != dt₁ && push!(gaps, (accesses[end][2], dt₁))
 
     return gaps

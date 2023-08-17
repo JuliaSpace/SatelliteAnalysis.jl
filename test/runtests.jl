@@ -12,6 +12,10 @@ end
     include("./eclipse_time.jl")
 end
 
+@testset "Ground Facility Accesses and Gaps" verbose = true begin
+    include("./ground_facility_accesses_and_gaps.jl")
+end
+
 @testset "Lighting Condition" verbose = true begin
     include("./lighting_condition.jl")
 end

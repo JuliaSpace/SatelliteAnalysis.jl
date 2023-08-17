@@ -1,27 +1,27 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 # Description
-# ==============================================================================
+# ==========================================================================================
 #
-#   Functions to verify is a ground facility is visibile given a satellite
-#   position.
+#   Functions to verify is a ground facility is visible given a satellite position.
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 export is_ground_facility_visible
 
 """
-    is_ground_facility_visible(sat_r_e::AbstractVector, gs_r_e::AbstractVector, θ::Number)
+    is_ground_facility_visible(sat_r_e::AbstractVector, gs_r_e::AbstractVector, θ::Number) -> Bool
 
-Check if the satellite with position vector `sat_r_e` (ECEF) is inside the
-visibility circle of a ground facility with position vector `gs_r_e` (ECEF) and a
-minimum elevation angle of `θ` [rad].
+Check if the satellite with position vector `sat_r_e` (ECEF) is inside the visibility circle
+of a ground facility with position vector `gs_r_e` (ECEF) and a minimum elevation angle of
+`θ` [rad].
 
-Notice that `sat_r_e` and `gs_r_e` must be represented in the same ECEF frame,
-and must have the same unit.
+Notice that `sat_r_e` and `gs_r_e` must be represented in the same ECEF frame, and must have
+the same unit.
 
-Returns `true` if the satellite is inside the visibility circle, or `false`
-otherwise.
+# Returns
+
+- `Bool`: `true` if the satellite is inside the visibility circle, or `false` otherwise.
 """
 function is_ground_facility_visible(
     sat_r_e::AbstractVector,
@@ -36,17 +36,17 @@ function is_ground_facility_visible(
 end
 
 """
-    is_ground_facility_visible(sat_r_e::AbstractVector, gs_lat::Number, gs_lon::Number, gs_h::Number, θ::Number)
+    is_ground_facility_visible(sat_r_e::AbstractVector, gs_lat::Number, gs_lon::Number, gs_h::Number, θ::Number) -> Bool
 
-Check if the satellite with position vector `sat_r_e` (ECEF) is inside the
-visibility circle of a ground facility with latitude `gs_lat` [rad], longitude
-`gs_lon` [rad], altitude `gs_h` (WGS-84), and a minimum elevation angle of
-`θ` [rad].
+Check if the satellite with position vector `sat_r_e` (ECEF) is inside the visibility circle
+of a ground facility with latitude `gs_lat` [rad], longitude `gs_lon` [rad], altitude `gs_h`
+(WGS-84), and a minimum elevation angle of `θ` [rad].
 
 Notice that `sat_r_e` and `gs_h` must have the same units.
 
-Return `true` if the satellite is inside the visibility circle, or `false`
-otherwise.
+# Returns
+
+- `Bool`: `true` if the satellite is inside the visibility circle, or `false` otherwise.
 """
 function is_ground_facility_visible(
     sat_r_e::AbstractVector,
