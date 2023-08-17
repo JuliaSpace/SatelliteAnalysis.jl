@@ -1,62 +1,57 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 # Description
-# ==============================================================================
+# ==========================================================================================
 #
 #   Compute the satellite eclipse time summary.
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 # References
-# ==============================================================================
+# ==========================================================================================
 #
-# [1] Longo, C. R. O., Rickman, S. L (1995). Method for the Calculation of
-#     Spacecraft Umbra and Penumbra Shadow Terminator Points. NASA Technical
-#     Paper 3547.
+# [1] Longo, C. R. O., Rickman, S. L (1995). Method for the Calculation of Spacecraft Umbra
+#     and Penumbra Shadow Terminator Points. NASA Technical Paper 3547.
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 export eclipse_time_summary
 
 """
-    eclipse_time_summary([io::IO,] orbp::OrbitPropagator; kwargs...)
+    eclipse_time_summary(orbp::OrbitPropagator; kwargs...) -> Vector{Float64}, Vector{Float64}, Vector{Float64}
+    eclipse_time_summary(io::IO, orbp::OrbitPropagator; kwargs...) -> Nothing
 
-Compute the eclipse time summary for the orbit propagator `orbp`. The summary is
-computed as the total time the object stays in the sunlight, penumbra, and umbra
-regions per day.
-
-# Returns
-
-If the `io` parameter **is not** present, then the function returns three
-vectors:
-
-- The total sunlight time per orbit at each day [s].
-- The total penumbra time per orbit at each day [s].
-- The total umbra time per orbit at each day [s].
-
-If the `io` parameter **is** present, then the function prints to `io` the
-results in table format.
+Compute the eclipse time summary for the orbit propagator `orbp`. The summary is computed as
+the total time the object stays in the sunlight, penumbra, and umbra regions per day.
 
 # Keywords
 
 - `num_days::Number`: Number of days in which the analysis will be performed.
     (**Default** = 365)
-- `step::Number`: The step in which the propagation will occur. Notice that this
-    function has a crossing estimation to accurately estimate the transition
-    between the regions. However, if this step is very large, we may miss some
-    small regions. If it is negative, then it will be selected as the time in
-    which the mean anomaly advances 0.5°.
+- `step::Number`: The step in which the propagation will occur. Notice that this function
+    has a crossing estimation to accurately estimate the transition between the regions.
+    However, if this step is very large, we may miss some small regions. If it is negative,
+    it will be selected as the time in which the mean anomaly advances 0.5°.
 
-If the parameter `io` is passed, then the following additional keywords are
-available:
+If the parameter `io` is passed, the following additional keywords are available:
 
-- `unit::Symbol`: Select the unit in which the results will be printed. The
-    possible values are:
+- `unit::Symbol`: Select the unit in which the results will be printed. The possible values
+    are:
     - `:s` for seconds (**Default**);
     - `:m` for minutes; or
     - `:h` for hours.
-- `use_pager::Bool`: If `true`, then the result will be printed using
-    **TerminalPager.jl**.
+- `use_pager::Bool`: If `true`, then the result will be printed using **TerminalPager.jl**.
+
+# Returns
+
+If the `io` parameter **is not** present, the function returns three vectors:
+
+- `Vector{Float64}`: The total sunlight time per orbit at each day [s].
+- `Vector{Float64}`: The total penumbra time per orbit at each day [s].
+- `Vector{Float64}`: The total umbra time per orbit at each day [s].
+
+If the `io` parameter **is** present, the function prints to `io` the results in a table and
+returns `nothing`.
 """
 function eclipse_time_summary(
     orbp::OrbitPropagator;
@@ -66,26 +61,26 @@ function eclipse_time_summary(
     jd₀ = Propagators.epoch(orbp)
 
     # TODO: Improve how the orbit period is computed.
-    # We must obtain the mean elements to compute the orbit period. Maybe there
-    # is a better way to do this.
+    # We must obtain the mean elements to compute the orbit period. Maybe there is a better
+    # way to do this.
     mean_elements = Propagators.mean_elements(orbp)
 
     # We need the orbit period because we will propagate one orbit per day.
-    orbit_period = orbital_period(mean_elements)
+    orb_period = orbital_period(mean_elements)
 
     # Check the propagation step we need to use.
-    Δt₀ = step < 0 ? orbit_period * 0.5 / 360 : Float64(step)
+    Δt₀ = step < 0 ? orb_period * 0.5 / 360 : Float64(step)
 
     # Vector of the days in which the eclipse time will be computed.
     days = 0:1:num_days-1
 
-    # Preallocate the output variables.
+    # Pre-allocate the output variables.
     sunlight_time = zeros(num_days)
     penumbra_time = zeros(num_days)
     umbra_time    = zeros(num_days)
 
     # Loop
-    # ==========================================================================
+    # ======================================================================================
 
     @inbounds for d in days
         # TODO: Should we transform between MOD => TOD/TEME?
@@ -108,7 +103,7 @@ function eclipse_time_summary(
                 t_k₀ = t_k - Δt
                 t_k₁ = t_k
                 t_kc = find_crossing(
-                    _fc,
+                    _lighting_condition_crossing,
                     t_k₀,
                     t_k₁,
                     true,
@@ -155,12 +150,12 @@ function eclipse_time_summary(
 
             old_state = new_state
 
-            abs(t_k - orbit_period) < 1e-3 && break
+            abs(t_k - orb_period) < 1e-3 && break
 
-            # Make sure that the last interval will have the exact size so that
-            # the end of the analysis is the end of the orbit.
-            if (t_k + Δt > orbit_period)
-                Δt = orbit_period - t_k
+            # Make sure that the last interval will have the exact size so that the end of
+            # the analysis is the end of the orbit.
+            if (t_k + Δt > orb_period)
+                Δt = orb_period - t_k
             end
 
             t_k += Δt
@@ -178,6 +173,14 @@ function eclipse_time_summary(
     unit::Symbol = :s,
     use_pager::Bool = false
 )
+    # Do not use pager if `io` is not `stdout`.
+    if use_pager && (io != stdout)
+        @warn "We can only use the pager if printing to `stdout`."
+        use_pager = false
+    end
+
+    has_color = get(io, :color, false)
+
     # Compute the summary.
     sunlight_time, penumbra_time, umbra_time = eclipse_time_summary(
         orbp;
@@ -186,7 +189,7 @@ function eclipse_time_summary(
     )
 
     # Get the date vector.
-    vjd = get_epoch(orbp) .+ collect(0:1:num_days-1)
+    vjd = Propagators.epoch(orbp) .+ collect(0:1:num_days-1)
     vdate = string.(jd_to_date.(DateTime, vjd))
 
     # Obtain the conversion given the unit selection.
@@ -210,25 +213,25 @@ function eclipse_time_summary(
         vcat(
             hcat(vdate, sunlight_time, penumbra_time, umbra_time),
             hcat(
-                AnsiTextCell(string(crayon"red bold") * "Maximum"),
+                has_color ? AnsiTextCell(string(crayon"red bold") * "Maximum") : "Maximum",
                 maximum(sunlight_time),
                 maximum(penumbra_time),
                 maximum(umbra_time)
             ),
             hcat(
-                AnsiTextCell(string(crayon"yellow bold") * "Mean"),
+                has_color ? AnsiTextCell(string(crayon"yellow bold") * "Mean") : "Mean",
                 mean(sunlight_time),
                 mean(penumbra_time),
                 mean(umbra_time)
             ),
             hcat(
-                AnsiTextCell(string(crayon"blue bold") * "Minimum"),
+                has_color ? AnsiTextCell(string(crayon"blue bold") * "Minimum") : "Minimum",
                 minimum(sunlight_time),
                 minimum(penumbra_time),
                 minimum(umbra_time)
             ),
         );
-        color = get(stdout, :color, false),
+        color = get(io, :color, false),
         crop = use_pager ? :none : :horizontal,
         display_size = use_pager ? (-1, -1) : displaysize(stdout),
         header = [
@@ -250,20 +253,20 @@ function eclipse_time_summary(
     if use_pager
         pager(
             str;
-            freeze_columns = max(length.(vdate)..., 6) + 3,
-            freeze_rows = 2
+            frozen_columns = max(length.(vdate)..., 6) + 3,
+            frozen_rows = 2
         )
     else
-        println(str)
+        print(io, str)
     end
 
     return nothing
 end
 
+#                                    Private Functions
+# ==========================================================================================
 
-#                              Private functions
-# ==============================================================================
-
+# Accumulate the time in a specific lighting state.
 function _accumulate(
     Δts::Number,
     state::Symbol,
@@ -283,8 +286,8 @@ function _accumulate(
     return nothing
 end
 
-# Without the `@noinline` we get **a lot** of allocations when calling the
-# function `find_crossing`.
+# Without the `@noinline` we get **a lot** of allocations when calling the function
+# `find_crossing`.
 @noinline function _get_lighting_condition(
     orbp::OrbitPropagator,
     t::Number,
@@ -295,7 +298,9 @@ end
     return lighting_condition(r_i, s_i)
 end
 
-@noinline function _fc(
+# Function used in `find_crossing` to precisely obtain the instant in which the lightning
+# condition changed.
+@noinline function _lighting_condition_crossing(
     t::Number,
     orbp::OrbitPropagator,
     d::Number,
