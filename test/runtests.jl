@@ -16,9 +16,9 @@ end
     include("./lighting_condition.jl")
 end
 
-# @testset "Miscellaneous" verbose = true begin
-#     include("./misc.jl")
-# end
+@testset "Miscellaneous" verbose = true begin
+   include("./misc.jl")
+end
 
 @testset "Orbits" verbose = true begin
     include("./sun_syncrhonous_orbits.jl")

@@ -1,24 +1,27 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 # Description
-# ==============================================================================
+# ==========================================================================================
 #
 #   Find crossing of a function.
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 """
-    find_crossing(f::Function, t₀::Number, t₁::Number, s₀, s₁, vargs...; Δ = 1e-3, max = 100, kwargs...)
+    find_crossing(f::Function, t₀::Number, t₁::Number, s₀, s₁, vargs...; Δ = 1e-3, max = 100, kwargs...) -> T
 
-Return the crossing time `tc` in which the function `f(t)` goes from the state
-`s₀` to the state `s₁`. It is assumed that `f(t₀) = s₀` and `f(t₁) = s₁`.
+Return the crossing time `tc` in which the function `f(t)` goes from the state `s₀` to the
+state `s₁`. It is assumed that `f(t₀) = s₀` and `f(t₁) = s₁`.
 
-The parameters in `vargs...` are passed to the function `f` after `t`, and the
-keywords `kwargs...` are also passed to `f`. Hence, it will always be called as
+The parameters in `vargs...` are passed to the function `f` after `t`, and the keywords
+`kwargs...` are also passed to `f`. Hence, it will always be called as
 `f(t, vargs...; kwargs...)`.
 
-If the computed interval is smaller than `Δ`, or if the number of iterations is
-higher than `max`, then the algorithm stops.
+If the computed interval is smaller than `Δ`, or if the number of iterations is higher than
+`max`, the algorithm stops.
+
+!!! note
+    The output type `T` is obtained by the type of `(t₁ + t₂) / 2`.
 
 # Examples
 
@@ -40,11 +43,11 @@ function find_crossing(
     t₁::Number,
     s₀,
     s₁,
-    vargs...;
+    vargs::Vararg{Any, N};
     Δ = 1e-3,
     max = 100,
     kwargs...
-)
+) where N
     it = 0
 
     T = typeof((t₁ + t₀) / 2)
@@ -66,7 +69,7 @@ function find_crossing(
             error("The function `f` returned an unexpected state.")
         end
 
-        # If the interval is small enough, then just return.
+        # If the interval is small enough, return.
         (ti₁ - ti₀) < Δ && break
 
         it += 1
