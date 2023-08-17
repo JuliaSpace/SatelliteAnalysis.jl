@@ -63,6 +63,10 @@ This function returns a `DataFrame` with the following columns:
     the orbital altitude. (**Default** = `nothing`)
 - `time_unit::Symbol`: Unit for all the time values in the output `DataFrame`.  It can be
     `:s` for seconds, `:m` for minutes, or `:h` for hours.  (**Default** = `:h`)
+- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
+    (**Default** = `GM_EARTH`)
+- `J2::Number`: J₂ perturbation term. (**Default** = EGM_2008_J2)
+- `R0::Number`: Earth's equatorial radius [m]. (**Default** = EARTH_EQUATORIAL_RADIUS)
 """
 function design_sun_sync_ground_repeating_orbit(
     minimum_repetition::Int,
@@ -74,7 +78,11 @@ function design_sun_sync_ground_repeating_orbit(
     pretify_rev_per_days::Bool = true,
     maximum_altitude::Union{Nothing, Number} = nothing,
     minimum_altitude::Union{Nothing, Number} = nothing,
-    time_unit::Symbol = :m
+    time_unit::Symbol = :m,
+    # Constants.
+    J2::Number = EGM_2008_J2,
+    m0::Number = GM_EARTH,
+    R0::Number = EARTH_EQUATORIAL_RADIUS
 )
     R₀ = EARTH_EQUATORIAL_RADIUS
 
@@ -97,13 +105,13 @@ function design_sun_sync_ground_repeating_orbit(
 
     # Create an empty `DataFrame` that will store the list of orbits.
     df = DataFrame(
-        semi_major_axis = Float64[],
-        altitude = Float64[],
-        inclination = Float64[],
-        period = Float64[],
-        rev_per_days = pretify_rev_per_days ? String[] : Tuple{Int, Rational}[],
+        semi_major_axis      = Float64[],
+        altitude             = Float64[],
+        inclination          = Float64[],
+        period               = Float64[],
+        rev_per_days         = pretify_rev_per_days ? String[] : Tuple{Int, Rational}[],
         adjacent_gt_distance = Float64[],
-        adjacent_gt_angle = Float64[]
+        adjacent_gt_angle    = Float64[]
     )
 
     # Check the units for the values.
@@ -133,7 +141,14 @@ function design_sun_sync_ground_repeating_orbit(
                 n = num_rev_per_day * 2π / 86400
 
                 # Find a Sun synchronous orbit with that angular velocity.
-                a, i, converged = sun_sync_orbit_from_angular_velocity(n, e; no_warnings = true)
+                a, i, converged = sun_sync_orbit_from_angular_velocity(
+                    n,
+                    e;
+                    no_warnings = true,
+                    J2 = J2,
+                    m0 = m0,
+                    R0 = R0
+                )
 
                 # If the algorithm has not converged or if the orbit is not valid, skip this
                 # value.
@@ -141,28 +156,39 @@ function design_sun_sync_ground_repeating_orbit(
                 (!converged || !orbit_valid) && continue
 
                 # If we reach this point, add the orbit to the `DataFrame`.
-                orbit_period = 2π / orbital_angular_velocity(a, e, i; perturbation = :J2)
-                orbit_cycle = num == 0 ? 1 : den
+                orb_angvel = orbital_angular_velocity(
+                    a,
+                    e,
+                    i;
+                    perturbation = :J2,
+                    J2 = J2,
+                    m0 = m0,
+                    R0 = R0
+                )
+
+                orb_period = 2π / orb_angvel
+                orb_cycle = num == 0 ? 1 : den
+
                 h = a - R₀
 
                 push!(df, (
                     a * dunit,
                     h * dunit,
                     i * angunit,
-                    orbit_period * tunit,
+                    orb_period * tunit,
                     pretify_rev_per_days ?
                         _pretify_rev_per_days(int, num, den) :
                         (int, num // den),
                     ground_repeating_orbit_adjacent_track_distance(
-                        orbit_period,
+                        orb_period,
                         i,
-                        orbit_cycle
+                        orb_cycle
                     ) * dunit,
                     ground_repeating_orbit_adjacent_track_angle(
                         h,
-                        orbit_period,
+                        orb_period,
                         i,
-                        orbit_cycle
+                        orb_cycle
                     ) * angunit
                 ))
             end
