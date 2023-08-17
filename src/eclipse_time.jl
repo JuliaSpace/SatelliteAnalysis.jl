@@ -233,7 +233,7 @@ function eclipse_time_summary(
         );
         color = get(io, :color, false),
         crop = use_pager ? :none : :horizontal,
-        display_size = use_pager ? (-1, -1) : displaysize(stdout),
+        display_size = (use_pager || (io != stdout)) ? (-1, -1) : displaysize(stdout),
         header = [
             "Day",
             "Sunlight time [$unit_label]",
