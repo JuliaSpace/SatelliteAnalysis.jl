@@ -13,7 +13,7 @@
 # Function: design_sun_sync_ground_repeating_orbits
 # ------------------------------------------------------------------------------------------
 
-@testset "Designing Sun-syncrhonous, ground-repeating orbits" begin
+@testset "Designing Sun-Synchronous, Ground-Repeating Orbits" begin
 
     # Default
     # ======================================================================================

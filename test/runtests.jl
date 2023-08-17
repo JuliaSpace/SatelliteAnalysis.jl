@@ -4,7 +4,7 @@ using LinearAlgebra
 using StaticArrays
 using SatelliteAnalysis
 
-@testset "Beta angle" verbose = true begin
+@testset "Beta Angle" verbose = true begin
     include("./beta_angle.jl")
 end
 
@@ -12,7 +12,7 @@ end
     include("./eclipse_time.jl")
 end
 
-@testset "Lighting condition" verbose = true begin
+@testset "Lighting Condition" verbose = true begin
     include("./lighting_condition.jl")
 end
 
