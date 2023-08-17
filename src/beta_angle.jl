@@ -43,7 +43,7 @@ The algorithm was obtained from **[1]**.
 - **[1]**: Mortari, D., Wilkins, M. P., and Bruccoleri, C.  On Sun-Synchronous Orbits and
     Associated Constellations
 
-# Extended help
+# Extended Help
 
 The beta angle is the angle between the orbit plane and the Sun. The positive direction is
 defined as that of the orbit angular momentum.
