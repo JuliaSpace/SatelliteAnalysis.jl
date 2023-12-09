@@ -106,15 +106,15 @@ julia> ground_facility_accesses(orbp, (0, 0, 0); unit = :m)
 """
 function ground_facility_accesses(
     orbp::OrbitPropagator,
-    gs_wgs84::Tuple{T1, T2, T3};
+    gf_wgs84::Tuple{T1, T2, T3};
     kwargs...
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
-    return ground_facility_accesses(orbp, [gs_wgs84]; kwargs...)
+    return ground_facility_accesses(orbp, [gf_wgs84]; kwargs...)
 end
 
 function ground_facility_accesses(
     orbp::OrbitPropagator,
-    vgs_wgs84::AbstractVector{T};
+    vgf_wgs84::AbstractVector{T};
     duration::Number = 86400,
     f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
     initial_time::Number = 0,
@@ -132,7 +132,7 @@ function ground_facility_accesses(
 
     # Convert the ground facilities positions to an ECEF vector to save
     # computational burden.
-    vgs_r_e = [geodetic_to_ecef(gs_wgs84...) for gs_wgs84 in vgs_wgs84]
+    vgs_r_e = [geodetic_to_ecef(gf_wgs84...) for gf_wgs84 in vgf_wgs84]
 
     # Vector that will contain the accesses.
     accesses = NTuple{2, DateTime}[]
@@ -287,15 +287,15 @@ julia> ground_facility_gaps(orbp, (0, 0, 0); unit = :m)
 """
 function ground_facility_gaps(
     orbp::OrbitPropagator,
-    gs_wgs84::Tuple{T1, T2, T3};
+    gf_wgs84::Tuple{T1, T2, T3};
     kwargs...
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
-    return ground_facility_gaps(orbp, [gs_wgs84]; kwargs...)
+    return ground_facility_gaps(orbp, [gf_wgs84]; kwargs...)
 end
 
 function ground_facility_gaps(
     orbp,
-    vgs_wgs84::AbstractVector{T};
+    vgf_wgs84::AbstractVector{T};
     duration::Number = 86400,
     f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
     initial_time::Number = 0,
@@ -312,7 +312,7 @@ function ground_facility_gaps(
     # Compute the list of ground facility accesses.
     dfa = ground_facility_accesses(
         orbp,
-        vgs_wgs84;
+        vgf_wgs84;
         duration,
         f_eci_to_ecef,
         initial_time,
