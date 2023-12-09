@@ -8,6 +8,12 @@
 
 # -- Function: ground_facility_accesses ----------------------------------------------------
 
+# Function to convert ECI to ECEF using TOD and PEF.
+function gf_tod_to_pef(r_i::AbstractVector, jd::Number)
+    D_pef_tod = r_eci_to_ecef(TOD(), PEF(), jd)
+    return D_pef_tod * r_i
+end
+
 @testset "Function ground_facility_accesses" begin
     jd₀ = SatelliteAnalysis.date_to_jd(2021, 1, 1, 0, 0, 0)
     orb = KeplerianElements(
@@ -23,7 +29,12 @@
 
     # == Single Facility ===================================================================
 
-    df = ground_facility_accesses(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF())
+    df = ground_facility_accesses(
+        orbp,
+        (0, 0, 0);
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef
+    )
 
     @test size(df) == (2, 3)
 
@@ -45,10 +56,9 @@
 
     df = ground_facility_accesses(
         orbp,
-        [(0, 0, 0), (0, π / 4, 0)],
-        1 * 86400,
-        TOD(),
-        PEF()
+        [(0, 0, 0), (0, π / 4, 0)];
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef
     )
 
     @test size(df) == (4, 3)
@@ -76,10 +86,9 @@
     # If we change the reduction function to AND instead of OR, we should have not access.
     df = ground_facility_accesses(
         orbp,
-        [(0, 0, 0), (0, π / 4, 0)],
-        1 * 86400,
-        TOD(),
-        PEF();
+        [(0, 0, 0), (0, π / 4, 0)];
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef,
         reduction = v -> (&)(v...)
     )
 
@@ -92,7 +101,13 @@
 
     # -- Minutes ---------------------------------------------------------------------------
 
-    df = ground_facility_accesses(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :m)
+    df = ground_facility_accesses(
+        orbp,
+        (0, 0, 0);
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef,
+        unit = :m
+    )
 
     @test size(df) == (2, 3)
 
@@ -106,7 +121,13 @@
 
     # -- Hours -----------------------------------------------------------------------------
 
-    df = ground_facility_accesses(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :h)
+    df = ground_facility_accesses(
+        orbp,
+        (0, 0, 0);
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef,
+        unit = :h
+    )
 
     @test size(df) == (2, 3)
 
@@ -120,7 +141,13 @@
 
     # -- Unknown Symbol --------------------------------------------------------------------
 
-    df = ground_facility_accesses(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :not_know)
+    df = ground_facility_accesses(
+        orbp, 
+        (0, 0, 0);
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef,
+        unit = :not_know
+    )
 
     @test size(df) == (2, 3)
 
@@ -148,7 +175,13 @@ end
 
     # == Single Facility ===================================================================
 
-    df = ground_facility_gaps(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF())
+    df = ground_facility_gaps(
+        orbp,
+        (0, 0, 0);
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef
+    )
+
 
     @test size(df) == (3, 3)
 
@@ -173,10 +206,9 @@ end
 
     df = ground_facility_gaps(
         orbp,
-        [(0, 0, 0), (0, π / 4, 0)],
-        1 * 86400,
-        TOD(),
-        PEF()
+        [(0, 0, 0), (0, π / 4, 0)];
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef
     )
 
     @test size(df) == (5, 3)
@@ -208,10 +240,9 @@ end
     # Hence, the gap must be equal to the interval of analysis.
     df = ground_facility_gaps(
         orbp,
-        [(0, 0, 0), (0, π / 4, 0)],
-        1 * 86400,
-        TOD(),
-        PEF();
+        [(0, 0, 0), (0, π / 4, 0)];
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef,
         reduction = v -> (&)(v...)
     )
 
@@ -230,7 +261,13 @@ end
 
     # -- Minutes ---------------------------------------------------------------------------
 
-    df = ground_facility_gaps(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :m)
+    df = ground_facility_gaps(
+        orbp,
+        (0, 0, 0);
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef,
+        unit = :m
+    )
 
     @test size(df) == (3, 3)
 
@@ -253,7 +290,13 @@ end
 
     # -- Hours -----------------------------------------------------------------------------
 
-    df = ground_facility_gaps(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :h)
+    df = ground_facility_gaps(
+        orbp,
+        (0, 0, 0);
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef,
+        unit = :h
+    )
 
     @test size(df) == (3, 3)
 
@@ -276,7 +319,13 @@ end
 
     # -- Unknown Symbol --------------------------------------------------------------------
 
-    df = ground_facility_gaps(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :not_known)
+    df = ground_facility_gaps(
+        orbp,
+        (0, 0, 0);
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef,
+        unit = :not_known
+    )
 
     @test size(df) == (3, 3)
 

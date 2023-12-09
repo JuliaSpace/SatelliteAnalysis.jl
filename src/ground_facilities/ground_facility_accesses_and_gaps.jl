@@ -7,11 +7,11 @@
 export ground_facility_accesses, ground_facility_gaps
 
 """
-    ground_facility_accesses(orbp, [(WGS84)], Δt, eci, ecef, vargs...; kwargs...) -> DataFrame
+    ground_facility_accesses(orbp, [(WGS84)]; kwargs...) -> DataFrame
 
 Compute the accesses of a satellite with orbit propagator `orbp` (see `Propagators.init`) to
 the ground facilities defined in the vector `vgs_r_e`. The analysis interval begins in the
-propagator epoch plus `t_0` and lasts for `Δt` [s].
+propagator epoch plus `initial_time` (keyword) and lasts for `duration` [s] (keyword).
 
 The ground facilities are specified using a vector of tuples with three numbers:
 
@@ -24,17 +24,23 @@ containing the WGS84 position of each ground facility `[(WGS84)]`:
 Those geodetic information are transformed to an ECEF vector using the function
 `geodetic_to_ecef`.
 
-# Arguments
-
-- `eci`: Earth-Centered Inertial frame in which the state vector of the propagator is
-    represented.
-- `ecef`: Earth-Centered, Earth-fixed frame to be used for the analysis. It must be the same
-    frame used to compute the ground facility position.
-- `vargs...`: List of additional arguments to be passed to the function `r_eci_to_ecef` when
-    converting the ECI frame to the ECEF.
-
 # Keywords
 
+- `duration::Number`: Duration of the analysis [s].
+    (**Default** = 86400)
+- `f_eci_to_ecef::Function`: Function to convert the orbit propagator position represented
+    in the Earth-centered inertial (ECI) reference frame to the Earth-centered, Earth-fixed
+    (ECEF) reference frame. The signature must be
+
+    ```julia
+    f_eci_to_ecef(r_i::AbstractVector, jd::Number) -> AbstractVector
+    ```
+
+    and it must return the position vector `r_i` represented in the ECEF at the instant `jd`
+    [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.
+    (**Default**: `_ground_facility_default_eci_to_ecef`)
+- `initial_time::Number`: Initial time of the analysis after the propagator epoch [s].
+    (**Default** = 0)
 - `minimum_elevation::Number`: Minimum elevation angle for communication between the
     satellite and the ground facilities [rad]. (**Default** = 10°)
 - `reduction::Function`: A function that receives a boolean vector with the visibility
@@ -45,7 +51,6 @@ Those geodetic information are transformed to an ECEF vector using the function
 - `step::Number`: The step [s] used to propagate the orbit. Notice that we perform a cross
     tuning to accurately obtain the access time. However, if an access is lower than the
     step, it can be neglected. (**Default** = 60)
-- `t_0::Number`: Initial time of the analysis after the propagator epoch [s].
 - `unit::Symbol`: Select the unit in which the duration will be computed. The possible
     values are:
     - `:s` for seconds (**Default**);
@@ -62,29 +67,26 @@ Those geodetic information are transformed to an ECEF vector using the function
 """
 function ground_facility_accesses(
     orbp::OrbitPropagator,
-    gs_wgs84::Tuple{T1, T2, T3},
-    vargs::Vararg{Any, N};
+    gs_wgs84::Tuple{T1, T2, T3};
     kwargs...
-) where {N, T1 <: Number, T2 <: Number, T3 <: Number}
-    return ground_facility_accesses(orbp, [gs_wgs84], vargs...; kwargs...)
+) where {T1 <: Number, T2 <: Number, T3 <: Number}
+    return ground_facility_accesses(orbp, [gs_wgs84]; kwargs...)
 end
 
 function ground_facility_accesses(
     orbp::OrbitPropagator,
-    vgs_wgs84::AbstractVector{T},
-    Δt::Number,
-    eci::Union{T_ECIs, T_ECIs_IAU_2006},
-    ecef::Union{T_ECEFs, T_ECEFs_IAU_2006},
-    vargs::Vararg{Any, N};
+    vgs_wgs84::AbstractVector{T};
+    duration::Number = 86400,
+    f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
+    initial_time::Number = 0,
     minimum_elevation::Number = 10 |> deg2rad,
     reduction::Function = v -> |(v...),
     step::Number = 60,
-    t_0::Number = 0,
     unit::Symbol = :s
-) where {N, T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
+) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
 
     # Time vector of the analysis.
-    t = float(t_0):float(step):float(Δt + t_0)
+    t = float(initial_time):float(step):float(initial_time + duration)
 
     # Get the epoch of the propagator.
     jd₀ = Propagators.epoch(orbp)
@@ -104,8 +106,8 @@ function ground_facility_accesses(
 
     # Lambda function to check the reduced visibility.
     function f(t)::Bool
-        r_i, v_i  = Propagators.propagate!(orbp, t)
-        r_e       = r_eci_to_ecef(DCM, eci, ecef, jd₀ + t / 86400, vargs...) * r_i
+        r_i, ~ = Propagators.propagate!(orbp, t)
+        r_e = f_eci_to_ecef(r_i, jd₀ + t / 86400)
 
         @inbounds for i in eachindex(visibility)
             visibility[i] = is_ground_facility_visible(r_e, vgs_r_e[i], minimum_elevation)
@@ -126,7 +128,7 @@ function ground_facility_accesses(
         # Handle the initial case.
         if state == :initial
             if visible
-                access_beg = jd_to_date(DateTime, jd₀) + Dates.Second(t_0)
+                access_beg = jd_to_date(DateTime, jd₀) + Dates.Second(round(Int, inital_time))
                 state = :visible
             else
                 state = :not_visible
@@ -159,7 +161,7 @@ function ground_facility_accesses(
     # If the analysis finished during an access, then just add the end of the interval as
     # the end of the access.
     if state == :visible
-        access_end = jd_to_date(DateTime, jd₀ + (Δt + t_0) / 86400)
+        access_end = jd_to_date(DateTime, jd₀ + (initial_time + duration) / 86400)
         push!(vaccess_beg, access_beg)
         push!(vaccess_end, access_end)
     end
@@ -190,65 +192,59 @@ function ground_facility_accesses(
 end
 
 """
-    ground_facility_gaps(T, orbp, args...; t_0::Number = 0, kwargs...) -> [Tuple, DataFrame]
+    ground_facility_gaps(orbp, args...; duration::Number = 86400, initial_time::Number = 0, kwargs...) -> DataFrame
 
 Compute the gaps between the accesses of ground facilities. The arguments and keywords are
 the same as the ones used in the function [`ground_facility_accesses`](@ref).
 
-Notice that the gap analysis starts in the orbit propagator epoch plus `t_0` and lasts for
-`Δt` [s].
+Notice that the gap analysis starts in the orbit propagator epoch plus `initial_time` and
+lasts for `duration` [s].
 
 # Returns
 
 - `DataFrame`: The function returns a `DataFrame` with three columns:
-    - `access_beginning`: Time of the access beginning [UTC] encoded using `DateTime`.
-    - `access_end`: Time of the access end [UTC] encoded using `DateTime`.
+    - `gap_beginning`: Time of the access beginning [UTC] encoded using `DateTime`.
+    - `gap_end`: Time of the access end [UTC] encoded using `DateTime`.
     - `duration`: Duration of the access [s].
     The unit of the column `duration` is stored in the `DataFrame` using metadata.
 """
 function ground_facility_gaps(
     orbp::OrbitPropagator,
-    gs_wgs84::Tuple{T1, T2, T3},
-    vargs::Vararg{Any, N};
+    gs_wgs84::Tuple{T1, T2, T3};
     kwargs...
-) where {N, T1 <: Number, T2 <: Number, T3 <: Number}
-    return ground_facility_gaps(orbp, [gs_wgs84], vargs...; kwargs...)
+) where {T1 <: Number, T2 <: Number, T3 <: Number}
+    return ground_facility_gaps(orbp, [gs_wgs84]; kwargs...)
 end
 
 function ground_facility_gaps(
     orbp,
-    vgs_wgs84::AbstractVector{T},
-    Δt::Number,
-    eci::Union{T_ECIs, T_ECIs_IAU_2006},
-    ecef::Union{T_ECEFs, T_ECEFs_IAU_2006},
-    vargs::Vararg{Any, N};
+    vgs_wgs84::AbstractVector{T};
+    duration::Number = 86400,
+    f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
+    initial_time::Number = 0,
     minimum_elevation::Number = 10 |> deg2rad,
     reduction::Function = v -> |(v...),
     step::Number = 60,
-    t_0::Number = 0,
     unit::Symbol = :s
-) where {N, T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
+) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
 
     # Get the epoch of the propagator.
     jd₀ = Propagators.epoch(orbp)
-    dt₀ = jd_to_date(DateTime, jd₀) + Dates.Second(t_0)
+    dt₀ = jd_to_date(DateTime, jd₀) + Dates.Second(round(Int, initial_time))
 
     # Compute the list of ground facility accesses.
     dfa = ground_facility_accesses(
         orbp,
-        vgs_wgs84,
-        Δt,
-        eci,
-        ecef,
-        vargs...;
+        vgs_wgs84;
+        duration,
+        f_eci_to_ecef,
+        initial_time,
         minimum_elevation,
-        reduction,
-        step,
-        t_0
+        reduction
     )
 
     # Compute the last propagation instant.
-    jd₁ = jd₀ + (Δt + t_0) / 86400
+    jd₁ = jd₀ + (initial_time + duration) / 86400
     dt₁ = jd_to_date(DateTime, jd₁)
 
     # Compute the gaps between accesses.
@@ -306,4 +302,15 @@ function ground_facility_gaps(
     colmetadata!(dfg, :duration, "Unit", unit)
 
     return dfg
+end
+
+############################################################################################
+#                                    Private Functions                                     #
+############################################################################################
+
+# Default function to convert `r_i` from the ECI reference frame to ECEF reference frame at
+# the instant `jd`.
+function _ground_facilities_default_eci_to_ecef(r_eci::AbstractVector, jd::Number)
+    D_ecef_eci = r_eci_to_ecef(TEME(), PEF(), jd)
+    return D_ecef_eci * r_eci
 end
