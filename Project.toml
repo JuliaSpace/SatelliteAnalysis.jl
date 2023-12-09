@@ -23,7 +23,7 @@ Reexport = "1"
 ReferenceFrameRotations = "1, 2, 3"
 SatelliteToolbox = "0.12"
 StaticArrays = "1"
-TerminalPager = "0.4"
+TerminalPager = "0.4, 0.5"
 julia = "1"
 
 [extras]
