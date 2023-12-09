@@ -1,19 +1,13 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+## Description #############################################################################
 #
-# Description
-# ==========================================================================================
+# Functions to design Sun synchronous orbits.
 #
-#   Functions to design Sun synchronous orbits.
+## References ##############################################################################
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# [1] Kozai, Y (1959). The Motion of a Close Earth Satellite. The Astronomical Journal,
+#     v. 64, no. 1274, pp. 367 -- 377.
 #
-# References
-# ==========================================================================================
-#
-#   [1] Kozai, Y (1959). The Motion of a Close Earth Satellite. The Astronomical Journal,
-#       v. 64, no. 1274, pp. 367 -- 377.
-#
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+############################################################################################
 
 export design_sun_sync_ground_repeating_orbit
 export sun_sync_orbit_from_angular_velocity
@@ -422,8 +416,7 @@ function sun_sync_orbit_from_angular_velocity(
     # The desired angular velocity in [deg / min].
     ω_d = T(angvel) * rs_to_dm
 
-    # Solving for Zeros of f₁ and f₂ Using Newton-Raphson Method
-    # ======================================================================================
+    # == Solving for Zeros of f₁ and f₂ Using Newton-Raphson Method ========================
     #
     # The function `f₁` is the residue related to the time derivative of RAAN, and the
     # function `f₂` is the residue related to the angular velocity.
@@ -972,7 +965,7 @@ function sun_sync_orbit_inclination(
 end
 
 ############################################################################################
-#                                    Private Functions
+#                                    Private Functions                                     #
 ############################################################################################
 
 function _pretify_rev_per_days(i::Int, num::Int, den::Int)

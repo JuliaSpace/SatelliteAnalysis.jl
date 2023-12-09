@@ -1,11 +1,8 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+## Description #############################################################################
 #
-# Description
-# ==========================================================================================
+# Functions to compute the accesses and gaps between the satellite and ground facilities.
 #
-#   Functions to compute the accesses and gaps between the satellite and ground facilities.
-#
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+############################################################################################
 
 export ground_facility_accesses, ground_facility_gaps
 
@@ -159,8 +156,8 @@ function ground_facility_accesses(
         end
     end
 
-    # If the analysis finished during an access, then just add the end of the
-    # interval as the end of the access.
+    # If the analysis finished during an access, then just add the end of the interval as
+    # the end of the access.
     if state == :visible
         access_end = jd_to_date(DateTime, jd₀ + (Δt + t_0) / 86400)
         push!(vaccess_beg, access_beg)

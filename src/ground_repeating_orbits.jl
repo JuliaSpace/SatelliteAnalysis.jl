@@ -1,20 +1,13 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+## Description #############################################################################
 #
-# Description
-# ==========================================================================================
+# Functions related to ground repeating orbits.
 #
-#   Functions related to ground repeating orbits.
+## Remarks #################################################################################
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# A ground repeating orbit is any orbit that the number of revolutions per day is a rational
+# number. Hence, this type of orbit repeats its ground trace after a finite number of days.
 #
-# Remarks
-# ==========================================================================================
-#
-#   A ground repeating orbit is any orbit that the number of revolutions per day is a
-#   rational number. Hence, this type of orbit repeats its ground trace after a finite
-#   number of days.
-#
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+############################################################################################
 
 export ground_repeating_orbit_adjacent_track_angle
 export ground_repeating_orbit_adjacent_track_distance

@@ -1,19 +1,13 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+## Description #############################################################################
 #
-# Description
-# ==========================================================================================
+# Compute the satellite lighting condition considering the Earth eclipse.
 #
-#   Compute the satellite lighting condition considering the Earth eclipse.
-#
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-# References
-# ==========================================================================================
+## References ##############################################################################
 #
 # [1] Longo, C. R. O., Rickman, S. L (1995). Method for the Calculation of Spacecraft Umbra
 #     and Penumbra Shadow Terminator Points. NASA Technical Paper 3547.
 #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+############################################################################################
 
 export lighting_condition
 
