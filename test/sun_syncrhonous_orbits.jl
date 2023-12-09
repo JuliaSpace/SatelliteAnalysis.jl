@@ -1,22 +1,16 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+## Description #############################################################################
 #
-# Description
-# ==========================================================================================
-#
-#   Tests related to the Sun-synchronous orbit functions.
+# Tests related to the Sun-synchronous orbit functions.
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# File: ./src/sun_synchronous_orbits.jl
-# ==========================================================================================
+# == File: ./src/sun_synchronous_orbits.jl =================================================
 
-# Function: design_sun_sync_ground_repeating_orbits
-# ------------------------------------------------------------------------------------------
+# -- Function: design_sun_sync_ground_repeating_orbits -------------------------------------
 
 @testset "Designing Sun-Synchronous, Ground-Repeating Orbits" begin
 
-    # Default
-    # ======================================================================================
+    # == Default ===========================================================================
 
     df = design_sun_sync_ground_repeating_orbit(1, 1)
 
@@ -38,8 +32,7 @@
     @test df[end,   :adjacent_gt_distance]  ≈ 3028.040  (atol = 1e-3)
     @test df[end,   :adjacent_gt_angle]     ≈ 92.4927   (atol = 1e-4)
 
-    # Altitude filter
-    # ======================================================================================
+    # == Altitude filter ===================================================================
 
     df = design_sun_sync_ground_repeating_orbit(
         5,
@@ -57,8 +50,7 @@
     @test df[begin, :adjacent_gt_distance]  ≈ 550.608    (atol = 1e-3)
     @test df[begin, :adjacent_gt_angle]     ≈ 39.872     (atol = 1e-3)
 
-    # Revolution per days
-    # ======================================================================================
+    # == Revolution per days ===============================================================
 
     df = design_sun_sync_ground_repeating_orbit(
         5,
@@ -77,11 +69,9 @@
     @test df[begin, :adjacent_gt_distance]  ≈ 550.608      (atol = 1e-3)
     @test df[begin, :adjacent_gt_angle]     ≈ 39.872       (atol = 1e-3)
 
-    # Test units
-    # ======================================================================================
+    # == Test units ========================================================================
 
-    # Angle
-    # --------------------------------------------------------------------------------------
+    # -- Angle -----------------------------------------------------------------------------
 
     df = design_sun_sync_ground_repeating_orbit(
         5,
@@ -94,8 +84,7 @@
     @test df[begin, :inclination]       ≈ 98.4106 |> deg2rad (atol = 2e-6)
     @test df[begin, :adjacent_gt_angle] ≈ 39.872  |> deg2rad (atol = 8e-5)
 
-    # Distance
-    # --------------------------------------------------------------------------------------
+    # -- Distance --------------------------------------------------------------------------
 
     df = design_sun_sync_ground_repeating_orbit(
         5,
@@ -109,8 +98,7 @@
     @test df[begin, :altitude]             ≈ 752.847e3  (atol = 1)
     @test df[begin, :adjacent_gt_distance] ≈ 550.608e3  (atol = 1)
 
-    # Time
-    # --------------------------------------------------------------------------------------
+    # -- Time ------------------------------------------------------------------------------
 
     df = design_sun_sync_ground_repeating_orbit(
         5,
@@ -132,8 +120,7 @@
 
     @test df[begin, :period] ≈ 1.66667 (atol = 1e-5)
 
-    # Errors
-    # ======================================================================================
+    # == Errors ============================================================================
 
     @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(0, 10)
     @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(3, -3)
@@ -141,12 +128,10 @@
     @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(1, 5; e = 1)
 end
 
-# Function: sun_sync_orbit_from_angular_velocity
-# ------------------------------------------------------------------------------------------
+# -- Function: sun_sync_orbit_from_angular_velocity ----------------------------------------
 
 @testset "Function sun_sync_orbit_from_angular_velocity" begin
-    # Float64
-    # ======================================================================================
+    # == Float64 ===========================================================================
 
     a, i, c = sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad)
     @test a ≈ 7.130983932846816e6
@@ -162,8 +147,7 @@ end
     @test eltype(a) == Float64
     @test eltype(i) == Float64
 
-    # Float32
-    # ======================================================================================
+    # == Float32 ===========================================================================
 
     a, i, c = sun_sync_orbit_from_angular_velocity(0.06f0 |> deg2rad)
     @test a ≈ 7.130984f6
@@ -179,8 +163,7 @@ end
     @test eltype(a) == Float32
     @test eltype(i) == Float32
 
-    # Test When Algorithm Did Not Converged
-    # ======================================================================================
+    # == Test When Algorithm Did Not Converged =============================================
 
     a, i, c = (@test_logs(
         (:warn,),
@@ -188,8 +171,7 @@ end
     ))
     @test c == false
 
-    # Test When the Orbit Is Not Valid
-    # ======================================================================================
+    # == Test When the Orbit Is Not Valid ==================================================
 
     a, i, c = (@test_logs(
         (:warn, "The orbit is not valid because the perigee is inside the Earth."),
@@ -207,12 +189,10 @@ end
     @test_throws ArgumentError sun_sync_orbit_from_angular_velocity(+0.004 |> deg2rad, -1.1)
 end
 
-# Function: sun_sync_orbit_inclination
-# ------------------------------------------------------------------------------------------
+# -- Function: sun_sync_orbit_inclination --------------------------------------------------
 
 @testset "Function sun_sync_orbit_inclination" begin
-    # Float64
-    # ======================================================================================
+    # == Float64 ===========================================================================
 
     i, c = sun_sync_orbit_inclination(7130.982e3)
     @test i isa Float64
@@ -224,8 +204,7 @@ end
     @test i ≈ 1.716851774960272
     @test c == true
 
-    # Float32
-    # ======================================================================================
+    # == Float32 ===========================================================================
 
     i, c = sun_sync_orbit_inclination(7130.982f3)
     @test i isa Float32
@@ -237,8 +216,7 @@ end
     @test i ≈ 1.7168517f0
     @test c == true
 
-    # Test When Algorithm Did Not Converge
-    # ======================================================================================
+    # == Test When Algorithm Did Not Converge ==============================================
 
     a, c = (@test_logs(
         (:warn,),
@@ -252,18 +230,15 @@ end
     @test_throws ArgumentError sun_sync_orbit_inclination(7130.982e3, -0.1)
     @test_throws ArgumentError sun_sync_orbit_inclination(7130.982e3,  0.4)
 
-    # Test When the Orbit Is Not Valid
-    # ======================================================================================
+    # == Test When the Orbit Is Not Valid ==================================================
 
     @test_throws ArgumentError sun_sync_orbit_inclination(15_000e3)
 end
 
-# Function: sun_sync_orbit_semi_major_axis
-# ------------------------------------------------------------------------------------------
+# -- Function: sun_sync_orbit_semi_major_axis ----------------------------------------------
 
 @testset "Function sun_sync_orbit_semi_major_axis" begin
-    # Float64
-    # ======================================================================================
+    # == Float64 ===========================================================================
 
     a, c = sun_sync_orbit_semi_major_axis(98.410 |> deg2rad)
     @test a isa Float64
@@ -275,8 +250,7 @@ end
     @test a ≈ 7.141033706031902e6
     @test c == true
 
-    # Float32
-    # ======================================================================================
+    # == Float32 ===========================================================================
 
     a, c = sun_sync_orbit_semi_major_axis(98.410f0 |> deg2rad)
     @test a isa Float32
@@ -288,8 +262,7 @@ end
     @test a ≈ 7.1410335f6
     @test c == true
 
-    # Test When Algorithm Did Not Converge
-    # ======================================================================================
+    # == Test When Algorithm Did Not Converge ==============================================
 
     a, c = (@test_logs(
         (:warn,),
@@ -297,8 +270,7 @@ end
     ))
     @test c == false
 
-    # Test When the Orbit Is Not Valid
-    # ======================================================================================
+    # == Test When the Orbit Is Not Valid ==================================================
 
     a, c = (@test_logs(
         (:warn, "The orbit is not valid because the perigee is inside the Earth."),

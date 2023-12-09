@@ -1,17 +1,12 @@
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+## Description #############################################################################
 #
-# Description
-# ==========================================================================================
-#
-#   Tests related to the ground facility accesses and gaps.
+# Tests related to the ground facility accesses and gaps.
 #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# File: ./src/ground_facilities/ground_facility_accesses_and_gaps.jl
-# ==========================================================================================
+# == File: ./src/ground_facilities/ground_facility_accesses_and_gaps.jl ====================
 
-# Function: ground_facility_accesses
-# ------------------------------------------------------------------------------------------
+# -- Function: ground_facility_accesses ----------------------------------------------------
 
 @testset "Function ground_facility_accesses" begin
     jd₀ = SatelliteAnalysis.date_to_jd(2021, 1, 1, 0, 0, 0)
@@ -26,8 +21,7 @@
     )
     orbp = Propagators.init(Val(:J2), orb)
 
-    # Single Facility
-    # ======================================================================================
+    # == Single Facility ===================================================================
 
     df = ground_facility_accesses(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF())
 
@@ -47,8 +41,7 @@
     @test metadata(df, "Description") == "Accesses to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :s
 
-    # Multiple Facilities
-    # ======================================================================================
+    # == Multiple Facilities ===============================================================
 
     df = ground_facility_accesses(
         orbp,
@@ -95,11 +88,9 @@
     @test metadata(df, "Description") == "Accesses to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :s
 
-    # Duration Units
-    # ======================================================================================
+    # == Duration Units ====================================================================
 
-    # Minutes
-    # --------------------------------------------------------------------------------------
+    # -- Minutes ---------------------------------------------------------------------------
 
     df = ground_facility_accesses(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :m)
 
@@ -113,8 +104,7 @@
     @test metadata(df, "Description") == "Accesses to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :m
 
-    # Hours
-    # --------------------------------------------------------------------------------------
+    # -- Hours -----------------------------------------------------------------------------
 
     df = ground_facility_accesses(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :h)
 
@@ -128,8 +118,7 @@
     @test metadata(df, "Description") == "Accesses to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :h
 
-    # Unknown Symbol
-    # --------------------------------------------------------------------------------------
+    # -- Unknown Symbol --------------------------------------------------------------------
 
     df = ground_facility_accesses(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :not_know)
 
@@ -157,8 +146,7 @@ end
     )
     orbp = Propagators.init(Val(:J2), orb)
 
-    # Single Facility
-    # ======================================================================================
+    # == Single Facility ===================================================================
 
     df = ground_facility_gaps(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF())
 
@@ -181,8 +169,7 @@ end
     @test metadata(df, "Description") == "Gaps to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :s
 
-    # Multiple Facilities
-    # ======================================================================================
+    # == Multiple Facilities ===============================================================
 
     df = ground_facility_gaps(
         orbp,
@@ -239,11 +226,9 @@ end
     @test metadata(df, "Description") == "Gaps to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :s
 
-    # Duration Units
-    # ======================================================================================
+    # == Duration Units ====================================================================
 
-    # Minutes
-    # --------------------------------------------------------------------------------------
+    # -- Minutes ---------------------------------------------------------------------------
 
     df = ground_facility_gaps(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :m)
 
@@ -266,8 +251,7 @@ end
     @test metadata(df, "Description") == "Gaps to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :m
 
-    # Hours
-    # --------------------------------------------------------------------------------------
+    # -- Hours -----------------------------------------------------------------------------
 
     df = ground_facility_gaps(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :h)
 
@@ -290,8 +274,7 @@ end
     @test metadata(df, "Description") == "Gaps to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :h
 
-    # Unknown Symbol
-    # --------------------------------------------------------------------------------------
+    # -- Unknown Symbol --------------------------------------------------------------------
 
     df = ground_facility_gaps(orbp, (0, 0, 0) , 1 * 86400, TOD(), PEF(); unit = :not_known)
 
