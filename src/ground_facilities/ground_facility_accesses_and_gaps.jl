@@ -72,7 +72,9 @@ Those geodetic information are transformed to an ECEF vector using the function
 
 ## Examples
 
-```julia
+```julia-repl
+julia> using SatelliteAnalysis
+
 julia> jd₀ = date_to_jd(2024, 1, 1);
 
 julia> orb = KeplerianElements(
@@ -251,7 +253,9 @@ lasts for `duration` [s].
 
 ## Examples
 
-```julia
+```julia-repl
+julia> using SatelliteAnalysis
+
 julia> jd₀ = date_to_jd(2024, 1, 1);
 
 julia> orb = KeplerianElements(

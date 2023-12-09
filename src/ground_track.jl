@@ -45,7 +45,9 @@ longitude [rad] of each point in the ground track.
 
 ## Examples
 
-```julia
+```julia-repl
+julia> using SatelliteAnalysis, UnicodePlots
+
 julia> jd₀ = date_to_jd(2024, 1, 1);
 
 julia> orb = KeplerianElements(

@@ -301,6 +301,8 @@ using the Newton-Raphson method with the presented equations.
 ## Examples
 
 ```julia-repl
+julia> using SatelliteAnalysis
+
 julia> sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad)
 (7.130983932846816e6, 1.7175898375139984, true)
 
@@ -584,6 +586,8 @@ for `a` using the Newton-Raphson method with the presented equations.
 ## Examples
 
 ```julia-repl
+julia> using SatelliteAnalysis
+
 julia> sun_sync_orbit_semi_major_axis(98.410 |> deg2rad)
 (7.130827866508738e6, true)
 
@@ -813,6 +817,8 @@ for `i` using the Newton-Raphson method with the presented equations.
 ## Examples
 
 ```julia-repl
+julia> using SatelliteAnalysis
+
 julia> sun_sync_orbit_inclination(7130.982e3)
 (1.7175896973066611, true)
 

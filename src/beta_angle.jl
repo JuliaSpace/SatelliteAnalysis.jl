@@ -47,7 +47,7 @@ receives in a particular orbit.
 
 ## Examples
 
-```julia
+```julia-repl
 julia> using SatelliteAnalysis, UnicodePlots
 
 julia> jd₀ = date_to_jd(2021, 1, 1, 0, 0, 0)

@@ -44,7 +44,9 @@ each day.
 
 ## Examples
 
-```
+```julia-repl
+julia> using SatelliteAnalysis
+
 julia> orb = KeplerianElements(
            date_to_jd(2021, 1, 1, 0, 0, 0),
            7130.982e3,
