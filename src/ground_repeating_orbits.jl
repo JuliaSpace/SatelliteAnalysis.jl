@@ -50,22 +50,34 @@ function ground_repeating_orbit_adjacent_track_angle(
     i::T3,
     orbit_cycle::Integer
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
-    T  = float(promote_type(T1, T2, T3))
-    R₀ = T(EARTH_EQUATORIAL_RADIUS)
+    T   = float(promote_type(T1, T2, T3))
+    R₀  = T(EARTH_EQUATORIAL_RADIUS)
+    ω_e = T(EARTH_ANGULAR_SPEED)
 
-    # Angle between two adjacent tracks at Equator measured from the Earth's center.
-    θ = T(orbit_period) / T(orbit_cycle) * T(π) / 43200
+    # Satellite mean angular velocity [rad / s].
+    ω_s = T(2π) / T(orbit_period)
 
-    # Angle between two adjacent tracks along the satellite's path measured from the Earth's
-    # center. The projection of this angle in the Earth's surface is the distance between
-    # the two adjacent tracks.
-    β = asin(sin(θ) * sin(T(i)))
+    # Angle between one ground track and the middle of the region between the two adjacent
+    # tracks in the Equator [rad]. This angle is measured from the Earth's center.
+    θ = T(orbit_period) / T(orbit_cycle) * T(π) / 43200 / 2
+    sin_θ, cos_θ = sincos(θ)
+    cot_θ = cos_θ / sin_θ
+
+    # We need to compute the angle between one ground track and the middle of the region
+    # between the two adjacent tracks measured from the Earth's center (β). Thus, first we
+    # need to find the ground trace inclination, which is a composition between the Earth's
+    # rotation rate and the satellite speed.
+    sin_i, cos_i = sincos(i)
+    cot_i = cos_i / sin_i
+
+    i_gt = atan(ω_s * sin_i, ω_s * cos_i - ω_e)
+    β    = acot(cot_θ * sin_i + cot_i * cos_i / sin_θ)
 
     # Compute the angle between the two ground tracks measured from the satellite. `a` is an
     # auxiliary distance and `γ` is the angle we are looking for.
-    sin_βo2, cos_βo2 = sincos(β / 2)
-    α = √(R₀^2 + (R₀ + T(h))^2 - 2R₀ * (R₀ + T(h)) * cos_βo2)
-    γ = asin(R₀ / α * sin_βo2)
+    sin_β, cos_β = sincos(β)
+    α = √(R₀^2 + (R₀ + T(h))^2 - 2R₀ * (R₀ + T(h)) * cos_β)
+    γ = asin(R₀ / α * sin_β)
 
     # Finally, the adjacent track distance is two times `γ`.
     return 2γ
@@ -76,7 +88,7 @@ end
 
 Compute the adjacent track distance [m] at Equator in a ground repeating orbit.  The orbit
 is described by its orbital period `orbit_period` [s], inclination `i` [rad], and orbit
-cycle `orbit_cyle` [day].
+cycle `orbit_cycle` [day].
 
 !!! note
     Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
@@ -97,19 +109,31 @@ function ground_repeating_orbit_adjacent_track_distance(
     i::T2,
     orbit_cycle::Integer
 ) where {T1 <: Number, T2 <: Number}
-    T  = float(promote_type(T1, T2))
-    R₀ = T(EARTH_EQUATORIAL_RADIUS)
+    T   = float(promote_type(T1, T2))
+    R₀  = T(EARTH_EQUATORIAL_RADIUS)
+    ω_e = T(EARTH_ANGULAR_SPEED)
 
-    # Angle between two adjacent tracks at Equator measured from the Earth's center.
-    θ = T(orbit_period) / T(orbit_cycle) * T(π) / 43200
+    # Satellite mean angular velocity [rad / s].
+    ω_s = T(2π) / T(orbit_period)
 
-    # Angle between two adjacent tracks along the satellite's path measured from the Earth's
-    # center. The projection of this angle in the Earth's surface is the distance between
-    # the two adjacent tracks.
-    β = asin(sin(θ) * sin(T(i)))
+    # Angle between one ground track and the middle of the region between the two adjacent
+    # tracks in the Equator [rad]. This angle is measured from the Earth's center.
+    θ = T(orbit_period) / T(orbit_cycle) * T(π) / 43200 / 2
+    sin_θ, cos_θ = sincos(θ)
+    cot_θ = cos_θ / sin_θ
+
+    # We need to compute the angle between one ground track and the middle of the region
+    # between the two adjacent tracks measured from the Earth's center (β). Thus, first we
+    # need to find the ground trace inclination, which is a composition between the Earth's
+    # rotation rate and the satellite speed.
+    sin_i, cos_i = sincos(i)
+    cot_i = cos_i / sin_i
+
+    i_gt = atan(ω_s * sin_i, ω_s * cos_i - ω_e)
+    β    = acot(cot_θ * sin_i + cot_i * cos_i / sin_θ)
 
     # Distance between two adjacent tracks on the Earth's surface.
-    d = R₀ * β
+    d = 2β * R₀
 
     return d
 end
