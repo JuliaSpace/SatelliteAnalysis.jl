@@ -161,7 +161,7 @@ function ground_track(
     # == Compute the Ground Track ==========================================================
 
     # Time vector to compute the ground track.
-    vt = initial_time:step:duration
+    vt = float(initial_time):float(step):float(duration)
 
     # Allocate the output vector.
     gt = NTuple{2, Float64}[]
