@@ -11,7 +11,7 @@ export ground_facility_accesses, ground_facility_gaps
 
 Compute the accesses of a satellite with orbit propagator `orbp` (see `Propagators.init`) to
 the ground facilities defined in the vector `vgs_r_e`. The analysis interval begins in the
-propagator epoch plus `initial_time` (keyword) and lasts for `duration` [s] (keyword).
+propagator epoch plus `initial_time` and lasts for `duration` [s], where both are keywords.
 
 The ground facilities are specified using a vector of tuples with three numbers:
 
@@ -42,15 +42,18 @@ Those geodetic information are transformed to an ECEF vector using the function
 - `initial_time::Number`: Initial time of the analysis after the propagator epoch [s].
     (**Default** = 0)
 - `minimum_elevation::Number`: Minimum elevation angle for communication between the
-    satellite and the ground facilities [rad]. (**Default** = 10°)
+    satellite and the ground facilities [rad].
+    (**Default** = 10°)
 - `reduction::Function`: A function that receives a boolean vector with the visibility
     between the satellite and each ground facility. It must return a boolean value
     indicating if the access must be computed or not. This is useful to merge access time
-    between two or more facilities. (**Default** = `v -> |(v...)` *i.e.* compute the access
-    if at least one ground facilities is visible)
+    between two or more facilities.
+    (**Default** = `v -> |(v...)` *i.e.* compute the access if at least one ground
+    facilities is visible)
 - `step::Number`: The step [s] used to propagate the orbit. Notice that we perform a cross
     tuning to accurately obtain the access time. However, if an access is lower than the
-    step, it can be neglected. (**Default** = 60)
+    step, it can be neglected.
+    (**Default** = 60)
 - `unit::Symbol`: Select the unit in which the duration will be computed. The possible
     values are:
     - `:s` for seconds (**Default**);
@@ -64,6 +67,42 @@ Those geodetic information are transformed to an ECEF vector using the function
     - `access_end`: Time of the access end [UTC] encoded using `DateTime`.
     - `duration`: Duration of the access [s].
     The unit of the column `duration` is stored in the `DataFrame` using metadata.
+
+# Extended Help
+
+## Examples
+
+```julia
+julia> jd₀ = date_to_jd(2024, 1, 1);
+
+julia> orb = KeplerianElements(
+           jd₀,
+           7130.982e3,
+           0.001111,
+           98.405 |> deg2rad,
+           ltdn_to_raan(10.5, jd₀),
+           π / 2,
+           0
+       );
+
+julia> orbp = Propagators.init(Val(:J2), orb);
+
+julia> ground_facility_accesses(orbp, (0, 0, 0))
+2×3 DataFrame
+ Row │ access_beginning         access_end               duration 
+     │ DateTime                 DateTime                 Float64  
+─────┼────────────────────────────────────────────────────────────
+   1 │ 2024-01-01T10:20:03.136  2024-01-01T10:30:02.971   599.835
+   2 │ 2024-01-01T22:49:55.910  2024-01-01T22:59:23.470   567.56
+
+julia> ground_facility_accesses(orbp, (0, 0, 0); unit = :m)
+2×3 DataFrame
+ Row │ access_beginning         access_end               duration 
+     │ DateTime                 DateTime                 Float64  
+─────┼────────────────────────────────────────────────────────────
+   1 │ 2024-01-01T10:20:03.136  2024-01-01T10:30:02.971   9.99725
+   2 │ 2024-01-01T22:49:55.910  2024-01-01T22:59:23.470   9.45933
+```
 """
 function ground_facility_accesses(
     orbp::OrbitPropagator,
@@ -207,6 +246,44 @@ lasts for `duration` [s].
     - `gap_end`: Time of the access end [UTC] encoded using `DateTime`.
     - `duration`: Duration of the access [s].
     The unit of the column `duration` is stored in the `DataFrame` using metadata.
+
+# Extended Help
+
+## Examples
+
+```julia
+julia> jd₀ = date_to_jd(2024, 1, 1);
+
+julia> orb = KeplerianElements(
+           jd₀,
+           7130.982e3,
+           0.001111,
+           98.405 |> deg2rad,
+           ltdn_to_raan(10.5, jd₀),
+           π / 2,
+           0
+       );
+
+julia> orbp = Propagators.init(Val(:J2), orb);
+
+julia> ground_facility_gaps(orbp, (0, 0, 0))
+3×3 DataFrame
+ Row │ gap_beginning            gap_end                  duration 
+     │ DateTime                 DateTime                 Float64  
+─────┼────────────────────────────────────────────────────────────
+   1 │ 2024-01-01T00:00:00      2024-01-01T10:20:03.136  37203.1
+   2 │ 2024-01-01T10:30:02.971  2024-01-01T22:49:55.910  44392.9
+   3 │ 2024-01-01T22:59:23.470  2024-01-02T00:00:00       3636.53
+
+julia> ground_facility_gaps(orbp, (0, 0, 0); unit = :m)
+3×3 DataFrame
+ Row │ gap_beginning            gap_end                  duration 
+     │ DateTime                 DateTime                 Float64  
+─────┼────────────────────────────────────────────────────────────
+   1 │ 2024-01-01T00:00:00      2024-01-01T10:20:03.136  620.052
+   2 │ 2024-01-01T10:30:02.971  2024-01-01T22:49:55.910  739.882
+   3 │ 2024-01-01T22:59:23.470  2024-01-02T00:00:00       60.6088
+```
 """
 function ground_facility_gaps(
     orbp::OrbitPropagator,
