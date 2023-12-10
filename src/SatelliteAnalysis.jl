@@ -3,11 +3,9 @@ module SatelliteAnalysis
 using Dates
 using LinearAlgebra
 using PrettyNumbers
-using PrettyTables
 using Reexport
 using StaticArrays
 using Statistics
-using TerminalPager
 
 @reexport using DataFrames
 @reexport using ReferenceFrameRotations
