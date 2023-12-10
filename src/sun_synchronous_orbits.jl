@@ -40,27 +40,36 @@ This function returns a `DataFrame` with the following columns:
 # Keywords
 
 - `angle_unit::Symbol`: Unit for all the angles in the output `DataFrame`.  It can be `:deg`
-    for degrees or `:rad` for radians. (**Default**: `:deg`)
+    for degrees or `:rad` for radians.
+    (**Default**: `:deg`)
 - `distance_unit::Symbol`: The unit for all the distances in the output `DataFrame`. It can
-    be `:m` for meters or `:km` for kilometers.  (**Default**: `:km`)
-- `e::Number`: Orbit eccentricity. (**Default**: 0)
+    be `:m` for meters or `:km` for kilometers.
+    (**Default**: `:km`)
+- `e::Number`: Orbit eccentricity.
+    (**Default**: 0)
 - `int_rev_per_day::Tuple`: `Tuple` with the integer parts of the number of revolutions per
-    day to be analyzed. (**Default** = `(13, 14, 15, 16, 17)`)
+    day to be analyzed.
+    (**Default** = `(13, 14, 15, 16, 17)`)
 - `pretity_rev_per_days::Bool`: If `true`, the column with the revolutions per day will be
-    conveted to a string with a pretty representation of this information. (**Default**:
-    `true`)
+    conveted to a string with a pretty representation of this information.
+    (**Default**: `true`)
 - `maximum_altitude::Union{Nothing, Number}`: Maximum altitude [m] of the orbits in the
     output `DataFrame`. If it is `nothing`, the algorithm will not apply a higher limit to
-    the orbital altitude. (**Default** = `nothing`)
+    the orbital altitude.
+    (**Default** = `nothing`)
 - `minimum_altitude::Union{Nothing, Number}`: Minimum altitude [m] of the orbits in the
     output `DataFrame`. If it is `nothing`, the algorithm will not apply a lower limit to
-    the orbital altitude. (**Default** = `nothing`)
+    the orbital altitude.
+    (**Default** = `nothing`)
 - `time_unit::Symbol`: Unit for all the time values in the output `DataFrame`.  It can be
-    `:s` for seconds, `:m` for minutes, or `:h` for hours.  (**Default** = `:h`)
+    `:s` for seconds, `:m` for minutes, or `:h` for hours.
+    (**Default** = `:h`)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
     (**Default** = `GM_EARTH`)
-- `J2::Number`: J₂ perturbation term. (**Default** = EGM_2008_J2)
-- `R0::Number`: Earth's equatorial radius [m]. (**Default** = EARTH_EQUATORIAL_RADIUS)
+- `J2::Number`: J₂ perturbation term.
+    (**Default** = `EGM_2008_J2`)
+- `R0::Number`: Earth's equatorial radius [m].
+    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
 """
 function design_sun_sync_ground_repeating_orbit(
     minimum_repetition::Int,
@@ -228,15 +237,19 @@ The algorithm here considers only the perturbation terms up to J₂.
 
 - `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
     (**Default** = 3)
-- `no_warnings::Bool`: If `true`, no warnings will be printed. (**Default** = `false`)
+- `no_warnings::Bool`: If `true`, no warnings will be printed.
+    (**Default** = `false`)
 - `tolerance::Union{Nothing, NTuple{2, Number}}`: Residue tolerances to verify if the
     numerical method has converged. If it is `nothing`, `(√eps(T), √eps(T))` will be used,
     where `T` is the internal type for the computations. Notice that the residue function
-    `f₁` unit is [deg / day], whereas the `f₂` unit is [deg / min]. (**Default** = 1e-18)
+    `f₁` unit is [deg / day], whereas the `f₂` unit is [deg / min].
+    (**Default** = 1e-18)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
     (**Default** = `GM_EARTH`)
-- `J2::Number`: J₂ perturbation term. (**Default** = EGM_2008_J2)
-- `R0::Number`: Earth's equatorial radius [m]. (**Default** = EARTH_EQUATORIAL_RADIUS)
+- `J2::Number`: J₂ perturbation term.
+    (**Default** = `EGM_2008_J2`)
+- `R0::Number`: Earth's equatorial radius [m].
+    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
 
 # Returns
 
@@ -540,8 +553,10 @@ The algorithm here considers only the perturbation terms up to J₂.
     (**Default** = nothing)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
     (**Default** = `GM_EARTH`)
-- `J2::Number`: J₂ perturbation term. (**Default** = EGM_2008_J2)
-- `R0::Number`: Earth's equatorial radius [m]. (**Default** = EARTH_EQUATORIAL_RADIUS)
+- `J2::Number`: J₂ perturbation term.
+    (**Default** = `EGM_2008_J2`)
+- `R0::Number`: Earth's equatorial radius [m].
+    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
 
 # Returns
 
@@ -771,8 +786,10 @@ The algorithm here considers only the perturbation terms up to J₂.
     (**Default** = nothing)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
     (**Default** = `GM_EARTH`)
-- `J2::Number`: J₂ perturbation term. (**Default** = EGM_2008_J2)
-- `R0::Number`: Earth's equatorial radius [m]. (**Default** = EARTH_EQUATORIAL_RADIUS)
+- `J2::Number`: J₂ perturbation term.
+    (**Default** = `EGM_2008_J2`)
+- `R0::Number`: Earth's equatorial radius [m].
+    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
 
 # Returns
 

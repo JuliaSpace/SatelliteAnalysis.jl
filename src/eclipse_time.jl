@@ -26,6 +26,7 @@ each day.
     has a crossing estimation to accurately estimate the transition between the regions.
     However, if this step is very large, we may miss some small regions. If it is negative,
     it will be selected as the time in which the mean anomaly advances 0.5°.
+    (**Default** = -1)
 - `unit::Symbol`: Select the unit in which the results will be generated. The possible
     values are:
     - `:s` for seconds (**Default**);
