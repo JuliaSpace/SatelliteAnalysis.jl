@@ -16,7 +16,7 @@ end
     include("./ground_facility_accesses_and_gaps.jl")
 end
 
-@testset "Ground Trakcs" verbose = true begin
+@testset "Ground Tracks" verbose = true begin
     include("./ground_track.jl")
 end
 
