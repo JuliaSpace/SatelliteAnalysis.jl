@@ -12,8 +12,9 @@ end
     include("./eclipse_time.jl")
 end
 
-@testset "Ground Facility Accesses and Gaps" verbose = true begin
+@testset "Ground Facilities" verbose = true begin
     include("./ground_facility_accesses_and_gaps.jl")
+    include("./ground_facility_visibility_circle.jl")
 end
 
 @testset "Ground Tracks" verbose = true begin
