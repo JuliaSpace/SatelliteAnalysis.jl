@@ -183,13 +183,14 @@ function design_sun_sync_ground_repeating_orbit(
                         _pretify_rev_per_days(int, num, den) :
                         (int, num // den),
                     ground_repeating_orbit_adjacent_track_distance(
-                        orb_period,
+                        a,
+                        e,
                         i,
                         orb_cycle
                     ) * dunit,
                     ground_repeating_orbit_adjacent_track_angle(
-                        h,
-                        orb_period,
+                        a,
+                        e,
                         i,
                         orb_cycle
                     ) * angunit
