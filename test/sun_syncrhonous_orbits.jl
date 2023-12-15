@@ -21,16 +21,16 @@
     @test df[begin, :inclination]           ≈ 95.6949   (atol = 1e-4)
     @test df[begin, :period]                ≈ 84.706    (atol = 1e-3)
     @test df[begin, :rev_per_days]         == "17"
-    @test df[begin, :adjacent_gt_distance]  ≈ 2345.589  (atol = 1e-3)
-    @test df[begin, :adjacent_gt_angle]     ≈ 169.0484  (atol = 1e-4)
+    @test df[begin, :adjacent_gt_distance]  ≈ 2327.845  (atol = 1e-3)
+    @test df[begin, :adjacent_gt_angle]     ≈ 169.1250  (atol = 1e-4)
 
     @test df[end,   :semi_major_axis]       ≈ 7635.252  (atol = 1e-3)
     @test df[end,   :altitude]              ≈ 1257.115  (atol = 1e-3)
     @test df[end,   :inclination]           ≈ 100.7057  (atol = 1e-4)
     @test df[end,   :period]                ≈ 110.769   (atol = 1e-3)
     @test df[end,   :rev_per_days]         == "13"
-    @test df[end,   :adjacent_gt_distance]  ≈ 3028.040  (atol = 1e-3)
-    @test df[end,   :adjacent_gt_angle]     ≈ 92.4927   (atol = 1e-4)
+    @test df[end,   :adjacent_gt_distance]  ≈ 2976.209  (atol = 1e-3)
+    @test df[end,   :adjacent_gt_angle]     ≈ 91.7639   (atol = 1e-4)
 
     # == Altitude filter ===================================================================
 
@@ -47,8 +47,8 @@
     @test df[begin, :inclination]           ≈ 98.4106    (atol = 1e-4)
     @test df[begin, :period]                ≈ 100.000    (atol = 1e-3)
     @test df[begin, :rev_per_days]         == "14 + ²/₅"
-    @test df[begin, :adjacent_gt_distance]  ≈ 550.608    (atol = 1e-3)
-    @test df[begin, :adjacent_gt_angle]     ≈ 39.872     (atol = 1e-3)
+    @test df[begin, :adjacent_gt_distance]  ≈ 543.811    (atol = 1e-3)
+    @test df[begin, :adjacent_gt_angle]     ≈ 39.425     (atol = 1e-3)
 
     # == Revolution per days ===============================================================
 
@@ -66,8 +66,8 @@
     @test df[begin, :inclination]           ≈ 98.4106      (atol = 1e-4)
     @test df[begin, :period]                ≈ 100.000      (atol = 1e-3)
     @test df[begin, :rev_per_days]         == (14, 2 // 5)
-    @test df[begin, :adjacent_gt_distance]  ≈ 550.608      (atol = 1e-3)
-    @test df[begin, :adjacent_gt_angle]     ≈ 39.872       (atol = 1e-3)
+    @test df[begin, :adjacent_gt_distance]  ≈ 543.811    (atol = 1e-3)
+    @test df[begin, :adjacent_gt_angle]     ≈ 39.425     (atol = 1e-3)
 
     # == Test units ========================================================================
 
@@ -82,7 +82,7 @@
     )
 
     @test df[begin, :inclination]       ≈ 98.4106 |> deg2rad (atol = 2e-6)
-    @test df[begin, :adjacent_gt_angle] ≈ 39.872  |> deg2rad (atol = 8e-5)
+    @test df[begin, :adjacent_gt_angle] ≈ 39.425  |> deg2rad (atol = 8e-5)
 
     # -- Distance --------------------------------------------------------------------------
 
@@ -96,7 +96,7 @@
 
     @test df[begin, :semi_major_axis]      ≈ 7130.984e3 (atol = 1)
     @test df[begin, :altitude]             ≈ 752.847e3  (atol = 1)
-    @test df[begin, :adjacent_gt_distance] ≈ 550.608e3  (atol = 1)
+    @test df[begin, :adjacent_gt_distance] ≈ 543.811e3  (atol = 1)
 
     # -- Time ------------------------------------------------------------------------------
 

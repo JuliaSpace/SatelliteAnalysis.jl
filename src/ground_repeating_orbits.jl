@@ -69,7 +69,10 @@ function ground_repeating_orbit_adjacent_track_angle(
     cot_i = cos_i / sin_i
 
     i_gt = atan(ω_s * sin_i, ω_s * cos_i - ω_e + ∂Ω_∂t)
-    β    = acot(cot_θ * sin_i + cot_i * cos_i / sin_θ)
+    sin_i_gt, cos_i_gt = sincos(i_gt)
+    cot_i_gt = cos_i_gt / sin_i_gt
+
+    β = acot(cot_θ * sin_i_gt + cot_i_gt * cos_i_gt / sin_θ)
 
     # Compute the angle between the two ground tracks measured from the satellite. `a` is an
     # auxiliary distance and `γ` is the angle we are looking for.
@@ -135,7 +138,10 @@ function ground_repeating_orbit_adjacent_track_distance(
     cot_i = cos_i / sin_i
 
     i_gt = atan(ω_s * sin_i, ω_s * cos_i - ω_e + ∂Ω_∂t)
-    β    = acot(cot_θ * sin_i + cot_i * cos_i / sin_θ)
+    sin_i_gt, cos_i_gt = sincos(i_gt)
+    cot_i_gt = cos_i_gt / sin_i_gt
+
+    β = acot(cot_θ * sin_i_gt + cot_i_gt * cos_i_gt / sin_θ)
 
     # Distance between two adjacent tracks on the Earth's surface.
     d = 2β * R₀
