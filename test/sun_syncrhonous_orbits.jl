@@ -125,7 +125,7 @@
     @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(0, 10)
     @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(3, -3)
     @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(3, 2)
-    @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(1, 5; e = 1)
+    @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(1, 5; eccentricity = 1)
 end
 
 # -- Function: sun_sync_orbit_from_angular_velocity ----------------------------------------

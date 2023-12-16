@@ -45,7 +45,7 @@ This function returns a `DataFrame` with the following columns:
 - `distance_unit::Symbol`: The unit for all the distances in the output `DataFrame`. It can
     be `:m` for meters or `:km` for kilometers.
     (**Default**: `:km`)
-- `e::Number`: Orbit eccentricity.
+- `eccentricity::Number`: Orbit eccentricity.
     (**Default**: 0)
 - `int_rev_per_day::Tuple`: `Tuple` with the integer parts of the number of revolutions per
     day to be analyzed.
@@ -76,7 +76,7 @@ function design_sun_sync_ground_repeating_orbit(
     maximum_repetition::Int;
     angle_unit::Symbol = :deg,
     distance_unit::Symbol = :km,
-    e::Number = 0,
+    eccentricity::Number = 0,
     int_rev_per_day::Tuple = (13, 14, 15, 16, 17),
     pretify_rev_per_days::Bool = true,
     maximum_altitude::Union{Nothing, Number} = nothing,
@@ -88,6 +88,7 @@ function design_sun_sync_ground_repeating_orbit(
     R0::Number = EARTH_EQUATORIAL_RADIUS
 )
     R₀ = EARTH_EQUATORIAL_RADIUS
+    e  = eccentricity
 
     # Check if the inputs are valid.
     minimum_repetition <= 0 && throw(
