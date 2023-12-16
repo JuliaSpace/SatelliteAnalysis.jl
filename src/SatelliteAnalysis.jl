@@ -17,6 +17,7 @@ using Statistics
 
 include("./beta_angle.jl")
 include("./eclipse_time.jl")
+include("./frozen_orbits.jl")
 include("./ground_repeating_orbits.jl")
 include("./ground_track.jl")
 include("./lighting_condition.jl")
