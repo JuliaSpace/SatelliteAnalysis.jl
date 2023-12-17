@@ -70,6 +70,8 @@ This function returns a `DataFrame` with the following columns:
     (**Default** = `EGM_2008_J2`)
 - `R0::Number`: Earth's equatorial radius [m].
     (**Default** = `EARTH_EQUATORIAL_RADIUS`)
+- `we::Number`: Earth's angular speed [rad / s].
+    (**Default**: `EARTH_ANGULAR_SPEED`)
 """
 function design_sun_sync_ground_repeating_orbit(
     minimum_repetition::Int,
@@ -85,7 +87,8 @@ function design_sun_sync_ground_repeating_orbit(
     # Constants.
     J2::Number = EGM_2008_J2,
     m0::Number = GM_EARTH,
-    R0::Number = EARTH_EQUATORIAL_RADIUS
+    R0::Number = EARTH_EQUATORIAL_RADIUS,
+    we::Number = EARTH_ANGULAR_SPEED
 )
     R₀ = EARTH_EQUATORIAL_RADIUS
     e  = eccentricity
@@ -187,13 +190,21 @@ function design_sun_sync_ground_repeating_orbit(
                         a,
                         e,
                         i,
-                        orb_cycle
+                        orb_cycle;
+                        J2 = J2,
+                        m0 = m0,
+                        R0 = R0,
+                        we = we
                     ) * dunit,
                     ground_repeating_orbit_adjacent_track_angle(
                         a,
                         e,
                         i,
-                        orb_cycle
+                        orb_cycle;
+                        J2 = J2,
+                        m0 = m0,
+                        R0 = R0,
+                        we = we
                     ) * angunit
                 ))
             end
