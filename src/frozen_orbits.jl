@@ -35,7 +35,9 @@ in **[1]**.
 - `gravity_model::Union{Nothing, AbstractGravityModel}`: Gravity model used to compute the
     frozen eccentricity. Refer to the object `AbstractGravityModel` of the package
     `SatelliteToolboxGravityModels.jl` for more information. If it is `nothing`, the system
-    will automatically fetch and load the EGM96 gravity model.
+    will automatically fetch and load the EGM96 gravity model. However, loading a gravity
+    model can significantly decrease the performance. Thus, it is advisable to pass a
+    gravity model here.
     (**Default** = `nothing`)
 - `max_degree`: Maximum gravity model degree used to compute the frozen eccentricity. If it
     is equal to or lower than 0, the maximum degree in `grav_model` will be used. Otherwise,
