@@ -4,7 +4,7 @@
 #
 ############################################################################################
 
-export ground_track
+export ground_track, ground_track_inclination
 
 """
     ground_track(orbp::OrbitPropagator; kwargs...) -> Vector{NTuple{2, Float64}}
@@ -211,6 +211,150 @@ function ground_track(
     end
 
     return gt
+end
+
+"""
+    ground_track_inclination(a::Number, e::Number, i::Number; kwargs...) -> T
+    ground_track_inclination(orb::Orbit{Tepoch, T}); kwargs...) where {Tepoch <: Number, T <: Number} -> T
+
+Compute the ground track inclination at the Equator [rad] in an orbit with semi-major axis
+`a` [m], eccentricity `e` [ ], and inclination `i` [rad]. The orbit can also be specified by
+`orb` (see `Orbit`).
+
+!!! note
+    The output type `T` in the first signature is obtained by promoting the inputs to a
+    float type.
+
+!!! warning
+    The algorithm here assumes a small orbit eccentricity.
+
+# Keywords
+
+- `perturbation::Symbol`: Symbol to select the perturbation terms that will be used. It can
+    be `:J0`, `:J2`, or `:J4`.
+    (**Default**: `:J2`)
+- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
+    (**Default**: `GM_EARTH`)
+- `J2::Number`: J₂ perturbation term.
+    (**Default**: `EGM_2008_J2`)
+- `J4::Number`: J₄ perturbation term.
+    (**Default**: `EGM_2008_J4`)
+- `R0::Number`: Earth's equatorial radius [m].
+    (**Default**: `EARTH_EQUATORIAL_RADIUS`)
+- `we::Number`: Earth's angular speed [rad / s].
+    (**Default**: `EARTH_ANGULAR_SPEED`)
+
+# Extended Help
+
+We define the ground track inclination as the angle that the ground track has with respect
+to the Equator. This information is important to compute, for example, the required swath
+for a remote sensing satellite to cover the entire Earth.
+
+The ground track inclination `i_gt` is given by:
+
+```
+            ┌                       ┐
+            │      ω_s ⋅ sin i      │
+i_gt = atan │ ───────────────────── │
+            │ ω_s ⋅ cos i - ω_e + Ω̇ │
+            └                       ┘
+```
+
+where `ω_s = n + ω̇` is the satellite angular velocity, `n` is the perturbed mean motion,
+`i` is the orbit inclination, `ω` is the orbit argument of perigee, `Ω` is the orbit right
+ascension of the ascending node, and `ω_e` is the Earth's angular rate.
+
+Formally, we should use the satellite instantaneous angular speed at the Equator instead of
+the mean angular speed `ω_s`. However, given the perturbations caused by the Earth's
+gravitational potential, the former is not simple to compute. This calculation would
+required to implement an orbit propagator here. Thus, we simplify it by assuming that the
+orbit eccentricity is small. This assumption is reasonable given the missions that would
+benefit from the computation of the ground track inclination. In this case, the orbit
+angular speed is almost constant and equal to `ω_s`.
+
+## Examples
+
+```julia-repl
+julia> using SatelliteAnalysis
+
+julia> ground_track_inclination(7130.982e3, 0.00111, 98.410 |> deg2rad) |> rad2deg
+102.30052101661899
+
+julia> jd₀ = date_to_jd(2021, 1, 1)
+2.4592155e6
+
+julia> orb = KeplerianElements(
+           jd₀,
+           7130.982e3,
+           0.001111,
+           98.410 |> deg2rad,
+           ltdn_to_raan(10.5, jd₀),
+           π / 2,
+           0
+       )
+KeplerianElements{Float64, Float64}:
+           Epoch :    2.45922e6 (2021-01-01T00:00:00)
+ Semi-major axis : 7130.98     km
+    Eccentricity :    0.001111
+     Inclination :   98.41     °
+            RAAN :   78.4021   °
+ Arg. of Perigee :   90.0      °
+    True Anomaly :    0.0      °
+
+julia> ground_track_inclination(orb) |> rad2deg
+102.30052101658998
+```
+"""
+function ground_track_inclination(
+    a::T1,
+    e::T2,
+    i::T3;
+    J2::Number = EGM_2008_J2,
+    J4::Number = EGM_2008_J4,
+    R0::Number = EARTH_EQUATORIAL_RADIUS,
+    m0::Number = GM_EARTH,
+    perturbation::Symbol = :J2,
+    we::Number = EARTH_ANGULAR_SPEED
+) where {T1 <: Number, T2 <: Number, T3 <: Number}
+    T   = float(promote_type(T1, T2, T3))
+    μ   = T(m0)
+    ω_e = T(we)
+
+    # Satellite mean angular velocity [rad / s].
+    ω_s = orbital_angular_velocity(
+        a,
+        e,
+        i;
+        perturbation = perturbation,
+        m0 = m0,
+        R0 = R0,
+        J2 = J2,
+        J4 = J4
+    )
+
+    # The ground track inclination depends on the RAAN time derivative [rad / s].
+    ∂Ω_∂t = raan_time_derivative(
+        a,
+        e,
+        i;
+        perturbation = perturbation,
+        J2 = J2,
+        J4 = J4,
+        m0 = m0,
+        R0 = R0
+    )
+
+    # Finally, we can compute the ground track inclination at Equator.
+    sin_i, cos_i = sincos(T(i))
+    i_t = atan(ω_s * sin_i, ω_s * cos_i - ω_e + ∂Ω_∂t)
+
+    return i_t
+end
+
+function ground_track_inclination(orb::Orbit; kwargs...)
+    # Convert first to Keplerian elements.
+    k = convert(KeplerianElements, orb)
+    return ground_track_inclination(k.a, k.e, k.i; kwargs...)
 end
 
 ############################################################################################

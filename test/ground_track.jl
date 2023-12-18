@@ -4,7 +4,7 @@
 #
 ############################################################################################
 
-# == File: ./src/ground_trakc.jl ===========================================================
+# == File: ./src/ground_track.jl ===========================================================
 
 # -- Function: ground_track ----------------------------------------------------------------
 
@@ -56,3 +56,27 @@
     @test isempty(gt) == true
 end
 
+# -- Function: ground_track_inclination ----------------------------------------------------
+
+@testset "Function ground_track_inclination" begin
+    jd₀ = SatelliteAnalysis.date_to_jd(2021, 1, 1)
+    orb = KeplerianElements(
+        jd₀,
+        7130.982e3,
+        0.001111,
+        98.410 |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90     |> deg2rad,
+        0
+    )
+
+    i_gt = ground_track_inclination(orb) |> rad2deg
+
+    @test i_gt ≈ 102.30052101658998
+
+    # Test if the parameters selection is working properly by comparing the J₀ case with the
+    # J₄ case but setting J₂ and J₄ to 0.
+    i_gt_J₀ = ground_track_inclination(orb; perturbation = :J0)
+    i_gt    = ground_track_inclination(orb; perturbation = :J4, J2 = 0, J4 = 0)
+    @test i_gt == i_gt_J₀
+end
