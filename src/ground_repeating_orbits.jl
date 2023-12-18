@@ -28,10 +28,15 @@ the satellite position. The orbit is described by its semi-major axis `a` [m], e
 
 # Keywords
 
+- `perturbation::Symbol`: Symbol to select the perturbation terms that will be used. It can
+    be `:J0`, `:J2`, or `:J4`.
+    (**Default**: `:J2`)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
     (**Default**: `GM_EARTH`)
 - `J2::Number`: J₂ perturbation term.
     (**Default**: `EGM_2008_J2`)
+- `J4::Number`: J₄ perturbation term.
+    (**Default**: `EGM_2008_J4`)
 - `R0::Number`: Earth's equatorial radius [m].
     (**Default**: `EARTH_EQUATORIAL_RADIUS`)
 - `we::Number`: Earth's angular speed [rad / s].
@@ -52,23 +57,40 @@ function ground_repeating_orbit_adjacent_track_angle(
     e::T2,
     i::T3,
     orbit_cycle::Integer;
+    perturbation::Symbol = :J2,
     J2::Number = EGM_2008_J2,
+    J4::Number = EGM_2008_J4,
     R0::Number = EARTH_EQUATORIAL_RADIUS,
     m0::Number = GM_EARTH,
     we::Number = EARTH_ANGULAR_SPEED
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
     T   = float(promote_type(T1, T2, T3))
     R₀  = T(R0)
-    ω_e = T(we)
-
-    # Satellite mean angular velocity [rad / s].
-    ω_s = orbital_angular_velocity(a, e, i; perturbation = :J2, m0 = m0, R0 = R0, J2 = J2)
+    ω_e = T(EARTH_ANGULAR_SPEED)
 
     # Compute the orbital period [s].
-    ΔT = T(2π) / ω_s
+    ΔT = orbital_period(
+        a,
+        e,
+        i;
+        perturbation = perturbation,
+        J2 = J2,
+        J4 = J4,
+        R0 = R0,
+        m0 = m0
+    )
 
     # Compute the RAAN time derivative [rad / s].
-    ∂Ω_∂t = raan_time_derivative(a, e, i; perturbation = :J2, m0 = m0, R0 = R0, J2 = J2)
+    ∂Ω_∂t = raan_time_derivative(
+        a,
+        e,
+        i;
+        perturbation = perturbation,
+        J2 = J2,
+        J4 = J4,
+        m0 = m0,
+        R0 = R0
+    )
 
     # Angle between one ground track and the middle of the region between the two adjacent
     # tracks in the Equator [rad]. This angle is measured from the Earth's center.
@@ -78,12 +100,20 @@ function ground_repeating_orbit_adjacent_track_angle(
 
     # We need to compute the angle between one ground track and the middle of the region
     # between the two adjacent tracks measured from the Earth's center (β). Thus, first we
-    # need to find the ground trace inclination, which is a composition between the Earth's
-    # rotation rate and the satellite speed.
-    sin_i, cos_i = sincos(i)
-    cot_i = cos_i / sin_i
+    # need to find the ground trace inclination [rad], which is a composition between the
+    # Earth's rotation rate and the satellite speed.
+    i_gt = ground_track_inclination(
+        a,
+        e,
+        i;
+        J2 = J2,
+        J4 = J4,
+        R0 = R0,
+        m0 = m0,
+        perturbation = perturbation,
+        we = we
+    )
 
-    i_gt = atan(ω_s * sin_i, ω_s * cos_i - ω_e + ∂Ω_∂t)
     sin_i_gt, cos_i_gt = sincos(i_gt)
     cot_i_gt = cos_i_gt / sin_i_gt
 
@@ -112,10 +142,15 @@ cycle `orbit_cycle` [day].
 
 # Keywords
 
+- `perturbation::Symbol`: Symbol to select the perturbation terms that will be used. It can
+    be `:J0`, `:J2`, or `:J4`.
+    (**Default**: `:J2`)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
     (**Default**: `GM_EARTH`)
 - `J2::Number`: J₂ perturbation term.
     (**Default**: `EGM_2008_J2`)
+- `J4::Number`: J₄ perturbation term.
+    (**Default**: `EGM_2008_J4`)
 - `R0::Number`: Earth's equatorial radius [m].
     (**Default**: `EARTH_EQUATORIAL_RADIUS`)
 - `we::Number`: Earth's angular speed [rad / s].
@@ -136,23 +171,40 @@ function ground_repeating_orbit_adjacent_track_distance(
     e::T2,
     i::T3,
     orbit_cycle::Integer;
+    perturbation::Symbol = :J2,
     J2::Number = EGM_2008_J2,
+    J4::Number = EGM_2008_J4,
     R0::Number = EARTH_EQUATORIAL_RADIUS,
     m0::Number = GM_EARTH,
     we::Number = EARTH_ANGULAR_SPEED
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
     T   = float(promote_type(T1, T2, T3))
     R₀  = T(R0)
-    ω_e = T(we)
-
-    # Satellite mean angular velocity [rad / s].
-    ω_s = orbital_angular_velocity(a, e, i; perturbation = :J2, m0 = m0, R0 = R0, J2 = J2)
+    ω_e = T(EARTH_ANGULAR_SPEED)
 
     # Compute the orbital period [s].
-    ΔT = T(2π) / ω_s
+    ΔT = orbital_period(
+        a,
+        e,
+        i;
+        perturbation = perturbation,
+        J2 = J2,
+        J4 = J4,
+        R0 = R0,
+        m0 = m0
+    )
 
     # Compute the RAAN time derivative [rad / s].
-    ∂Ω_∂t = raan_time_derivative(a, e, i; perturbation = :J2, m0 = m0, R0 = R0, J2 = J2)
+    ∂Ω_∂t = raan_time_derivative(
+        a,
+        e,
+        i;
+        perturbation = perturbation,
+        J2 = J2,
+        J4 = J4,
+        m0 = m0,
+        R0 = R0
+    )
 
     # Angle between one ground track and the middle of the region between the two adjacent
     # tracks in the Equator [rad]. This angle is measured from the Earth's center.
@@ -162,12 +214,20 @@ function ground_repeating_orbit_adjacent_track_distance(
 
     # We need to compute the angle between one ground track and the middle of the region
     # between the two adjacent tracks measured from the Earth's center (β). Thus, first we
-    # need to find the ground trace inclination, which is a composition between the Earth's
-    # rotation rate and the satellite speed.
-    sin_i, cos_i = sincos(i)
-    cot_i = cos_i / sin_i
+    # need to find the ground trace inclination [rad], which is a composition between the
+    # Earth's rotation rate and the satellite speed.
+    i_gt = ground_track_inclination(
+        a,
+        e,
+        i;
+        J2 = J2,
+        J4 = J4,
+        R0 = R0,
+        m0 = m0,
+        perturbation = perturbation,
+        we = we
+    )
 
-    i_gt = atan(ω_s * sin_i, ω_s * cos_i - ω_e + ∂Ω_∂t)
     sin_i_gt, cos_i_gt = sincos(i_gt)
     cot_i_gt = cos_i_gt / sin_i_gt
 
