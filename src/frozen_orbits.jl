@@ -211,15 +211,15 @@ function _F_and_∂F_l0p(l::Integer, p::Integer, i::Number)
     #
     # Thus, if we divide `k_t` / `k_{t - 1}` we get:
     #
-    #    k_t         4 ⋅ (l - t + 1) ⋅ (p - t + 1) ⋅ (l - p - t + 1)
-    #  ───────── = - ─────────────────────────────────────────────── .
-    #  k_{t - 1}       t ⋅ (2l - 2t + 2) ⋅ (2l - 2t + 1) ⋅ sin(i)^2
+    #    k_t         4 ⋅ (p - t + 1) ⋅ (l - p - t + 1)
+    #  ───────── = - ───────────────────────────────── .
+    #  k_{t - 1}       t ⋅ (2l - 2t + 1) ⋅ sin(i)^2
     #
     #  Finally, we can compute `k_t` interactively using:
     #
-    #          4 ⋅ (l - t + 1) ⋅ (p - t + 1) ⋅ (l - p - t + 1)
-    #  k_t = - ─────────────────────────────────────────────── ⋅ k_{t - 1} ,
-    #            t ⋅ (2l - 2t + 2) ⋅ (2l - 2t + 1) ⋅ sin(i)^2
+    #          2 ⋅ (p - t + 1) ⋅ (l - p - t + 1)
+    #  k_t = - ───────────────────────────────── ⋅ k_{t - 1} ,
+    #             t ⋅ (2l - 2t + 1) ⋅ sin(i)^2
     #
     # where the initialization is:
     #
@@ -227,31 +227,28 @@ function _F_and_∂F_l0p(l::Integer, p::Integer, i::Number)
     #  k_0 =  ─────────────────────────── ⋅ sin(i)^(l) ⋅ (-1)^{p - k} .
     #         l! ⋅ p! ⋅ (l - p)! ⋅ 2^(2l)
     #
+    #        ┌       ┐   ┌       ┐
+    #        │  2l   │   │   l   │   sin(i)^(l)
+    #  k_0 = │       │ ⋅ │       │ ⋅ ────────── ⋅ (-1)^{p - k} .
+    #        │   l   │   │   p   │     2^(2l)
+    #        └       ┘   └       ┘
+    #
     # !!! note
-    #   Thanks to @stevengj for the suggestion:
+    #   Thanks to @stevengj and @danielwe for the suggestions:
     #
     #       https://discourse.julialang.org/t/and-julia-keeps-amazing-me-high-precision-computation/107740/6
+    #       https://discourse.julialang.org/t/and-julia-keeps-amazing-me-high-precision-computation/107740/10
 
     fact = abs(pb - kb) % 2 == 0 ? big(1) : big(-1)
-    k_t = factorial(2lb) / (
-            factorial(lb) *
-            factorial(pb) *
-            factorial(lb - pb) *
-            big(2)^(2lb)
-        ) * sin_i^l * fact
+    k_t  = binomial(2lb, lb) * binomial(lb, pb) * sin_i^l * fact / 2^(2lb)
 
-    F  =  k_t
+    F  = k_t
     ∂F = k_t * lb / sin_i
 
     for tb in big(1):min(kb, pb)
-        k_t *= (
-            -4(lb - tb + 1) * (pb - tb + 1) * (lb - pb - tb + 1)
-        ) / (
-            tb * (2lb - 2tb + 2) * (2lb - 2tb + 1) * sin²_i
-        )
-
-        F  += k_t
-        ∂F += k_t * (lb - 2tb) / sin_i
+        k_t *= -2 * (pb - tb + 1) * (lb - pb - tb + 1) / (tb * (2lb - 2tb + 1) * sin²_i)
+        F   += k_t
+        ∂F  += k_t * (lb - 2tb) / sin_i
     end
 
     return F, ∂F * cos_i
