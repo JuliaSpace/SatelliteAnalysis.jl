@@ -200,21 +200,58 @@ function _F_and_∂F_l0p(l::Integer, p::Integer, i::Number)
     kb = div(lb, 2)
 
     sin_i, cos_i = sincos(ib)
+    sin²_i = sin_i * sin_i
 
-    for tb in big(0):min(kb, pb)
-        k_t = factorial(2lb - 2tb) / (
-            factorial(tb) *
-            factorial(lb - tb) *
-            factorial(pb - tb) *
-            factorial(lb - pb - tb) *
-            big(2)^(2lb - 2tb)
+    # `k_t` is the summation term of `F_l0p(i)` for a specific `t`. We will compute those
+    # terms interactively. The equation for `k_t` is:
+    #
+    #                              (2l - 2t)!
+    #  k_t =  ───────────────────────────────────────────────────── ⋅ sin(i)^(l - 2t) ⋅ (-1)^{p - t - k} .
+    #         t! ⋅ (l - t)! ⋅ (p - t)! ⋅ (l - p - t)! ⋅ 2^(2l - 2t)
+    #
+    # Thus, if we divide `k_t` / `k_{t - 1}` we get:
+    #
+    #    k_t         4 ⋅ (l - t + 1) ⋅ (p - t + 1) ⋅ (l - p - t + 1)
+    #  ───────── = - ─────────────────────────────────────────────── .
+    #  k_{t - 1}       t ⋅ (2l - 2t + 2) ⋅ (2l - 2t + 1) ⋅ sin(i)^2
+    #
+    #  Finally, we can compute `k_t` interactively using:
+    #
+    #          4 ⋅ (l - t + 1) ⋅ (p - t + 1) ⋅ (l - p - t + 1)
+    #  k_t = - ─────────────────────────────────────────────── ⋅ k_{t - 1} ,
+    #            t ⋅ (2l - 2t + 2) ⋅ (2l - 2t + 1) ⋅ sin(i)^2
+    #
+    # where the initialization is:
+    #
+    #                    2l!
+    #  k_0 =  ─────────────────────────── ⋅ sin(i)^(l) ⋅ (-1)^{p - k} .
+    #         l! ⋅ p! ⋅ (l - p)! ⋅ 2^(2l)
+    #
+    # !!! note
+    #   Thanks to @stevengj for the suggestion:
+    #
+    #       https://discourse.julialang.org/t/and-julia-keeps-amazing-me-high-precision-computation/107740/6
+
+    fact = abs(pb - kb) % 2 == 0 ? big(1) : big(-1)
+    k_t = factorial(2lb) / (
+            factorial(lb) *
+            factorial(pb) *
+            factorial(lb - pb) *
+            big(2)^(2lb)
+        ) * sin_i^l * fact
+
+    F  =  k_t
+    ∂F = k_t * lb / sin_i
+
+    for tb in big(1):min(kb, pb)
+        k_t *= (
+            -4(lb - tb + 1) * (pb - tb + 1) * (lb - pb - tb + 1)
+        ) / (
+            tb * (2lb - 2tb + 2) * (2lb - 2tb + 1) * sin²_i
         )
 
-        # This fact simulates the term (-1)^(p - t - k).
-        fact = abs(pb - tb - kb) % 2 == 0 ? big(1) : big(-1)
-
-        F  += k_t * sin_i^(lb - 2tb) * fact
-        ∂F += k_t * (lb - 2tb) * sin_i^(lb - 2tb - 1) * fact
+        F  += k_t
+        ∂F += k_t * (lb - 2tb) / sin_i
     end
 
     return F, ∂F * cos_i
