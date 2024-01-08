@@ -10,7 +10,7 @@ export ground_facility_accesses, ground_facility_gaps
     ground_facility_accesses(orbp, [(WGS84)]; kwargs...) -> DataFrame
 
 Compute the accesses of a satellite with orbit propagator `orbp` (see `Propagators.init`) to
-the ground facilities defined in the vector `vgs_r_e`. The analysis interval begins in the
+the ground facilities defined in the vector `[(WGS84)]`. The analysis interval begins in the
 propagator epoch plus `initial_time` and lasts for `duration` [s], where both are keywords.
 
 The ground facilities are specified using a vector of tuples with three numbers:
