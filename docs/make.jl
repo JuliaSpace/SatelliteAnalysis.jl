@@ -13,6 +13,7 @@ makedocs(
         "Home" => "index.md",
         "Beta Angle" => "man/beta_angle.md",
         "Eclipse Time" => "man/eclipse_time.md",
+        "Frozen Orbits" => "man/frozen_orbits.md",
         "Library" => "lib/library.md",
     ],
 )
