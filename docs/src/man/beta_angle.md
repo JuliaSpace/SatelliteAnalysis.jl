@@ -1,6 +1,13 @@
 Beta Angle
 ==========
 
+```@meta
+CurrentModule = SatelliteAnalysis
+DocTestSetup = quote
+    using SatelliteAnalysis
+end
+```
+
 The beta angle is the angle between the orbit plane and the Sun, as shown in the following
 figure. The positive direction is defined as that of the orbit angular momentum.
 
@@ -43,7 +50,7 @@ The following keywords are available:
 We will compute the beta angle of the Amazonia-1 mission for one year. The first thing we
 need to do is define the orbit:
 
-```julia-repl
+```jldoctest beta_angle
 julia> jd₀ = date_to_jd(2021, 1, 1)
 2.4592155e6
 
@@ -69,18 +76,37 @@ KeplerianElements{Float64, Float64}:
 Now, we can use the function `beta_angle` to obtain the beta angle [rad] for each day of the
 year:
 
-```julia-repl
+```jldoctest beta_angle
 julia> β = beta_angle.(orb, 1:365)
 365-element Vector{Float64}:
  0.432769059439428
  0.43467611908719883
  0.43656171032862834
  0.43842380844466566
+ 0.4402604460815964
+ 0.4420696960668151
+ 0.4438496428519736
+ 0.44559834924548514
+ 0.4473138284119864
+ 0.4489940331106146
  ⋮
+ 0.41833073501524676
+ 0.42033658211422464
+ 0.4223402721893086
+ 0.42433985882712166
+ 0.4263334149194056
  0.4283190235472065
  0.43029475458852695
  0.43225862572658325
  0.4342085608107653
+```
+
+```jldoctest beta_angle
+julia> first(β)
+0.432769059439428
+
+julia> last(β)
+0.4342085608107653
 ```
 
 If we use **CairoMakie.jl** to plot, we obtain:

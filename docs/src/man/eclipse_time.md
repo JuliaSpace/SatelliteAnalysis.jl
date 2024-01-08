@@ -1,6 +1,13 @@
 Eclipse Time
 ============
 
+```@meta
+CurrentModule = SatelliteAnalysis
+DocTestSetup = quote
+    using SatelliteAnalysis
+end
+```
+
 The eclipse time is the period the satellite does not receive sunlight due to the Earth
 shadow. This information is paramount for mission design since it directly interferes in the
 power and thermal subsystems.
@@ -43,7 +50,7 @@ The unit of each column is stored in the `DataFrame` using metadata.
 We will compute the eclipse time of the Amazonia-1 mission for one year. The first thing we
 need to do is define the orbit:
 
-```julia-repl
+```jldoctest eclipse_time
 julia> jd₀ = date_to_jd(2021, 1, 1)
 2.4592155e6
 
@@ -68,7 +75,7 @@ KeplerianElements{Float64, Float64}:
 
 The next step is to define the desired propagator:
 
-```julia-repl
+```jldoctest eclipse_time
 julia> orbp = Propagators.init(Val(:J2), orb)
 OrbitPropagatorJ2{Float64, Float64}:
    Propagator name : J2 Orbit Propagator
@@ -79,7 +86,7 @@ OrbitPropagatorJ2{Float64, Float64}:
 Now, we can use the function `eclipse_time_summary` to obtain the eclipse time information
 for each day of the year:
 
-```julia-repl
+```jldoctest eclipse_time
 julia> df = eclipse_time_summary(orbp; unit = :m)
 365×4 DataFrame
  Row │ date        sunlight  penumbra  umbra
@@ -89,18 +96,25 @@ julia> df = eclipse_time_summary(orbp; unit = :m)
    2 │ 2021-01-02   66.2308  0.340627  33.4285
    3 │ 2021-01-03   66.2461  0.340958  33.4129
    4 │ 2021-01-04   66.2623  0.341263  33.3964
+   5 │ 2021-01-05   66.2824  0.341704  33.3759
+   6 │ 2021-01-06   66.2932  0.341899  33.3649
+   7 │ 2021-01-07   66.3129  0.342331  33.3447
+   8 │ 2021-01-08   66.3274  0.342628  33.33
   ⋮  │     ⋮          ⋮         ⋮         ⋮
+ 359 │ 2021-12-25   66.1274  0.338075  33.5345
+ 360 │ 2021-12-26   66.1477  0.338525  33.5137
+ 361 │ 2021-12-27   66.1595  0.338762  33.5017
  362 │ 2021-12-28   66.18    0.339203  33.4808
  363 │ 2021-12-29   66.1956  0.33955   33.4648
  364 │ 2021-12-30   66.2122  0.339889  33.4479
  365 │ 2021-12-31   66.2327  0.340339  33.4269
-                               357 rows omitted
+                               350 rows omitted
 ```
 
 Finally, we can use the `DataFrame` to analyze the result. For example, the maximum eclipse
 time in an orbit is:
 
-```julia-repl
+```jldoctest eclipse_time
 julia> maximum(df.penumbra .+ df.umbra)
 34.66395872764383
 ```
