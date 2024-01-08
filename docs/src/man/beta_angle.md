@@ -119,5 +119,5 @@ If we use **CairoMakie.jl** to plot, we obtain:
 
 ## References
 
-- **[1]**: Mortari, D., Wilkins, M. P., and Bruccoleri, C.  On Sun-Synchronous Orbits and
-  Associated Constellations
+- **[1]**: **Mortari, D., Wilkins, M. P., and Bruccoleri, C**. _On Sun-Synchronous Orbits and
+  Associated Constellations_.

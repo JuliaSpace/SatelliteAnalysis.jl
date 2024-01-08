@@ -5,7 +5,7 @@
 ## References ##############################################################################
 #
 # [1] Mortari, D., Wilkins, M. P., and Bruccoleri, C.  On Sun-Synchronous Orbits and
-#     Associated Constellations
+#     Associated Constellations.
 #
 ############################################################################################
 

@@ -123,5 +123,5 @@ _i.e._, 34.66 minutes.
 
 ## References
 
-- **[1]** Longo, C. R. O., Rickman, S. L (1995). Method for the Calculation of Spacecraft
-  Umbra and Penumbra Shadow Terminator Points. NASA Technical Paper 3547.
+- **[1]** **Longo, C. R. O., Rickman, S. L (1995)**. _Method for the Calculation of
+  Spacecraft Umbra and Penumbra Shadow Terminator Points_. **NASA Technical Paper** 3547.
