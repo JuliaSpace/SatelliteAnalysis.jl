@@ -169,7 +169,7 @@ function ground_facility_accesses(
         # Handle the initial case.
         if state == :initial
             if visible
-                access_beg = jd_to_date(DateTime, jd₀) + Dates.Second(round(Int, inital_time))
+                access_beg = jd_to_date(DateTime, jd₀) + Dates.Second(round(Int, initial_time))
                 state = :visible
             else
                 state = :not_visible
