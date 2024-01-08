@@ -62,9 +62,9 @@ variation will change the resolution, leading to some problems when comparing th
 We can avoid this problem if we compute an eccentricity and the argument of perigee that
 yields theoretically:
 
-    ∂e      ∂ω
+    de      dω
     ── = 0, ── = 0
-    ∂t      ∂t
+    dt      dt
 
 This orbit is called **frozen**. Refer to **[1]** for more information.
 
