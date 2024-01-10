@@ -1,5 +1,5 @@
-Ground Facilities Accesses
-==========================
+Ground Facility Accesses
+========================
 
 ```@meta
 CurrentModule = SatelliteAnalysis
@@ -106,7 +106,7 @@ ground_facility_accesses(
 
 If we want to change the reference frames used in the analysis, we must provide a function
 `f_eci_to_ecef(r_i, jd)` that converts the vector `r_i` to the desired ECEF frame at the
-instant `jd` [Julian Day]. For repl, let's use the more precise ITRF instead of the PEF
+instant `jd` [Julian Day]. For example, let's use the more precise ITRF instead of the PEF
 (default):
 
 ```@repl ground_facility_access
@@ -128,7 +128,7 @@ ground_facility_accesses(
 )
 ```
 
-We can also perform analyses using multiple ground facilities. For repl, let's find the
+We can also perform analyses using multiple ground facilities. For example, let's find the
 accumulated access if we consider the INPE's stations at Cuiabá, MT, Brazil, and Alcântara,
 MA, Brazil:
 
@@ -147,7 +147,7 @@ ground_facility_accesses(
 
 By default, the algorithm computes the accumulated access, _i.e._, it considers the access
 active if either station has visibility to the satellite. We can change this logic by
-overloading the function in the keyword parameter `reduction`. For repl, let's compute
+overloading the function in the keyword parameter `reduction`. For example, let's compute
 only the accesses when the satellite has visibility to both ground stations at the same
 time:
 
