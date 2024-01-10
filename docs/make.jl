@@ -14,6 +14,9 @@ makedocs(
         "Beta Angle" => "man/beta_angle.md",
         "Eclipse Time" => "man/eclipse_time.md",
         "Frozen Orbits" => "man/frozen_orbits.md",
+        "Ground Facilities" => [
+            "Ground Facility Accesses" => "man/ground_facilities/ground_facility_accesses.md",
+        ],
         "Library" => "lib/library.md",
     ],
 )
