@@ -3,9 +3,10 @@ Frozen Orbits
 
 ```@meta
 CurrentModule = SatelliteAnalysis
-DocTestSetup = quote
-    using SatelliteAnalysis
-end
+```
+
+```@setup frozen_orbit
+using SatelliteAnalysis
 ```
 
 Due to the Earth's gravitational perturbation, the orbit of a salite will experience
@@ -61,62 +62,39 @@ We will compute the eccentricity and argument of perigee that yields a frozen or
 data from Amazonia-1 mission. First, we will use only 5 degrees, and the default gravity
 model (EGM96):
 
-```jldoctest
-julia> frozen_orbit(7130.982e3, 98.410 |> deg2rad; max_degree = 5)
-[ Info: Downloading the ICGEM file 'EGM96.gfc' from 'http://icgem.gfz-potsdam.de/getmodel/gfc/971b0a3b49a497910aad23cd85e066d4cd9af0aeafe7ce6301a696bed8570be3/EGM96.gfc'...
-(0.0011108978494835141, 1.5707963267948966)
+```@repl frozen_orbit
+frozen_orbit(7130.982e3, 98.410 |> deg2rad; max_degree = 5)
 
-julia> e, ω = frozen_orbit(7130.982e3, 98.410 |> deg2rad; max_degree = 5)
-(0.0011108978494835141, 1.5707963267948966)
+e, ω = frozen_orbit(7130.982e3, 98.410 |> deg2rad; max_degree = 5)
 
-julia> e
-0.0011108978494835141
+e
 
-julia> ω |> rad2deg
-90.0
+ω |> rad2deg
 ```
 
 If we want to use all the 360 terms in EGM96, we need to increase the precision of
 `BigFloat` to keep the accuracy:
 
-```jldoctest
-julia> setprecision(1024)
-1024
+```@repl frozen_orbit
+setprecision(1024)
 
-julia> e, ω = frozen_orbit(7130.982e3, 98.410 |> deg2rad; max_degree = 5)
-(0.0011108978494835141, 1.5707963267948966)
+e, ω = frozen_orbit(7130.982e3, 98.410 |> deg2rad; max_degree = 5)
 
-julia> e
-0.0011108978494835141
+e
 
-julia> ω |> rad2deg
-90.0
+ω |> rad2deg
 ```
 
 We can use a different gravity model as follows:
 
-```jldoctest
-julia> jgm3 = GravityModels.load(IcgemFile, fetch_icgem_file(:JGM3))
-[ Info: Downloading the ICGEM file 'JGM3.gfc' from 'http://icgem.gfz-potsdam.de/getmodel/gfc/a3375e01a717ac162962138a5e94f10466b71aa4a130d7f7d5b18ab3d5f90c3d/JGM3.gfc'...
-IcgemFile{Float64}:
-      Product type : gravity_field
-       Model name  : JGM3
-  Gravity constant : 3.986004415e14
-            Radius : 6.3781363e6
-    Maximum degree : 70
-            Errors : formal
-       Tide system : unknown
-              Norm : fully_normalized
-         Data type : Float64
+```@repl frozen_orbit
+jgm3 = GravityModels.load(IcgemFile, fetch_icgem_file(:JGM3))
 
-julia> e, ω = frozen_orbit(7130.982e3, 98.410 |> deg2rad; max_degree = 70, gravity_model = jgm3)
-(0.001163504566870769, 1.5707963267948966)
+e, ω = frozen_orbit(7130.982e3, 98.410 |> deg2rad; max_degree = 70, gravity_model = jgm3)
 
-julia> e
-0.001163504566870769
+e
 
-julia> ω |> rad2deg
-90.0
+ω |> rad2deg
 ```
 
 ## References
