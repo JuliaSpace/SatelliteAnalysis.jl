@@ -17,6 +17,7 @@ makedocs(
         "Ground Facilities" => [
             "Ground Facility Accesses" => "man/ground_facilities/ground_facility_accesses.md",
             "Ground Facility Gaps" => "man/ground_facilities/ground_facility_gaps.md",
+            "Ground Facility Visibility Circle" => "man/ground_facilities/ground_facility_visibility_circle.md"
         ],
         "Library" => "lib/library.md",
     ],
