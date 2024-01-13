@@ -20,6 +20,9 @@ makedocs(
             "Ground Facility Visibility Circle" => "man/ground_facilities/ground_facility_visibility_circle.md"
         ],
         "Ground Track" => "man/ground_track.md",
+        "Orbits" => [
+            "Sun Synchronous Orbits" => "man/orbits/sun_synchronous_orbits.md",
+        ],
         "Library" => "lib/library.md",
     ],
 )
