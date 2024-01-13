@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Ground Track · Satellite Analysis</title><meta name="title" content="Ground Track · Satellite Analysis"/><meta property="og:title" content="Ground Track · Satellite Analysis"/><meta property="twitter:title" content="Ground Track · Satellite Analysis"/><meta name="description" content="Documentation for Satellite Analysis."/><meta property="og:description" content="Documentation for Satellite Analysis."/><meta property="twitter:description" content="Documentation for Satellite Analysis."/><meta property="og:url" content="https://juliaspace.github.io/SatelliteAnalysis.jl/stable/man/ground_track/"/><meta property="twitter:url" content="https://juliaspace.github.io/SatelliteAnalysis.jl/stable/man/ground_track/"/><link rel="canonical" href="https://juliaspace.github.io/SatelliteAnalysis.jl/stable/man/ground_track/"/><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../search_index.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../"><img src="../../assets/logo.png" alt="Satellite Analysis logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../">Satellite Analysis</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../beta_angle/">Beta Angle</a></li><li><a class="tocitem" href="../eclipse_time/">Eclipse Time</a></li><li><a class="tocitem" href="../frozen_orbits/">Frozen Orbits</a></li><li><span class="tocitem">Ground Facilities</span><ul><li><a class="tocitem" href="../ground_facilities/ground_facility_accesses/">Ground Facility Accesses</a></li><li><a class="tocitem" href="../ground_facilities/ground_facility_gaps/">Ground Facility Gaps</a></li><li><a class="tocitem" href="../ground_facilities/ground_facility_visibility_circle/">Ground Facility Visibility Circle</a></li></ul></li><li class="is-active"><a class="tocitem" href>Ground Track</a><ul class="internal"><li><a class="tocitem" href="#Ground-Track-Inclination"><span>Ground Track Inclination</span></a></li><li><a class="tocitem" href="#Examples"><span>Examples</span></a></li></ul></li><li><span class="tocitem">Orbits</span><ul><li><a class="tocitem" href="../orbits/sun_synchronous_orbits/">Sun Synchronous Orbits</a></li></ul></li><li><a class="tocitem" href="../../lib/library/">Library</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Ground Track</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Ground Track</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaSpace/SatelliteAnalysis.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaSpace/SatelliteAnalysis.jl/blob/main/docs/src/man/ground_track.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Ground-Track"><a class="docs-heading-anchor" href="#Ground-Track">Ground Track</a><a id="Ground-Track-1"></a><a class="docs-heading-anchor-permalink" href="#Ground-Track" title="Permalink"></a></h1><p>We can obtain the ground track of a satellite using the function:</p><pre><code class="language-julia hljs">ground_track(orbp::OrbitPropagator; kwargs...) -&gt; Vector{NTuple{2, Float64}}</code></pre><p>It computes the satellite ground track using the orbit propagator <code>orbp</code>. It returns a vector of <code>NTuple{2, Float64}</code> where the first element is the latitude [rad] and the second is the longitude [rad] of each point in the ground track.</p><p>The following keywords are available:</p><ul><li><p><code>add_nans::Bool</code>: If <code>true</code>, we add <code>NaN</code> if there is a discontinuity in the ground track   to improve plotting.   (<strong>Default</strong>: true)</p></li><li><p><code>duration::Number</code>: Duration of the analysis.   (<strong>Default</strong>: 86400)</p></li><li><p><code>initial_time::Number</code>: Initial time regarding the orbit propagator <code>orbp</code> epoch [s].   (<strong>Default</strong>: 0)</p></li><li><p><code>f_eci_to_ecef::Function</code>: Function to convert the orbit propagator position represented   in the Earth-centered inertial (ECI) reference frame to the Earth-centered, Earth-fixed   (ECEF) reference frame. The signature must be</p><p><code>julia   f_eci_to_ecef(r_i::AbstractVector, jd::Number) -&gt; AbstractVector</code></p><p>and it must return the position vector <code>r_i</code> represented in the ECEF at the instant <code>jd</code>   [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.   (<strong>Default</strong>: <code>_ground_track_default_eci_to_ecef</code>)</p></li><li><p><code>step::Union{Nothing, Number}</code>: Step for the computation. If <code>nothing</code>, we will roughly   compute the step to approximate 1° in the mean anomaly.   (<strong>Default</strong>: <code>nothing</code>)</p></li><li><p><code>track_types::Symbol</code>: A symbol describing what kind of track types we must add to the   output vector. It can be <code>:ascending</code> for only ascending passages, <code>:descending</code> for   only descending passages, or <code>:all</code> for both.   (<strong>Default</strong>: <code>:all</code>)</p></li></ul><h2 id="Ground-Track-Inclination"><a class="docs-heading-anchor" href="#Ground-Track-Inclination">Ground Track Inclination</a><a id="Ground-Track-Inclination-1"></a><a class="docs-heading-anchor-permalink" href="#Ground-Track-Inclination" title="Permalink"></a></h2><p>Many analyses require the ground track inclination. For example, if we are designing a remote sensing mission with an optical payload, we must know how much two images overlap. This information can only be computed using spherical trigonometry and the ground track inclination instead of the orbital one.</p><p>The ground track inclination <span>$i_{gt}$</span>, shown in the following figure, is a composition of the orbit inclination, the Earth&#39;s angular speed, and the RAAN time derivative. We can compute it using:</p><p class="math-container">\[i_{gt} = \tan^{-1}\left(\frac{
+    \omega_s \sin i 
+}{
+    \omega_s \cos i - \omega_e + \dot{\Omega}
+}\right)\ ,\]</p><p>where <span>$i$</span> is the orbital inclination, <span>$\omega_s$</span> is the satellite angular speed at Equator, <span>$\omega_e$</span> is the Earth angular speed, and <span>$\Omega$</span> is the RAAN.</p><div align="center">
+  <img src="../../assets/ground_track_inclination.png" alt="Ground Track Inclination" width="100%"/>
+</div><p>Formally, we should use the satellite instantaneous angular speed at the Equator in <span>$\omega_s$</span>. However, given the perturbations caused by the Earth&#39;s gravitational potential, this speed is not simple to compute. The calculation would required to implement an orbit propagator. Thus, we simplify it by assuming that the orbit eccentricity is small. This assumption is reasonable given the missions that would benefit from the computation of the ground track inclination. In this case, we approximate <span>$\omega_s$</span> as the mean satellite angular speed.</p><p>The function:</p><pre><code class="language-julia hljs">ground_track_inclination(a::Number, e::Number, i::Number; kwargs...) -&gt; T
+ground_track_inclination(orb::Orbit{Tepoch, T}); kwargs...) where {Tepoch &lt;: Number, T &lt;: Number} -&gt; T</code></pre><p>computes the ground track inclination at the Equator [rad] in an orbit with semi-major axis <code>a</code> [m], eccentricity <code>e</code> [ ], and inclination <code>i</code> [rad]. The orbit can also be specified by <code>orb</code> (see <code>Orbit</code>).</p><div class="admonition is-info"><header class="admonition-header">Note</header><div class="admonition-body"><p>The output type <code>T</code> in the first signature is obtained by promoting the inputs to a float type.</p></div></div><p>The following keywords are available:</p><ul><li><code>perturbation::Symbol</code>: Symbol to select the perturbation terms that will be used. It can   be <code>:J0</code>, <code>:J2</code>, or <code>:J4</code>.   (<strong>Default</strong>: <code>:J2</code>)</li><li><code>m0::Number</code>: Standard gravitational parameter for Earth [m³ / s²].   (<strong>Default</strong>: <code>GM_EARTH</code>)</li><li><code>J2::Number</code>: J₂ perturbation term.   (<strong>Default</strong>: <code>EGM_2008_J2</code>)</li><li><code>J4::Number</code>: J₄ perturbation term.   (<strong>Default</strong>: <code>EGM_2008_J4</code>)</li><li><code>R0::Number</code>: Earth&#39;s equatorial radius [m].   (<strong>Default</strong>: <code>EARTH_EQUATORIAL_RADIUS</code>)</li><li><code>we::Number</code>: Earth&#39;s angular speed [rad / s].   (<strong>Default</strong>: <code>EARTH_ANGULAR_SPEED</code>)</li></ul><h2 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h2><p>We will compute the descending ground tracks of the Amazonia-1 mission for five days. The first thing we need to do is define the orbit:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; jd₀ = date_to_jd(2021, 1, 1)</code><code class="nohighlight hljs ansi" style="display:block;">2.4592155e6</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; orb = KeplerianElements(
+           jd₀,
+           7130.982e3,
+           0.001111,
+           98.405 |&gt; deg2rad,
+           ltdn_to_raan(10.5, jd₀),
+           π / 2,
+           0
+       )</code><code class="nohighlight hljs ansi" style="display:block;">KeplerianElements{Float64, Float64}:
+<span class="sgr1">           Epoch : </span>   2.45922e6 (2021-01-01T00:00:00)
+<span class="sgr1"> Semi-major axis : </span>7130.98     km
+<span class="sgr1">    Eccentricity : </span>   0.001111
+<span class="sgr1">     Inclination : </span>  98.405    °
+<span class="sgr1">            RAAN : </span>  78.4021   °
+<span class="sgr1"> Arg. of Perigee : </span>  90.0      °
+<span class="sgr1">    True Anomaly : </span>   0.0      °</code></pre><p>The next step is to define the desired propagator:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; orbp = Propagators.init(Val(:J2), orb)</code><code class="nohighlight hljs ansi" style="display:block;">OrbitPropagatorJ2{Float64, Float64}:
+<span class="sgr1">   Propagator name :</span> J2 Orbit Propagator
+<span class="sgr1">  Propagator epoch :</span> 2021-01-01T00:00:00
+<span class="sgr1">  Last propagation :</span> 2021-01-01T00:00:00</code></pre><p>Now, we can use the function <code>ground_track</code> to obtain the satellite ground track considering only the desdencing passages:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; gt = ground_track(orbp; duration = 5 * 86400, track_types = :descending)</code><code class="nohighlight hljs ansi" style="display:block;">13069-element Vector{Tuple{Float64, Float64}}:
+ (1.4249660489382514, -1.9629142342294301)
+ (1.4239401788695614, -2.083242314527422)
+ (1.4209046654853266, -2.2003522483295006)
+ (1.4159776024387374, -2.311522262637157)
+ (1.409331946731526, -2.4148462532664547)
+ (1.4011694236152394, -2.509306269805821)
+ (1.3916971289754156, -2.5946490797008246)
+ (1.3811109723095272, -2.6711712548167506)
+ (1.3695864566113856, -2.7395018851996817)
+ (1.3572752195159548, -2.800429478686105)
+ ⋮
+ (-1.3696124211656855, 2.1732322226073304)
+ (-1.381086271483457, 2.105195658702011)
+ (-1.39163034068695, 2.029040761805442)
+ (-1.4010715305058756, 1.9441454031386136)
+ (-1.4092166385020077, 1.850212787307041)
+ (-1.415861314669152, 1.7474838581667644)
+ (-1.420806159442775, 1.6369482222353913)
+ (-1.4238795249095673, 1.5204676340474153)
+ (-1.424963071388477, 1.400710314672049)</code></pre><p>Finally, we can extract the latitude and longitude of each point in the ground track using:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; gt_lat = first.(gt)</code><code class="nohighlight hljs ansi" style="display:block;">13069-element Vector{Float64}:
+  1.4249660489382514
+  1.4239401788695614
+  1.4209046654853266
+  1.4159776024387374
+  1.409331946731526
+  1.4011694236152394
+  1.3916971289754156
+  1.3811109723095272
+  1.3695864566113856
+  1.3572752195159548
+  ⋮
+ -1.3696124211656855
+ -1.381086271483457
+ -1.39163034068695
+ -1.4010715305058756
+ -1.4092166385020077
+ -1.415861314669152
+ -1.420806159442775
+ -1.4238795249095673
+ -1.424963071388477</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; gt_lon = last.(gt)</code><code class="nohighlight hljs ansi" style="display:block;">13069-element Vector{Float64}:
+ -1.9629142342294301
+ -2.083242314527422
+ -2.2003522483295006
+ -2.311522262637157
+ -2.4148462532664547
+ -2.509306269805821
+ -2.5946490797008246
+ -2.6711712548167506
+ -2.7395018851996817
+ -2.800429478686105
+  ⋮
+  2.1732322226073304
+  2.105195658702011
+  2.029040761805442
+  1.9441454031386136
+  1.850212787307041
+  1.7474838581667644
+  1.6369482222353913
+  1.5204676340474153
+  1.400710314672049</code></pre><p>If we use <strong>GeoMakie.jl</strong> to plot, we obtain:</p><div align="center">
+  <img src="../../assets/amz1_descending_ground_tracks.png" alt="Amazonia-1 Descending Ground Tracks" width="100%"/>
+</div><p>Finally, the ground track inclination is:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ground_track_inclination(orb) |&gt; rad2deg</code><code class="nohighlight hljs ansi" style="display:block;">102.29560077110351</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ground_facilities/ground_facility_visibility_circle/">« Ground Facility Visibility Circle</a><a class="docs-footer-nextpage" href="../orbits/sun_synchronous_orbits/">Sun Synchronous Orbits »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Saturday 13 January 2024 18:29">Saturday 13 January 2024</span>. Using Julia version 1.10.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
