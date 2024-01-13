@@ -34,7 +34,6 @@ The following keywords are available:
     satellite and the ground facility [rad].
     (**Default**: `10 |> deg2rad`)
 
-
 !!! note
     If we want to verify if a satellite has line-of-sight to a ground facility, see the
     function [`is_ground_facility_visible`](@ref).
