@@ -36,7 +36,7 @@ The following keywords are available:
 
 
 !!! note
-    If we want only to verify if a satellite has line-of-sight to a ground facility, see the
+    If we want to verify if a satellite has line-of-sight to a ground facility, see the
     function [`is_ground_facility_visible`](@ref).
 
 ## Examples
