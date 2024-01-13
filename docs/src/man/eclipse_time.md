@@ -46,6 +46,10 @@ The function returns a `DataFrame` with three columns:
 
 The unit of each column is stored in the `DataFrame` using metadata.
 
+!!! note
+    If we want to verify the current lighting condition in a satellite (sunlight, umbra, or
+    penumbra), see the function [`lighting_condition`](@ref).
+
 ## Examples
 
 We will compute the eclipse time of the Amazonia-1 mission for one year. The first thing we
