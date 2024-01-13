@@ -34,6 +34,11 @@ The following keywords are available:
     satellite and the ground facility [rad].
     (**Default**: `10 |> deg2rad`)
 
+
+!!! note
+    If we want only to verify if a satellite has line-of-sight to a ground facility, see the
+    function [`is_ground_facility_visible`](@ref).
+
 ## Examples
 
 We can obtain the visibility circle between the Amazonia-1 satellite and INPE's ground
