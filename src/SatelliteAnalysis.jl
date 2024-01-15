@@ -1,6 +1,7 @@
 module SatelliteAnalysis
 
 using Dates
+using Downloads
 using LinearAlgebra
 using PrettyNumbers
 using Reexport

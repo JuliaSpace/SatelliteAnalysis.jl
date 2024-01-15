@@ -6,6 +6,7 @@ version = "0.3.0"
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 PrettyNumbers = "d1bdb62b-d559-469f-b147-fd8a93502a34"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
@@ -23,6 +24,7 @@ SatelliteAnalysisPlottingExt = ["GeoMakie"]
 
 [compat]
 DataFrames = "1"
+Downloads = "1"
 GeoMakie = "0.6"
 PrettyNumbers = "0.2"
 Reexport = "1"
@@ -33,8 +35,8 @@ StaticArrays = "1"
 julia = "1.10"
 
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "Logging"]

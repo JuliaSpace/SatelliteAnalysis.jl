@@ -47,7 +47,7 @@ function fetch_country_polygons(
 
     if download_file
         @info "Downloading the file '$filename' from '$url'..."
-        download(url, filepath)
+        Downloads.download(url, filepath)
         open(filepath_timestamp, "w") do f
             write(f, string(now()))
         end
