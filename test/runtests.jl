@@ -1,6 +1,7 @@
 using Test
 
 using LinearAlgebra
+using Logging
 using StaticArrays
 using SatelliteAnalysis
 
@@ -31,6 +32,10 @@ end
 
 @testset "Miscellaneous" verbose = true begin
    include("./misc.jl")
+end
+
+@testset "Plotting" verbose = true begin
+    include("./plotting.jl")
 end
 
 @testset "Orbits" verbose = true begin
