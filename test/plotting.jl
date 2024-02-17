@@ -58,3 +58,37 @@ end
     @test fig isa Figure
     @test ax isa Axis
 end
+
+# == File: ./src/plotting/ground_facilities.jl =============================================
+
+# -- Function: plot_ground_facility_visibility_circles -------------------------------------
+
+@testset "Function plot_ground_facility_visibility_circles" begin
+    @test_logs(
+        (:error, "The package GeoMakie.jl must be loaded to use this functionality."),
+        plot_ground_facility_visibility_circles(1)
+    )
+end
+
+@testset "Function plot_ground_facility_visibility_circles [EXT]" begin
+    using GeoMakie
+
+    gfv1 = ground_facility_visibility_circle((0, 0, 0), EARTH_EQUATORIAL_RADIUS + 700e3);
+    gfv2 = ground_facility_visibility_circle((-40 |> deg2rad, -60 |> deg2rad, 0), EARTH_EQUATORIAL_RADIUS + 700e3);
+
+    fig, ax = plot_ground_facility_visibility_circles(
+        [gfv1, gfv2];
+        ground_facility_names = ["GF 1", "GF 2"]
+    )
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # == Errors ============================================================================
+
+    @test_throws ArgumentError plot_ground_facility_visibility_circles(
+        [gfv1, gfv2];
+        ground_facility_names = ["GF 1", "GF 2", "GF 3"]
+    )
+end
+
