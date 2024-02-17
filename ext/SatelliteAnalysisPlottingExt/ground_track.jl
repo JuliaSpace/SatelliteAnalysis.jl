@@ -29,7 +29,7 @@ function SatelliteAnalysis.plot_ground_track(
         ylabel = "Latitude [°]",
         ylabelsize = 32,
         yticklabelsize = 28,
-        title = "Ground Trace",
+        title = "Ground Track",
         titlegap = 16,
         titlesize = 28,
     )
