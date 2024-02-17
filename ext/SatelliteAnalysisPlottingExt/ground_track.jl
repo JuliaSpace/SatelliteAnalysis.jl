@@ -24,14 +24,14 @@ function SatelliteAnalysis.plot_ground_track(
         fig[1, 1],
         aspect = 2,
         xlabel = "Longitude [°]",
-        xlabelsize = 32,
-        xticklabelsize = 28,
+        xlabelsize = _LABEL_SIZE,
+        xticklabelsize = _TICK_LABEL_SIZE,
         ylabel = "Latitude [°]",
-        ylabelsize = 32,
-        yticklabelsize = 28,
+        ylabelsize = _LABEL_SIZE,
+        yticklabelsize = _TICK_LABEL_SIZE,
         title = "Ground Track",
         titlegap = 16,
-        titlesize = 28,
+        titlesize = _TITLE_SIZE,
     )
 
     xlims!(ax, -180, +180)
