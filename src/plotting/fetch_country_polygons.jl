@@ -7,7 +7,7 @@
 export fetch_country_polygons
 
 """
-    fetch_country_polygons(url = "https://datahub.io/core/geo-countries/r/countries.geojson"; kwargs...) -> String
+    fetch_country_polygons(url = "https://pkgstore.datahub.io/core/geo-countries/countries/archive/23f420f929e0e09c39d916b8aaa166fb/countries.geojson"; kwargs...) -> String
 
 Fetch the GeoJSON file with the country polygons in `url`. The algorithm stores the file in
 a scratch space. The function returns a `String` with the file path.
@@ -22,11 +22,9 @@ a scratch space. The function returns a `String` with the file path.
     (**Default** = `false`)
 """
 function fetch_country_polygons(
-    url = "https://datahub.io/core/geo-countries/r/countries.geojson";
+    url = "https://pkgstore.datahub.io/core/geo-countries/countries/archive/23f420f929e0e09c39d916b8aaa166fb/countries.geojson";
     force_download::Bool = false
 )
-
-    url = "https://datahub.io/core/geo-countries/r/countries.geojson"
     filename = "countries.geojson"
 
     # Get the scratch space where the files are located.
