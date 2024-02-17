@@ -13,7 +13,7 @@ Plot the ground track `gt` computed using the function [`ground_track`](@ref). I
 the objects `Figure` and `Axis` used to plot the data. For more information, please, refer
 to **Makie.jl** documentation.
 
-!!! warn
+!!! warning
     This function **only works** after loading the package **GeoMakie.jl**. Furthermore, the
     user must also load one Makie.jl back end (CairoMakie.jl or GLMakie.jl, for example) to
     see the result.
