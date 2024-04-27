@@ -1,6 +1,15 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.3.1
+-------------
+
+- ![Feature][badge-feature] The package now contains extensions that are loaded when
+  [GeoMakie.jl](https://github.com/MakieOrg/GeoMakie.jl) is loaded. In this case, we added
+  functions to plot the ground tracks and the ground facility visibility circles.
+- ![Feature][badge-feature] We added support to download the GeoJSON file with the
+  countries' polygons that can be used, for example, to plot information in the world map.
+
 Version 0.3.0
 -------------
 
