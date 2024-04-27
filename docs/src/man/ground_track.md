@@ -165,3 +165,56 @@ Finally, the ground track inclination is:
 ```@repl ground_track
 ground_track_inclination(orb) |> rad2deg
 ```
+
+## Plotting
+
+If the user loads the package [GeoMakie.jl](https://github.com/MakieOrg/GeoMakie.jl)
+together with a [Makie.jl](https://docs.makie.org/stable/) back end, an extension is loaded
+and adds the possibility to plot the ground track. In this case, the following function is
+available:
+
+```julia
+plot_ground_track(gt::Vector{NTuple{2, T}}; kwargs...) where T<:Number -> Figure, Axis
+```
+
+It plots the ground track `gt` computed using the function [`ground_track`](@ref). It
+returns the objects `Figure` and `Axis` used to plot the data. For more information, please,
+refer to [Makie.jl](https://docs.makie.org/stable/) documentation.
+
+All `kwargs...` are passed to the function `Figure`.
+
+### Example
+
+The code:
+
+```julia-repl ground_track_plotting
+julia> using GeoMakie, GLMakie
+
+julia> jd₀ = date_to_jd(2021, 1, 1)
+
+julia> orb = KeplerianElements(
+    jd₀,
+    7130.982e3,
+    0.001111,
+    98.405 |> deg2rad,
+    ltdn_to_raan(10.5, jd₀),
+    π / 2,
+    0
+)
+
+julia> orbp = Propagators.init(Val(:J2), orb)
+
+julia> gt = ground_track(orbp; duration = 5 * 86400, track_types = :ascending)
+
+julia> fig, ax = plot_ground_track(gt)
+
+julia> fig
+```
+
+produces the following figure if **GLMakie.jl** is loaded:
+
+```@raw html
+<div align="center">
+  <img src="../../assets/ground_track_plotting_extension.png" alt="Ground Track Plot" width="100%"/>
+</div>
+```

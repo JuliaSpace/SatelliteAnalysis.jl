@@ -58,4 +58,65 @@ If we plot the result using Makie, we obtain:
 </div>
 ```
 
+## Plotting
 
+If the user loads the package [GeoMakie.jl](https://github.com/MakieOrg/GeoMakie.jl)
+together with a [Makie.jl](https://docs.makie.org/stable/) back end, an extension is loaded
+and adds the possibility to plot the ground facility visibility circle. In this case, the
+following function is available:
+
+```julia
+plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, T}}}; kwargs...) where T <: Number -> Figure, Axis
+```
+
+It plots the ground facility visibility circles in the vector `vgf_vc`, where each element
+is computed using the function [`ground_facility_visibility_circle`](@ref). It returns the
+objects `Figure` and `Axis` used to plot the data. For more information, please, refer to
+[Makie.jl](https://docs.makie.org/stable/) documentation.
+
+The following keywords are available:
+
+- `ground_facility_names::Union{Nothing, Vector{String}}`: The user can provide a vector of
+    `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
+    parameter is `nothing`, no ground facility name is added to the figure.
+    (**Default** = `nothing`)
+
+All other `kwargs...` are passed to the function `Figure`.
+
+### Example
+
+The code:
+
+```julia-repl ground_track_plotting
+julia> using GeoMakie, GLMakie
+
+julia> gf1_vc = ground_facility_visibility_circle(
+           (-(15 + 33 / 60) |> deg2rad, -(56 + 04 / 60) |> deg2rad, 0),
+           7130.982e3
+       );
+
+julia> gf2_vc = ground_facility_visibility_circle(
+           (-22.6763 |> deg2rad, -44.9973 |> deg2rad, 0),
+           7130.982e3
+       );
+
+julia> gf3_vc = ground_facility_visibility_circle(
+           (+78.228 |> deg2rad, +15.399 |> deg2rad, 0),
+           7130.982e3
+       );
+
+julia> fig, ax = plot_ground_facility_visibility_circles(
+           [gf1_vc, gf2_vc, gf3_vc];
+           ground_facility_names = ["Cuiabá", "Cachoeira Paulista", "Svalbard"]
+       );
+
+julia> fig
+```
+
+produces the following figure if **GLMakie.jl** is loaded:
+
+```@raw html
+<div align="center">
+  <img src="../../../assets/ground_facility_plotting_extension.png" alt="Ground Facility Visibility Circle Plot" width="100%"/>
+</div>
+```
