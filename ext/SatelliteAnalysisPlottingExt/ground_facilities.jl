@@ -23,7 +23,7 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles(
     country_polys = GeoMakie.GeoJSON.read(read(countries_filename))
 
     # Plot the ground trace.
-    fig = Figure(; size = (1600, 800), kwargs...)
+    fig = Figure(; size = (1450, 800), kwargs...)
 
     ax = Axis(
         fig[1, 1],
