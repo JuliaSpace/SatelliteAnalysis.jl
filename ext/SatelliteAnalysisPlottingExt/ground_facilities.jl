@@ -27,16 +27,16 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles(
 
     ax = Axis(
         fig[1, 1],
-        aspect = 2,
-        xlabel = "Longitude [°]",
-        xlabelsize = _LABEL_SIZE,
+        aspect         = 2,
+        title          = "Ground Facility Visibility Circles",
+        titlegap       = 16,
+        titlesize      = _TITLE_SIZE,
+        xlabel         = "Longitude [°]",
+        xlabelsize     = _LABEL_SIZE,
         xticklabelsize = _TICK_LABEL_SIZE,
-        ylabel = "Latitude [°]",
-        ylabelsize = _LABEL_SIZE,
+        ylabel         = "Latitude [°]",
+        ylabelsize     = _LABEL_SIZE,
         yticklabelsize = _TICK_LABEL_SIZE,
-        title = "Ground Facility Visibility Circles",
-        titlegap = 16,
-        titlesize = _TITLE_SIZE,
     )
 
     xlims!(ax, -180, +180)
@@ -47,7 +47,7 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles(
     poly!(
         ax,
         country_polys;
-        color = :white,
+        color       = :white,
         strokecolor = :black,
         strokewidth = 1
     )
@@ -63,19 +63,19 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles(
         # We need to compute the vectors in the ECEF reference frame to obtain the ground
         # station position, which is computed by averaging them.
         vr_ecef = geodetic_to_ecef.(gf_lat, gf_lon, 0)
-        vr_mean_ecef = sum(vr_ecef) / length(gf_vc)
-        gf_lat_mean, gf_lon_mean, ~ = ecef_to_geodetic(vr_mean_ecef)
+        gf_ecef = sum(vr_ecef) / length(gf_vc)
+        gf_lat, gf_lon, ~ = ecef_to_geodetic(gf_ecef)
 
-        dot = scatter!(ax, gf_lon_mean |> rad2deg, gf_lat_mean |> rad2deg; color = vc.color)
+        dot = scatter!(ax, gf_lon |> rad2deg, gf_lat |> rad2deg; color = vc.color)
         translate!(dot, 0, 0, 10)
 
         if !isnothing(ground_facility_names)
             label = text!(
                 ax,
                 ground_facility_names[k];
-                color =  vc.color,
+                color    = vc.color,
                 fontsize = _TICK_LABEL_SIZE,
-                position = (gf_lon_mean |> rad2deg, gf_lat_mean |> rad2deg),
+                position = (gf_lon |> rad2deg, gf_lat |> rad2deg),
             )
             translate!(label, 0, 0, 10)
         end
