@@ -55,22 +55,30 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles(
     # Plot the visibility circles.
     for k in 1:length(vgf_vc)
         gf_vc  = vgf_vc[k - 1 + begin]
-        gf_lat = first.(gf_vc) .|> rad2deg
-        gf_lon = last.(gf_vc)  .|> rad2deg
+        gf_lat = first.(gf_vc)
+        gf_lon = last.(gf_vc)
 
-        lines!(ax, gf_lon, gf_lat; linewidth = 2)
+        vc = lines!(ax, gf_lon .|> rad2deg, gf_lat .|> rad2deg; linewidth = 2)
 
-        gf_lat_mean = sum(gf_lat) ./ length(gf_lat)
-        gf_lon_mean = sum(gf_lon) ./ length(gf_lon)
+        # We need to compute the vectors in the ECEF reference frame to obtain the ground
+        # station position, which is computed by averaging them.
+        vr_ecef = geodetic_to_ecef.(gf_lat, gf_lon, 0)
+        vr_mean_ecef = sum(vr_ecef) / length(gf_vc)
+        gf_lat_mean, gf_lon_mean, ~ = ecef_to_geodetic(vr_mean_ecef)
 
-        scatter!(ax, gf_lon_mean, gf_lat_mean)
+        dot = scatter!(ax, gf_lon_mean |> rad2deg, gf_lat_mean |> rad2deg; color = vc.color)
+        translate!(dot, 0, 0, 10)
 
-        !isnothing(ground_facility_names) && text!(
-            ax,
-            ground_facility_names[k];
-            position = (gf_lon_mean, gf_lat_mean),
-            fontsize = _TICK_LABEL_SIZE,
-        )
+        if !isnothing(ground_facility_names)
+            label = text!(
+                ax,
+                ground_facility_names[k];
+                color =  vc.color,
+                fontsize = _TICK_LABEL_SIZE,
+                position = (gf_lon_mean |> rad2deg, gf_lat_mean |> rad2deg),
+            )
+            translate!(label, 0, 0, 10)
+        end
     end
 
     return fig, ax
