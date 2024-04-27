@@ -27,8 +27,8 @@ end
 # -- Function: plot_ground_track -----------------------------------------------------------
 
 @testset "Function plot_ground_track" begin
-    @test_logs(
-        (:error, "The package GeoMakie.jl must be loaded to use this functionality."),
+    @test_throws(
+        "Wrong input or the package GeoMakie.jl is not loaded.",
         plot_ground_track(1)
     )
 end
@@ -64,9 +64,9 @@ end
 # -- Function: plot_ground_facility_visibility_circles -------------------------------------
 
 @testset "Function plot_ground_facility_visibility_circles" begin
-    @test_logs(
-        (:error, "The package GeoMakie.jl must be loaded to use this functionality."),
-        plot_ground_facility_visibility_circles(1)
+    @test_throws(
+        "Wrong input or the package GeoMakie.jl is not loaded.",
+        plot_ground_track(1)
     )
 end
 

@@ -66,6 +66,6 @@ julia> fig
 ```
 """
 function plot_ground_track(::Any; kwargs...)
-    @error "The package GeoMakie.jl must be loaded to use this functionality."
+    error("Wrong input or the package GeoMakie.jl is not loaded.")
     return nothing
 end
