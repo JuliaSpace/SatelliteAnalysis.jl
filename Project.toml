@@ -26,19 +26,24 @@ SatelliteAnalysisPlottingExt = ["GeoMakie"]
 
 [compat]
 DataFrames = "1"
+Dates = "1.6"
 Downloads = "1"
 GeoMakie = "0.6"
+LinearAlgebra = "1.6"
+Logging = "1.6"
 PrettyNumbers = "0.2"
 Reexport = "1"
 ReferenceFrameRotations = "3"
 SatelliteToolbox = "0.12.2"
 Scratch = "1.2"
 StaticArrays = "1"
+Statistics = "1.6"
+Test = "1.6"
 julia = "1.10"
 
 [extras]
-Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
