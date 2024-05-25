@@ -1,5 +1,4 @@
-Ground Facility Gaps
-====================
+# Ground Facility Gaps
 
 ```@meta
 CurrentModule = SatelliteAnalysis
@@ -28,6 +27,7 @@ This function returns a `DataFrame` with three columns:
 - `access_end`: Time of the access end [UTC] encoded using `DateTime`.
 - `duration`: Duration of the access [s].
   The unit of the column `duration` is stored in the `DataFrame` using metadata.
+
 ## Examples
 
 Let's compute the gaps of the Amazonia-1 satellite to the INPE's ground station at Cuiabá,

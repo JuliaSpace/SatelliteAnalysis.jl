@@ -1,5 +1,4 @@
-Frozen Orbits
-=============
+# Frozen Orbits
 
 ```@meta
 CurrentModule = SatelliteAnalysis
@@ -37,6 +36,7 @@ the orbit has semi-major axis `a` [m] and inclination `i` [rad]. This function u
 theory in **[1]**.
 
 !!! note
+
     This function uses `BigFloat` internally to perform all computations, allowing very high
     degrees. However, the user must ensure that the default precision is enough for the
     required degree. Refer to the function `setprecision` for more information.

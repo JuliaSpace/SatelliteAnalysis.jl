@@ -1,5 +1,4 @@
-Sun-Synchronous Orbits
-======================
+# Sun-Synchronous Orbits
 
 ```@meta
 CurrentModule = SatelliteAnalysis
@@ -45,6 +44,7 @@ where ``n_0 = \sqrt{\mu / a^3}``, and ``\mu`` is the Earth's standard gravitatio
 parameter.
 
 !!! note
+
     Formally, all quantities on the right-hand side of those equations must be the mean
     elements instead of the initial ones. However, we are considering only the secular
     perturbations caused by the ``J_2`` term. Thus, the semi-major axis, eccentricity, and
@@ -310,6 +310,7 @@ This function returns a `DataFrame` with the following columns:
     satellite position.
 
 !!! note
+
     The units of those columns depends on the keywords.
 
 The following keywords are available:
@@ -364,6 +365,7 @@ show(df; crop = :none)
 ```
 
 !!! info
+
     The designer can use the fields `adjacent_gt_distance` and `adjacent_gt_angle` to check
     whether the mission payload can operate correctly in the orbit. For example, in orbit
     \#4, the payload swath of a remote sensing satellite with a camera must be higher than

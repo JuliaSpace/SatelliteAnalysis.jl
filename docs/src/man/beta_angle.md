@@ -1,5 +1,4 @@
-Beta Angle
-==========
+# Beta Angle
 
 ```@meta
 CurrentModule = SatelliteAnalysis
@@ -74,11 +73,36 @@ year:
 
 If we use **CairoMakie.jl** to plot, we obtain:
 
-```@raw html
-<div align="center">
-  <img src="../../assets/beta_angle_amz1.png" alt="Beta Angle of the Amazonia-1 Mission" width="100%"/>
-</div>
+```@setup beta_angle
+using CairoMakie
+
+fig = Figure(; size = (1000, 800))
+
+ax = Axis(
+    fig[1, 1],
+    spinewidth         = 2,
+    title              = "Amazonia-1 Beta Angle",
+    titlegap           = 16,
+    titlesize          = 30,
+    xlabelsize         = 30,
+    xticklabelsize     = 26,
+    xticks             = 0:11,
+    xtickformat        = y -> map(m -> Dates.monthname(Int(m + 1))[1:3], y),
+    xticklabelrotation = pi / 4,
+    ylabel             = "Beta Angle [°]",
+    ylabelsize         = 30,
+    yticklabelsize     = 26,
+    yticks             = 17:27
+)
+
+xlims!(ax, 0, 12)
+
+lines!(ax, collect(1:365) ./ 30, β .|> rad2deg; linewidth = 4)
+
+save("amz1_beta_angle.png", fig)
 ```
+
+![Amazonia-1 beta angle](./amz1_beta_angle.png)
 
 ## References
 

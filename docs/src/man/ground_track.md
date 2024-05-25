@@ -1,5 +1,4 @@
-Ground Track
-============
+# Ground Track
 
 ```@meta
 CurrentModule = SatelliteAnalysis
@@ -32,9 +31,7 @@ The following keywords are available:
     in the Earth-centered inertial (ECI) reference frame to the Earth-centered, Earth-fixed
     (ECEF) reference frame. The signature must be
 
-    ```julia
-    f_eci_to_ecef(r_i::AbstractVector, jd::Number) -> AbstractVector
-    ```
+    `f_eci_to_ecef(r_i::AbstractVector, jd::Number) -> AbstractVector`
 
     and it must return the position vector `r_i` represented in the ECEF at the instant `jd`
     [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.
@@ -139,7 +136,7 @@ orbp = Propagators.init(Val(:J2), orb)
 ```
 
 Now, we can use the function `ground_track` to obtain the satellite ground track considering
-only the desdencing passages:
+only the descending passages:
 
 ```@repl ground_track
 gt = ground_track(orbp; duration = 5 * 86400, track_types = :descending)
@@ -154,11 +151,17 @@ gt_lon = last.(gt)
 
 If we use **GeoMakie.jl** to plot, we obtain:
 
-```@raw html
-<div align="center">
-  <img src="../../assets/amz1_descending_ground_tracks.png" alt="Amazonia-1 Descending Ground Tracks" width="100%"/>
-</div>
+```@setup ground_track
+using GeoMakie, CairoMakie
+
+fig, ax = plot_ground_track(gt)
+
+ax.title = "Amazonia-1 Descending Ground Tracks"
+
+save("amz1_descending_ground_tracks.png", fig)
 ```
+
+![Amazonia-1 descending ground track](./amz1_descending_ground_tracks.png)
 
 Finally, the ground track inclination is:
 
@@ -187,12 +190,12 @@ All `kwargs...` are passed to the function `Figure`.
 
 The code:
 
-```julia-repl ground_track_plotting
-julia> using GeoMakie, GLMakie
+```@repl ground_track
+using GeoMakie, CairoMakie
 
-julia> jd₀ = date_to_jd(2021, 1, 1)
+jd₀ = date_to_jd(2021, 1, 1)
 
-julia> orb = KeplerianElements(
+orb = KeplerianElements(
     jd₀,
     7130.982e3,
     0.001111,
@@ -202,19 +205,15 @@ julia> orb = KeplerianElements(
     0
 )
 
-julia> orbp = Propagators.init(Val(:J2), orb)
+orbp = Propagators.init(Val(:J2), orb)
 
-julia> gt = ground_track(orbp; duration = 5 * 86400, track_types = :ascending)
+gt = ground_track(orbp; duration = 5 * 86400, track_types = :ascending)
 
-julia> fig, ax = plot_ground_track(gt)
+fig, ax = plot_ground_track(gt)
 
-julia> fig
+save("ground_track.png", fig)
 ```
 
-produces the following figure if **GLMakie.jl** is loaded:
+produces the following figure:
 
-```@raw html
-<div align="center">
-  <img src="../../assets/ground_track_plotting_extension.png" alt="Ground Track Plot" width="100%"/>
-</div>
-```
+![Ground track](./ground_track.png)

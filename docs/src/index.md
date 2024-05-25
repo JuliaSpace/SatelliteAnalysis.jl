@@ -1,11 +1,7 @@
-SatelliteAnalysis.jl
-====================
+# SatelliteAnalysis.jl
 
 ```@meta
 CurrentModule = SatelliteAnalysis
-DocTestSetup = quote
-    using SatelliteAnalysis
-end
 ```
 
 This package contains several functions to perform analysis related to satellites. Those

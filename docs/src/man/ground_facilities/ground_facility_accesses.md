@@ -1,5 +1,4 @@
-Ground Facility Accesses
-========================
+# Ground Facility Accesses
 
 ```@meta
 CurrentModule = SatelliteAnalysis
@@ -22,11 +21,15 @@ keywords.
 
 The ground facilities are specified using a vector of tuples with three numbers:
 
-    Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}
+```julia
+Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}
+```
 
 containing the WGS84 position of each ground facility `[(WGS84)]`:
 
-    (latitude [rad], longitude [rad], altitude [m])
+```text
+(latitude [rad], longitude [rad], altitude [m])
+```
 
 Those geodetic information are transformed to an ECEF vector using the function
 `geodetic_to_ecef`.
@@ -39,9 +42,7 @@ The following keywords are available:
     in the Earth-centered inertial (ECI) reference frame to the Earth-centered, Earth-fixed
     (ECEF) reference frame. The signature must be
 
-    ```
-    f_eci_to_ecef(r_i::AbstractVector, jd::Number) -> AbstractVector
-    ```
+    `f_eci_to_ecef(r_i::AbstractVector, jd::Number) -> AbstractVector`
 
     and it must return the position vector `r_i` represented in the ECEF at the instant `jd`
     [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.
