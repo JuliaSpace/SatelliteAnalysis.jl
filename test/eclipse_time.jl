@@ -22,8 +22,7 @@
 
     orbp = Propagators.init(Val(:J2), orb)
 
-    # Seconds
-    # ======================================================================================
+    # == Seconds ===========================================================================
 
     df = eclipse_time_summary(orbp; num_days = 5)
 
@@ -39,8 +38,7 @@
     @test colmetadata(df, :penumbra, "Unit") == :s
     @test colmetadata(df, :umbra,    "Unit") == :s
 
-    # Minutes
-    # ======================================================================================
+    # == Minutes ===========================================================================
 
     df = eclipse_time_summary(orbp; num_days = 5, unit = :m)
 
@@ -56,8 +54,7 @@
     @test colmetadata(df, :penumbra, "Unit") == :m
     @test colmetadata(df, :umbra,    "Unit") == :m
 
-    # Hours
-    # ======================================================================================
+    # == Hours =============================================================================
 
     df = eclipse_time_summary(orbp; num_days = 5, unit = :h)
 
@@ -73,8 +70,7 @@
     @test colmetadata(df, :penumbra, "Unit") == :h
     @test colmetadata(df, :umbra,    "Unit") == :h
 
-    # Unknown Symbol
-    # ======================================================================================
+    # == Unknown Symbol ====================================================================
 
     df = eclipse_time_summary(orbp; num_days = 5, unit = :not_known)
 

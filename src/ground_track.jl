@@ -26,9 +26,7 @@ longitude [rad] of each point in the ground track.
     in the Earth-centered inertial (ECI) reference frame to the Earth-centered, Earth-fixed
     (ECEF) reference frame. The signature must be
 
-    ```julia
-    f_eci_to_ecef(r_i::AbstractVector, jd::Number) -> AbstractVector
-    ```
+    `f_eci_to_ecef(r_i::AbstractVector, jd::Number) -> AbstractVector`
 
     and it must return the position vector `r_i` represented in the ECEF at the instant `jd`
     [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.

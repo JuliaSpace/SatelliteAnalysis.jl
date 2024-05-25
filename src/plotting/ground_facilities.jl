@@ -15,6 +15,7 @@ the objects `Figure` and `Axis` used to plot the data. For more information, ple
 to **Makie.jl** documentation.
 
 !!! warning
+
     This function **only works** after loading the package **GeoMakie.jl**. Furthermore, the
     user must also load one Makie.jl back end (CairoMakie.jl or GLMakie.jl, for example) to
     see the result.

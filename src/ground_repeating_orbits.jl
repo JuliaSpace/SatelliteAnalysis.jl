@@ -20,9 +20,11 @@ the satellite position. The orbit is described by its semi-major axis `a` [m], e
 [ ], inclination `i` [rad], and orbit cycle `orbit_cyle` [day].
 
 !!! warning
+
     The code does not check if the orbit is ground-repeating with `orbit_cycle` [day].
 
 !!! note
+
     Internally, this function uses the precision obtained by promoting `T1`, `T2`, and `T3`
     to a float-pointing number `T`.
 
@@ -137,6 +139,7 @@ is described by its orbital period `orbit_period` [s], inclination `i` [rad], an
 cycle `orbit_cycle` [day].
 
 !!! note
+
     Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
     float-pointing number `T`.
 

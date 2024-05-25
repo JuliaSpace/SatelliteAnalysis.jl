@@ -13,6 +13,7 @@ Fetch the GeoJSON file with the country polygons in `url`. The algorithm stores 
 a scratch space. The function returns a `String` with the file path.
 
 !!! note
+
     If the file has already been downloaded, this function only returns its path. However,
     if the keyword `force_download` is `true`, the file is downloaded again from `url`.
 

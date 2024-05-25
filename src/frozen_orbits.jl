@@ -26,6 +26,7 @@ orbit has semi-major axis `a` [m] and inclination `i` [rad]. This function uses 
 in **[1]**.
 
 !!! note
+
     This function uses `BigFloat` internally to perform all computations, allowing very high
     degrees. However, the user must ensure that the default precision is enough for the
     required degree. Refer to the function `setprecision` for more information.
@@ -182,6 +183,7 @@ Compute the inclination function `F_{l,0,p}(i)` and its derivative `∂F_{l,0,p}
 defined in **[1, p. 642]**.
 
 !!! note
+
     Internally, we must use `BigFloat` to allow calculations on high degrees.
 
 # References

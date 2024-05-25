@@ -18,6 +18,7 @@ If the computed interval is smaller than `Δ`, or if the number of iterations is
 `max`, the algorithm stops.
 
 !!! note
+
     The output type `T` is obtained by the type of `(t₁ + t₂) / 2`.
 
 # Examples

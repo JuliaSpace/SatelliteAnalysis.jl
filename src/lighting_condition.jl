@@ -24,6 +24,7 @@ Compute the lighting condition at the position `r_i` [m] considering the Sun pos
 The algorithm used in this function was based on **[1]**.
 
 !!! note
+
     The vectors `r_i` and `s_i` must be represented in the same reference frame.
 
 # References

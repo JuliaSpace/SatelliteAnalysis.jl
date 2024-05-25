@@ -35,6 +35,7 @@ This function returns a `DataFrame` with the following columns:
     satellite position.
 
 !!! note
+
     The units of those columns depends on the keywords.
 
 # Keywords
@@ -243,6 +244,7 @@ omitted, the orbit is considered circular, i.e., `e = 0`.
 The algorithm here considers only the perturbation terms up to J₂.
 
 !!! note
+
     Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
     float-pointing number `T`.
 
@@ -553,6 +555,7 @@ the eccentricity `e` [ ]. If the latter is omitted, the orbit is considered circ
 The algorithm here considers only the perturbation terms up to J₂.
 
 !!! note
+
     Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
     float-pointing number `T`.
 
@@ -786,6 +789,7 @@ the eccentricity `e` [ ]. If the latter is omitted, the orbit is considered circ
 The algorithm here considers only the perturbation terms up to J₂.
 
 !!! note
+
     Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
     float-pointing number `T`.
 

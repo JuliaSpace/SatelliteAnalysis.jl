@@ -19,6 +19,7 @@ Compute the beta angle [rad] for the orbit `orb` after `Δjd` days from its epoc
 The algorithm was obtained from **[1]**.
 
 !!! note
+
     It is expected that the input elements are represented in the TOD reference frame. If it
     is not the case, they can be converted using the function `orb_eci_to_eci` of
     **SatelliteToolboxTransformations.jl**.
