@@ -9,6 +9,8 @@
 # -- Function: fetch_country_polygons ------------------------------------------------------
 
 @testset "Function fetch_country_polygons" begin
+    SatelliteAnalysis.Scratch.clear_scratchspaces!(SatelliteAnalysis)
+
     f1 = @test_logs(
         (:info, "Downloading the file 'countries.geojson' from 'https://pkgstore.datahub.io/core/geo-countries/countries/archive/23f420f929e0e09c39d916b8aaa166fb/countries.geojson'..."),
         fetch_country_polygons()
