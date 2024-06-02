@@ -321,6 +321,7 @@ function ground_facility_gaps(
         f_eci_to_ecef,
         initial_time,
         minimum_elevation,
+        step,
         reduction
     )
 

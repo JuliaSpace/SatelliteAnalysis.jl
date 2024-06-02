@@ -31,7 +31,7 @@ end
 end
 
 @testset "Miscellaneous" verbose = true begin
-   include("./misc.jl")
+    include("./misc.jl")
 end
 
 @testset "Plotting" verbose = true begin
@@ -40,4 +40,8 @@ end
 
 @testset "Orbits" verbose = true begin
     include("./sun_syncrhonous_orbits.jl")
+end
+
+@testset "Issues" verbose = true begin
+    include("./issues.jl")
 end
