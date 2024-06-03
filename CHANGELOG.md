@@ -4,7 +4,7 @@ SatelliteAnalysis.jl Changelog
 Version 0.3.3
 -------------
 
-- ![Bugfix][badge-bugfix]: The function `ground_facility_gaps` was not taking into account
+- ![Bugfix][badge-bugfix] The function `ground_facility_gaps` was not taking into account
   the `step` parameter. (Issue [#3][gh-issue-3])
 
 Version 0.3.2
