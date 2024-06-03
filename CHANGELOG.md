@@ -1,6 +1,12 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.3.3
+-------------
+
+- ![Bugfix][badge-bugfix]: The function `ground_facility_gaps` was not taking into account
+  the `step` parameter. (Issue [#3][gh-issue-3])
+
 Version 0.3.2
 -------------
 
@@ -51,3 +57,5 @@ Version 0.1.0
 [badge-enhancement]: https://img.shields.io/badge/Enhancement-blue.svg
 [badge-bugfix]: https://img.shields.io/badge/Bugfix-purple.svg
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
+
+[gh-issue-3]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/issues/3
