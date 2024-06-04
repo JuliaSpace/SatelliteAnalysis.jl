@@ -46,7 +46,22 @@ function is_ground_facility_visible_old(
 
     return cos_β > cos(π / 2 - θ)
 end
+function is_ground_facility_visible(
+    sat_r_e::AbstractVector,
+    gf_r_e::AbstractVector,
+    θ::Number
+)
+    # Check if the satellite is within the visibility circle of the facility.
+    Δr_e = sat_r_e - gf_r_e # Corresponds to Δecef in TelecomUtils.get_visibility(gs,sat)
+    # t = norm(Δr_e)
+    # normalized_Δr_e = Δr_e ./ t
+    # xyz = rv.R' * normalized_Δr_e # Bring Δecef into the ENU frame
+    xyz = rv.R' * Δr_e # Bring Δecef into the ENU frame
 
+    cos_β = dot(xyz / norm(xyz), gf_r_e / norm(gf_r_e))
+
+    return cos_β > cos(π / 2 - θ)
+end
 
 """
     is_ground_facility_visible(sat_r_e::AbstractVector, gf_lat::Number, gf_lon::Number, gf_h::Number, θ::Number) -> Bool
