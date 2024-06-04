@@ -49,6 +49,7 @@ end
 function is_ground_facility_visible(
     sat_r_e::AbstractVector,
     gf_r_e::AbstractVector,
+    vgf_wgs84::AbstractVector,
     θ::Number
 )
     # Check if the satellite is within the visibility circle of the facility.
@@ -56,7 +57,8 @@ function is_ground_facility_visible(
     # t = norm(Δr_e)
     # normalized_Δr_e = Δr_e ./ t
     # xyz = rv.R' * normalized_Δr_e # Bring Δecef into the ENU frame
-    xyz = rv.R' * Δr_e # Bring Δecef into the ENU frame
+    R = _ecef_to_enu_rotmat(vgf_wgs84[1],vgf_wgs84[2])
+    xyz = R' * Δr_e # Bring Δecef into the ENU frame
 
     cos_β = dot(xyz / norm(xyz), gf_r_e / norm(gf_r_e))
 
