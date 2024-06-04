@@ -1,0 +1,9 @@
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+SatelliteAnalysis = "101040f3-2a13-4d8c-b9b0-4a720fa906ce"
+SatelliteOrbitPropagation = "aab15803-762a-4661-8643-6f3e2bab0f2a"
+SatelliteSimulationToolkit = "5417f155-44db-48b9-b9f5-1466ecd58970"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+TelecomUtils = "0c499ce9-5070-43f6-85c8-6d9cb66e1eb8"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
