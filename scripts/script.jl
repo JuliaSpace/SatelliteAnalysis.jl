@@ -82,3 +82,31 @@ end;
 $(acc2)
 $(gap2)
 """
+
+# el = 0.1749 rad (10.02°) r = 1709.5km
+#  az = 0.2867 rad (16.43°)
+# julia> is_ground_facility_visible(r_sat,r_gs,deg2rad(10))false
+# julia> is_ground_facility_visible(r_sat,r_gs,deg2rad(9.9))
+# true
+# julia> is_ground_facility_visible(r_sat,r_gs,deg2rad(9.95))true
+# julia> is_ground_facility_visible(r_sat,r_gs,deg2rad(9.98))
+# false
+# julia> r_gs = locations[1].rv.ecefECEF Coordinate:
+#  x = 5.528256639292835e6 y = 0.0
+#  z = 3.170373735383637e6
+# julia> r_sat = constellation[1].rv.pv.p_ecef
+# ECEF Coordinate: x = 5.547817213164223e6
+#  y = 1.6147583722314239e6 z = 3.7313600951122735e6
+
+## TEST
+r_gs = [5.528256639292835e6, 0.0, 3.170373735383637e6]
+r_sat = [5.547817213164223e6, 1.6147583722314239e6, 3.7313600951122735e6]
+em = EllipsoidModel()
+gs = UserView(ECEF(r_gs...),em)
+get_era(gs,ECEF(r_sat...))
+
+SatelliteAnalysis.is_ground_facility_visible(r_sat,r_gs,(gs.lla.lat,gs.lla.lon,gs.lla.alt),deg2rad(9.97))
+SatelliteAnalysis.is_ground_facility_visible(r_sat,r_gs,(gs.lla.lat,gs.lla.lon,gs.lla.alt),deg2rad(9.98))
+
+SatelliteAnalysis.is_ground_facility_visible_old(r_sat,r_gs,deg2rad(9.97))
+SatelliteAnalysis.is_ground_facility_visible_old(r_sat,r_gs,deg2rad(9.98))

@@ -2,7 +2,7 @@ using SatelliteSimulationToolkit
 using TelecomUtils
 using SatelliteOrbitPropagation
 
-@testset "Gap/Access Single Satellite - Benchamrg against SatelliteAnalysis.jl" begin
+@testset "Gap/Access Single Satellite - Benchamrk against SatelliteAnalysis.jl" begin
     ## Test against SatelliteAnalysis.jl
     ## //NOTE: A discrepancy between SatelliteAnalysis.jl and this test is expected due to the different underlying geometrical framework.
     # This leads to:
@@ -142,26 +142,26 @@ using SatelliteOrbitPropagation
         if size(out.gapacc.dfAcc[1],1) > 0
             for k in 1:size(out.gapacc.dfAcc[1],1)
                 # Measure the computation precision of the access start/end (it should be below mySim.timeStep+tol as explained, we assume 2*mySim.timeStep as max error here)
-                !(abs(out.gapacc.dfAcc[1].acc_start[k] - accessesDF[1][1].access_beginning[k]) < err) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
-                # @test abs(out.gapacc.dfAcc[1].acc_start[k] - accessesDF[1][1].access_beginning[k]) < err
-                !(abs(out.gapacc.dfAcc[1].acc_end[k] - accessesDF[1][1].access_end[k]) < err) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
-                # @test abs(out.gapacc.dfAcc[1].acc_end[k] - accessesDF[1][1].access_end[k]) < err
+                # !(abs(out.gapacc.dfAcc[1].acc_start[k] - accessesDF[1][1].access_beginning[k]) < err) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
+                @test abs(out.gapacc.dfAcc[1].acc_start[k] - accessesDF[1][1].access_beginning[k]) < err
+                # !(abs(out.gapacc.dfAcc[1].acc_end[k] - accessesDF[1][1].access_end[k]) < err) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
+                @test abs(out.gapacc.dfAcc[1].acc_end[k] - accessesDF[1][1].access_end[k]) < err
                 # Measure the computation precision of the access duration (it should be below 2*mySim.timeStep+tol as explained, we assume 3*mySim.timeStep as max error here)
-                !(abs(out.gapacc.dfAcc[1].duration[k] - accessesDF[1][1].duration[k]) < err.value) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
-                # @test abs(out.gapacc.dfAcc[1].duration[k] - accessesDF[1][1].duration[k]) < err.value
+                # !(abs(out.gapacc.dfAcc[1].duration[k] - accessesDF[1][1].duration[k]) < err.value) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
+                @test abs(out.gapacc.dfAcc[1].duration[k] - accessesDF[1][1].duration[k]) < err.value
             end
         end
         
         if size(out.gapacc.dfGap[1],1) > 0
             for k in 1:size(out.gapacc.dfGap[1],1)
                 # Measure the computation precision of the gap start/end (it should be below mySim.timeStep+tol as explained, we assume 2*mySim.timeStep as max error here)
-                !(abs(out.gapacc.dfGap[1].gap_start[k] - gapsDF[1][1].gap_beginning[k]) < err) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
-                # @test abs(out.gapacc.dfGap[1].gap_start[k] - gapsDF[1][1].gap_beginning[k]) < err
-                !(abs(out.gapacc.dfGap[1].gap_end[k] - gapsDF[1][1].gap_end[k]) < err) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
-                # @test abs(out.gapacc.dfGap[1].gap_end[k] - gapsDF[1][1].gap_end[k]) < err
+                # !(abs(out.gapacc.dfGap[1].gap_start[k] - gapsDF[1][1].gap_beginning[k]) < err) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
+                @test abs(out.gapacc.dfGap[1].gap_start[k] - gapsDF[1][1].gap_beginning[k]) < err
+                # !(abs(out.gapacc.dfGap[1].gap_end[k] - gapsDF[1][1].gap_end[k]) < err) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
+                @test abs(out.gapacc.dfGap[1].gap_end[k] - gapsDF[1][1].gap_end[k]) < err
                 # Measure the computation precision of the gap duration (it should be below 2*mySim.timeStep+tol as explained, we assume 3*mySim.timeStep as max error here)
-                !(abs(out.gapacc.dfGap[1].duration[k] - gapsDF[1][1].duration[k]) < err.value) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
-                # @test abs(out.gapacc.dfGap[1].duration[k] - gapsDF[1][1].duration[k]) < err.value
+                # !(abs(out.gapacc.dfGap[1].duration[k] - gapsDF[1][1].duration[k]) < err.value) && error("ts:$(ts), h:$(h), i:$(rad2deg(i)), mea:$(rad2deg(mea)), lla:$(lla)")
+                @test abs(out.gapacc.dfGap[1].duration[k] - gapsDF[1][1].duration[k]) < err.value
             end
         end
     end

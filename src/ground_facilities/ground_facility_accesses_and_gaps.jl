@@ -151,7 +151,7 @@ function ground_facility_accesses(
         r_e = f_eci_to_ecef(r_i, jd₀ + t / 86400)
 
         @inbounds for i in eachindex(visibility)
-            # visibility[i] = is_ground_facility_visible(r_e, vgs_r_e[i], minimum_elevation)
+            # visibility[i] = is_ground_facility_visible_old(r_e, vgs_r_e[i], minimum_elevation)
             visibility[i] = is_ground_facility_visible(r_e, vgs_r_e[i], vgf_wgs84[i], minimum_elevation)
         end
 

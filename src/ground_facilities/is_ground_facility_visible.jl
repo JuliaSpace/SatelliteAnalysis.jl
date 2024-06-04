@@ -46,24 +46,125 @@ function is_ground_facility_visible_old(
 
     return cos_β > cos(π / 2 - θ)
 end
-function is_ground_facility_visible(
+# function is_ground_facility_visible(
+#     sat_r_e::AbstractVector,
+#     gf_r_e::AbstractVector,
+#     vgf_wgs84::Tuple,
+#     θ::Number
+# )
+#     # Check if the satellite is within the visibility circle of the facility.
+#     Δr_e = sat_r_e - gf_r_e # Corresponds to Δecef in TelecomUtils.get_visibility(gs,sat)
+#     # t = norm(Δr_e)
+#     # normalized_Δr_e = Δr_e ./ t
+#     # xyz = rv.R' * normalized_Δr_e # Bring Δecef into the ENU frame
+#     R = _ecef_to_enu_rotmat(vgf_wgs84[1],vgf_wgs84[2])
+#     xyz = R * Δr_e # Bring Δecef into the ENU frame
+
+#     β = acos(dot(xyz / norm(xyz), gf_r_e / norm(gf_r_e)))
+
+#     return (π/2 - β) > θ
+# end
+
+# function get_beta_(
+#     sat_r_e::AbstractVector,
+#     gf_r_e::AbstractVector,
+#     vgf_wgs84::Tuple
+# )
+#     # Check if the satellite is within the visibility circle of the facility.
+#     Δr_e = sat_r_e - gf_r_e # Corresponds to Δecef in TelecomUtils.get_visibility(gs,sat)
+#     # t = norm(Δr_e)
+#     # normalized_Δr_e = Δr_e ./ t
+#     # xyz = rv.R' * normalized_Δr_e # Bring Δecef into the ENU frame
+#     R = _ecef_to_enu_rotmat(vgf_wgs84[1],vgf_wgs84[2])
+#     xyz = R * Δr_e # Bring Δecef into the ENU frame
+
+#     β = acos(dot(xyz / norm(xyz), gf_r_e / norm(gf_r_e)))
+
+#     return rad2deg(β)
+# end
+
+# function is_ground_facility_visible( # Same result as old
+#     sat_r_e::AbstractVector,
+#     gf_r_e::AbstractVector,
+#     vgf_wgs84::Tuple,
+#     θ::Number
+# )
+#     # Check if the satellite is within the visibility circle of the facility.
+#     Δr_e = sat_r_e - gf_r_e # Corresponds to Δecef in TelecomUtils.get_visibility(gs,sat)
+#     # t = norm(Δr_e)
+#     # normalized_Δr_e = Δr_e ./ t
+#     # xyz = rv.R' * normalized_Δr_e # Bring Δecef into the ENU frame
+#     R = _ecef_to_enu_rotmat(vgf_wgs84[1],vgf_wgs84[2])
+#     xyz_Δr_e = R * Δr_e # Bring Δecef into the ENU frame
+#     xyz_gf_r_e = R * gf_r_e # Bring Δecef into the ENU frame
+
+#     β = acos(dot(xyz_Δr_e / norm(xyz_Δr_e), xyz_gf_r_e / norm(xyz_gf_r_e)))
+
+#     return (π/2 - β) > θ
+# end
+# function get_el( # Same result as old
+#     sat_r_e::AbstractVector,
+#     gf_r_e::AbstractVector,
+#     vgf_wgs84::Tuple,
+# )
+#     # Check if the satellite is within the visibility circle of the facility.
+#     Δr_e = sat_r_e - gf_r_e # Corresponds to Δecef in TelecomUtils.get_visibility(gs,sat)
+#     # t = norm(Δr_e)
+#     # normalized_Δr_e = Δr_e ./ t
+#     # xyz = rv.R' * normalized_Δr_e # Bring Δecef into the ENU frame
+#     R = _ecef_to_enu_rotmat(vgf_wgs84[1],vgf_wgs84[2])
+#     xyz_Δr_e = R * Δr_e # Bring Δecef into the ENU frame
+#     xyz_gf_r_e = R * gf_r_e # Bring Δecef into the ENU frame
+
+#     β = acos(dot(xyz_Δr_e / norm(xyz_Δr_e), xyz_gf_r_e / norm(xyz_gf_r_e)))
+
+#     return rad2deg(pi/2-β)
+# end
+function get_el( # Same result as old
     sat_r_e::AbstractVector,
     gf_r_e::AbstractVector,
-    vgf_wgs84::AbstractVector,
-    θ::Number
+    vgf_wgs84::Tuple,
 )
     # Check if the satellite is within the visibility circle of the facility.
     Δr_e = sat_r_e - gf_r_e # Corresponds to Δecef in TelecomUtils.get_visibility(gs,sat)
-    # t = norm(Δr_e)
-    # normalized_Δr_e = Δr_e ./ t
-    # xyz = rv.R' * normalized_Δr_e # Bring Δecef into the ENU frame
     R = _ecef_to_enu_rotmat(vgf_wgs84[1],vgf_wgs84[2])
-    xyz = R' * Δr_e # Bring Δecef into the ENU frame
+    xyz = R * Δr_e # Bring Δecef into the ENU frame
 
-    cos_β = dot(xyz / norm(xyz), gf_r_e / norm(gf_r_e))
+    (;x,y,z) = xyz
+    r = norm(xyz)
+    θ = acos(z/r)
+    # φ = atan(y,x)
 
-    return cos_β > cos(π / 2 - θ)
+    return pi/2-θ
 end
+
+function is_ground_facility_visible( # Same result as old
+    sat_r_e::AbstractVector,
+    gf_r_e::AbstractVector,
+    vgf_wgs84::Tuple,
+    θ::Number
+)
+    el = get_el(sat_r_e, gf_r_e, vgf_wgs84)
+
+    return el > θ
+end
+# function is_ground_facility_visible( # Same result as old
+#     sat_r_e::AbstractVector,
+#     gf_r_e::AbstractVector,
+#     vgf_wgs84::Tuple,
+#     θ::Number
+# )
+#     # Check if the satellite is within the visibility circle of the facility.
+#     R = _ecef_to_enu_rotmat(vgf_wgs84[1],vgf_wgs84[2])
+#     xyz_sat_r_e = R*sat_r_e
+#     xyz_gf_r_e = R*gf_r_e
+    
+#     xyz_Δr_e = xyz_sat_r_e - xyz_gf_r_e
+
+#     β = acos(dot(xyz_Δr_e / norm(xyz_Δr_e), xyz_gf_r_e / norm(xyz_gf_r_e)))
+
+#     return (π/2 - β) > θ
+# end
 
 """
     is_ground_facility_visible(sat_r_e::AbstractVector, gf_lat::Number, gf_lon::Number, gf_h::Number, θ::Number) -> Bool
