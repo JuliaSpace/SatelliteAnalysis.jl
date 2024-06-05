@@ -135,6 +135,7 @@ function ground_facility_accesses(
     # Convert the ground facilities positions to an ECEF vector to save
     # computational burden.
     vgs_r_e = [geodetic_to_ecef(gf_wgs84...) for gf_wgs84 in vgf_wgs84]
+    vgs_rot_ecef_enu = [_rotmat_ecef_to_enu(gf_wgs84[1],gf_wgs84[2]) for gf_wgs84 in vgf_wgs84]
 
     # Vector that will contain the accesses.
     accesses = NTuple{2, DateTime}[]
@@ -151,8 +152,8 @@ function ground_facility_accesses(
         r_e = f_eci_to_ecef(r_i, jd₀ + t / 86400)
 
         @inbounds for i in eachindex(visibility)
-            # visibility[i] = is_ground_facility_visible_old(r_e, vgs_r_e[i], minimum_elevation)
-            visibility[i] = is_ground_facility_visible(r_e, vgs_r_e[i], vgf_wgs84[i], minimum_elevation)
+            visibility[i] = is_ground_facility_visible_old(r_e, vgs_r_e[i], minimum_elevation)
+            # visibility[i] = is_ground_facility_visible(r_e, vgs_r_e[i], vgs_rot_ecef_enu[i], minimum_elevation)
         end
 
         return reduction(visibility)
@@ -396,4 +397,32 @@ end
 function _ground_facilities_default_eci_to_ecef(r_eci::AbstractVector, jd::Number)
     D_ecef_eci = r_eci_to_ecef(TEME(), PEF(), jd)
     return D_ecef_eci * r_eci
+end
+
+"""
+    _rotmat_ecef_to_enu(lat, lon)::SMatrix{3,3}
+
+Generate a 3x3 rotation matrix from ECEF (Earth-Centered, Earth-Fixed) coordinates to ENU (East, North, Up) coordinates.
+
+## Arguments
+- `lat`: Latitude in radians.
+- `lon`: Longitude in radians.
+
+## Returns
+- `R`: A 3x3 StaticArray rotation matrix.
+"""
+function _rotmat_ecef_to_enu(lat,lon)::SMatrix{3,3}
+    # Precompute the sines and cosines
+    sλ, cλ = sincos(lon)
+    sφ, cφ = sincos(lat)
+    
+    # Generate the rotation matrix as a StaticArray
+    # Rotation matrix ECEF -> ENU [https://gssc.esa.int/navipedia/index.php/Transformations_between_ECEF_and_ENU_coordinates]
+    R = SA_F64[
+            -sλ      cλ      0
+            -cλ*sφ  -sλ*sφ   cφ
+            cλ*cφ   sλ*cφ   sφ
+        ] |> SMatrix{3,3}
+
+    return R
 end

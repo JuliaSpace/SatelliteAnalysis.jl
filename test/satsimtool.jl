@@ -77,7 +77,7 @@ using SatelliteOrbitPropagation
                     e                   = 0.0,
                     raan0               = 0.0,          
                     per                 = 0.0, 
-                    geometry 		    = Auto(),
+                    geometry 		    = SatelliteOrbitPropagation.Auto(),
                     ID 				    = 1
                 )
             ],

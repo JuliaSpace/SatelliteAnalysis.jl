@@ -99,14 +99,39 @@ $(gap2)
 #  y = 1.6147583722314239e6 z = 3.7313600951122735e6
 
 ## TEST
-r_gs = [5.528256639292835e6, 0.0, 3.170373735383637e6]
-r_sat = [5.547817213164223e6, 1.6147583722314239e6, 3.7313600951122735e6]
-em = EllipsoidModel()
-gs = UserView(ECEF(r_gs...),em)
+r_gs = [5.528256639292835e6, 0.0, 3.170373735383637e6];
+r_sat = [5.547817213164223e6, 1.6147583722314239e6, 3.7313600951122735e6];
+em = EllipsoidModel();
+gs = UserView(ECEF(r_gs...),em);
+R_ecef_enu = _rotmat_ecef_to_enu(gs.lla.lat, gs.lla.lon);
+
+@info "TelecomUtils ERA"
 get_era(gs,ECEF(r_sat...))
 
-SatelliteAnalysis.is_ground_facility_visible(r_sat,r_gs,(gs.lla.lat,gs.lla.lon,gs.lla.alt),deg2rad(9.97))
-SatelliteAnalysis.is_ground_facility_visible(r_sat,r_gs,(gs.lla.lat,gs.lla.lon,gs.lla.alt),deg2rad(9.98))
+@info "New Implementation"
+rad2deg(SatelliteAnalysis._get_elevation(r_sat,r_gs,R_ecef_enu))
+SatelliteAnalysis.is_ground_facility_visible(r_sat,r_gs,R_ecef_enu,deg2rad(9.97))
+SatelliteAnalysis.is_ground_facility_visible(r_sat,r_gs,R_ecef_enu,deg2rad(9.98))
 
+@info "Old Implementation"
+rad2deg(SatelliteAnalysis._get_elevation_old(r_sat,r_gs))
 SatelliteAnalysis.is_ground_facility_visible_old(r_sat,r_gs,deg2rad(9.97))
 SatelliteAnalysis.is_ground_facility_visible_old(r_sat,r_gs,deg2rad(9.98))
+
+## TEST2
+@info "Equator"
+sat1=SatView(LLA(0.0, 0.0, 1000e3));
+gs1=UserView(LLA(0.0, 0.0, 0.0));
+get_era(gs1, sat1)
+rad2deg(SatelliteAnalysis._get_elevation_old(sat1.ecef, gs1.ecef))
+R_ecef_enu1 = _rotmat_ecef_to_enu(gs1.lla.lat, gs1.lla.lon);
+rad2deg(SatelliteAnalysis._get_elevation(sat1.ecef, gs1.ecef, R_ecef_enu1))
+
+@info "North LAT"
+sat2=SatView(LLA(deg2rad(42), deg2rad(11), 1000e3));
+gs2=UserView(LLA(deg2rad(42), deg2rad(11), 0.0));
+get_era(gs2, sat2)
+rad2deg(SatelliteAnalysis._get_elevation_old(sat2.ecef, gs2.ecef))
+R_ecef_enu2 = _rotmat_ecef_to_enu(gs2.lla.lat, gs2.lla.lon);
+rad2deg(SatelliteAnalysis._get_elevation(sat2.ecef, gs2.ecef, R_ecef_enu2))
+

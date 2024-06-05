@@ -46,6 +46,9 @@ using SatelliteAnalysis
 #     include("./issues.jl")
 # end
 
-@testset "Against SatelliteSimulationToolkit" verbose = true begin
-    include("./satsimtool.jl")
+# @testset "Against SatelliteSimulationToolkit" verbose = true begin
+#     include("./satsimtool.jl")
+# end
+@testset "Accesses and Gaps" verbose = true begin
+    include("./accesses_gaps.jl")
 end

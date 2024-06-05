@@ -1,4 +1,5 @@
 [deps]
+GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
 SatelliteAnalysis = "101040f3-2a13-4d8c-b9b0-4a720fa906ce"
