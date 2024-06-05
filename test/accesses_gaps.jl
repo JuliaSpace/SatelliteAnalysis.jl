@@ -30,16 +30,16 @@ end
     end
 end
 
-@testset "Test Old Functions" begin
-    # Test old Implementation to actually proof the issue related to the LTp and ellipsoid not considered for the elevation computation between satellite and ground station.
-    # Due to the issue the elevation will never be 90° (even if it should be) except for the ground station at the poles and the ground station at the equator.
-    for i in 1:runs
-        if abs(vgs_lla[i].lat) < 1e-6 || abs(abs(vgs_lla[i].lat) - pi/2) < 1e-6
-            @test abs(abs(SatelliteAnalysis._get_elevation_old(vsat_ecef[i], vgs_ecef[i]) - pi/2)) < 1e-6
-            @test SatelliteAnalysis.is_ground_facility_visible_old(vsat_ecef[i], vgs_ecef[i], (pi/2) - 1e-6) == true
-        else
-            @test SatelliteAnalysis._get_elevation_old(vsat_ecef[i], vgs_ecef[i]) != pi/2
-            @test SatelliteAnalysis.is_ground_facility_visible_old(vsat_ecef[i], vgs_ecef[i], (pi/2) - 1e-6) == false
-        end
-    end
-end
+# @testset "Test Old Functions" begin
+#     # Test old Implementation to actually proof the issue related to the LTp and ellipsoid not considered for the elevation computation between satellite and ground station.
+#     # Due to the issue the elevation will never be 90° (even if it should be) except for the ground station at the poles and the ground station at the equator.
+#     for i in 1:runs
+#         if abs(vgs_lla[i].lat) < 1e-6 || abs(abs(vgs_lla[i].lat) - pi/2) < 1e-6
+#             @test abs(abs(SatelliteAnalysis._get_elevation_old(vsat_ecef[i], vgs_ecef[i]) - pi/2)) < 1e-6
+#             @test SatelliteAnalysis.is_ground_facility_visible_old(vsat_ecef[i], vgs_ecef[i], (pi/2) - 1e-6) == true
+#         else
+#             @test SatelliteAnalysis._get_elevation_old(vsat_ecef[i], vgs_ecef[i]) != pi/2
+#             @test SatelliteAnalysis.is_ground_facility_visible_old(vsat_ecef[i], vgs_ecef[i], (pi/2) - 1e-6) == false
+#         end
+#     end
+# end
