@@ -8,16 +8,17 @@ export is_ground_facility_visible
 
 """
     is_ground_facility_visible(sat_r_e::AbstractVector, gf_lat::Number, gf_lon::Number, gf_h::Number, θ::Number) -> Bool
-    is_ground_facility_visible(sat_r_e::AbstractVector, gf_r_e::AbstractVector, gf_rot_ecef_enu::SMatrix{3,3}, θ::Number) -> Bool
     is_ground_facility_visible(sat_r_e::AbstractVector, gf_r_e::AbstractVector, θ::Number) -> Bool
+    is_ground_facility_visible(sat_r_ned::AbstractVector, θ::Number) -> Bool
 
 Check if the satellite with position vector `sat_r_e` (ECEF) is inside the visibility circle
 of a ground facility with latitude `gf_lat` [rad], longitude `gf_lon` [rad], altitude `gf_h`
-(WGS-84), and a minimum elevation angle of `θ` [rad].
+(WGS-84) or ECEF position `gf_r_e` [m]. The algorithm considers that the ground station has
+visibility to the satellite if its elevation angle is larger than `θ` [rad].
 
-The second method is an alternative to the main function allowing to pre-calculate the rotation matrix for each of the ground facility location. This avoids computing the ECEF to Local Coordinates Plane at every propagation time step.
-
-Notice that `sat_r_e` and `gf_h` must have the same units.
+The user can also pass the satellite position represented in the NED (North-East-Down)
+reference frame `sat_r_ned` [m] at the ground station location, which increases the
+performance since the algorithm performs no reference frame conversion.
 
 # Returns
 
@@ -35,24 +36,22 @@ function is_ground_facility_visible(
 end
 
 function is_ground_facility_visible(
-    r_ned::AbstractVector,
-    minimum_elevation::Number
-)
-    # Check if the satellite is within the minimum elevation supported by the facility.
-    # Using the NED vector of the satellite, wrt to the current ground facility, it is sufficient 
-    # to check the angle θ between `r_ned` and the local vertical (-Z axis), then: el = π/2 - θ.
-    (;x,y,z) = r_ned
-    r = norm(r_ned)
-    θ = acos(-z/r)
-    
-    return (π/2 - θ) > minimum_elevation
-end
-
-function is_ground_facility_visible(
     sat_r_e::AbstractVector,
     gf_r_e::AbstractVector,
     θ::Number
 )
     gf_wgs84 = ecef_to_geodetic(gf_r_e)
     return is_ground_facility_visible(sat_r_e, gf_wgs84..., θ)
+end
+
+function is_ground_facility_visible(r_ned::AbstractVector, minimum_elevation::Number)
+    # Check if the satellite is within the minimum elevation supported by the facility.
+    # Using the NED vector of the satellite, w.r.t. to the current ground facility, it is
+    # sufficient to check the angle θ between `r_ned` and the local vertical (-Z axis),
+    # then: el = π / 2 - θ.
+    z = r_ned[3]
+    r = norm(r_ned)
+    θ = acos(-z / r)
+
+    return (π / 2 - θ) > minimum_elevation
 end

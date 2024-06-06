@@ -142,7 +142,7 @@ end
     # -- Unknown Symbol --------------------------------------------------------------------
 
     df = ground_facility_accesses(
-        orbp, 
+        orbp,
         (0, 0, 0);
         duration = 1 * 86400,
         f_eci_to_ecef = gf_tod_to_pef,
@@ -161,7 +161,7 @@ end
 
     # == Facility Outside the Equator ======================================================
 
-    # This test is used to verify the improvement provided by commit 43eea92.
+    # This test is used to verify the improvement provided by commit `43eea92`.
 
     jd₀ = date_to_jd(2026, 1, 1)
 
