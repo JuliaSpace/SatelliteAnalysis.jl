@@ -1,3 +1,15 @@
+# Additional Functions# Only for test purposes
+function _get_elevation( # //FIX: to be removed
+    r_ned::AbstractVector,
+)
+    # Check if the satellite is within the minimum elevation supported by the facility.
+    (;x,y,z) = r_ned
+    r = norm(r_ned)
+    θ = acos(-z/r)
+    
+    return (π/2 - θ)
+end
+
 # Initialization
 runs = 100000
 prec = pi/200

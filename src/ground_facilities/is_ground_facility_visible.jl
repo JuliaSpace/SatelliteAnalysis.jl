@@ -29,97 +29,20 @@ function is_ground_facility_visible(
     gf_h::Number,
     θ::Number
 )
-    gf_r_e = geodetic_to_ecef(gf_lat, gf_lon, gf_h)
-
-    # Check if the satellite is within the minimum elevation supported by the facility.
-    Δr_e = sat_r_e - gf_r_e 
-    Δr_e_ned = ecef_to_ned(Δr_e, gf_lat, gf_lon, gf_h)
-    Δr_e_enu = C_ned_enu * Δr_e_ned
-    sph_coord = _cartesian_to_spherical(Δr_e_enu)
-
-    return (π/2-sph_coord.θ) > θ
+    r_ned = ecef_to_ned(sat_r_e, gf_lat, gf_lon, gf_h; translate = true)
+    return is_ground_facility_visible(r_ned, θ)
 end
 
 function is_ground_facility_visible(
-    sat_r_e::AbstractVector,
-    gf_r_e::AbstractVector,
-    gf_rot_ecef_enu::SMatrix{3,3},
-    θ::Number
+    r_ned::AbstractVector,
+    minimum_elevation::Number
 )
     # Check if the satellite is within the minimum elevation supported by the facility.
-    Δr_e = sat_r_e - gf_r_e 
-    Δr_e_enu = gf_rot_ecef_enu * Δr_e
-    sph_coord = _cartesian_to_spherical(Δr_e_enu)
-
-    return (π/2-sph_coord.θ) > θ
+    # Using the NED vector of the satellite, wrt to the current ground facility, it is sufficient 
+    # to check the angle θ between `r_ned` and the local vertical (-Z axis), then: el = π/2 - θ.
+    (;x,y,z) = r_ned
+    r = norm(r_ned)
+    θ = acos(-z/r)
+    
+    return (π/2 - θ) > minimum_elevation
 end
-
-############################################################################################
-#                                    Private Functions                                     #
-############################################################################################
-
-C_ned_enu = SMatrix{3,3}([0 1 0; 1 0 0; 0 0 -1]) # Conversion matrix NED to ENU
-
-function _cartesian_to_spherical(xyz::AbstractVector)
-    (;x,y,z) = xyz
-    r = norm(xyz)
-    θ = acos(z/r)
-    φ = atan(y,x)
-
-    return (;r=r, θ=θ, φ=φ)
-end
-
-# Only for test purposes
-function _get_elevation(
-    sat_r_e::AbstractVector,
-    gf_lat::Number,
-    gf_lon::Number,
-    gf_h::Number
-)
-    gf_r_e = geodetic_to_ecef(gf_lat, gf_lon, gf_h)
-
-    # Check if the satellite is within the minimum elevation supported by the facility.
-    Δr_e = sat_r_e - gf_r_e 
-    Δr_e_ned = ecef_to_ned(Δr_e, gf_lat, gf_lon, gf_h)
-    Δr_e_enu = C_ned_enu * Δr_e_ned
-    sph_coord = _cartesian_to_spherical(Δr_e_enu)
-
-    return (π/2-sph_coord.θ)
-end
-
-function _get_elevation(
-    sat_r_e::AbstractVector,
-    gf_r_e::AbstractVector,
-    gf_rot_ecef_enu::SMatrix{3,3}
-)
-    # Check if the satellite is within the minimum elevation supported by the facility.
-    Δr_e = sat_r_e - gf_r_e 
-    Δr_e_enu = gf_rot_ecef_enu * Δr_e
-    sph_coord = _cartesian_to_spherical(Δr_e_enu)
-
-    return (π/2-sph_coord.θ)
-end
-
-# # Old function with ellipsoid error
-# function is_ground_facility_visible_old(
-#     sat_r_e::AbstractVector,
-#     gf_r_e::AbstractVector,
-#     θ::Number
-# )
-#     # Check if the satellite is within the visibility circle of the facility.
-#     Δr_e = sat_r_e - gf_r_e
-#     cos_β = dot(Δr_e / norm(Δr_e), gf_r_e / norm(gf_r_e))
-
-#     return cos_β > cos(π / 2 - θ)
-# end
-
-# function _get_elevation_old(
-#     sat_r_e::AbstractVector,
-#     gf_r_e::AbstractVector
-# )
-#     # Check if the satellite is within the visibility circle of the facility.
-#     Δr_e = sat_r_e - gf_r_e
-#     cos_β = dot(Δr_e / norm(Δr_e), gf_r_e / norm(gf_r_e))
-
-#     return π/2 - acos(abs(cos_β) > 1 ? 1 : cos_β)
-# end
