@@ -24,7 +24,7 @@ docs/site/
 /test*.jl
 
 # Other Files
-*.png
+# *.png
 *.fig
 *.mat
 *.jld2

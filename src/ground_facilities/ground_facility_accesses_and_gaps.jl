@@ -392,31 +392,3 @@ function _ground_facilities_default_eci_to_ecef(r_eci::AbstractVector, jd::Numbe
     D_ecef_eci = r_eci_to_ecef(TEME(), PEF(), jd)
     return D_ecef_eci * r_eci
 end
-
-"""
-    _rotmat_ecef_to_enu(lat, lon)::SMatrix{3,3}
-
-Generate a 3x3 rotation matrix from ECEF (Earth-Centered, Earth-Fixed) coordinates to ENU (East, North, Up) coordinates.
-
-## Arguments
-- `lat`: Latitude in radians.
-- `lon`: Longitude in radians.
-
-## Returns
-- `R`: A 3x3 StaticArray rotation matrix.
-"""
-function _rotmat_ecef_to_enu(lat,lon)::SMatrix{3,3} # //FIX: to be removed
-    # Precompute the sines and cosines
-    sλ, cλ = sincos(lon)
-    sφ, cφ = sincos(lat)
-    
-    # Generate the rotation matrix as a StaticArray
-    # Rotation matrix ECEF -> ENU [https://gssc.esa.int/navipedia/index.php/Transformations_between_ECEF_and_ENU_coordinates]
-    R = SA_F64[
-            -sλ      cλ      0
-            -cλ*sφ  -sλ*sφ   cφ
-            cλ*cφ   sλ*cφ   sφ
-        ] |> SMatrix{3,3}
-
-    return R
-end
