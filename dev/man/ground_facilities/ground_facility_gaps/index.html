@@ -31,10 +31,10 @@
 <span class="sgr1"> Row </span>│<span class="sgr1"> gap_beginning            gap_end                  duration </span>
      │<span class="sgr90"> DateTime                 DateTime                 Float64  </span>
 ─────┼────────────────────────────────────────────────────────────
-   1 │ 2024-01-08T03:09:17.511  2024-01-08T13:56:46.830  647.489
-   2 │ 2024-01-08T14:08:49.523  2024-01-08T15:39:26.373   90.6142
-   3 │ 2024-01-08T15:43:46.376  2024-01-09T02:18:04.189  634.297
-   4 │ 2024-01-09T02:30:10.279  2024-01-09T03:08:20.572   38.1716</code></pre><p>If we want to change the reference frames used in the analysis, we must provide a function <code>f_eci_to_ecef(r_i, jd)</code> that converts the vector <code>r_i</code> to the desired ECEF frame at the instant <code>jd</code> [Julian Day]. For example, let&#39;s use the more precise ITRF instead of the PEF (default):</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; const eop = fetch_iers_eop(Val(:IAU1980));</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; function f_eci_to_ecef(r_teme, jd)
+   1 │ 2024-01-08T03:09:16.311  2024-01-08T13:56:48.099  647.53
+   2 │ 2024-01-08T14:08:50.888  2024-01-08T15:39:28.281   90.6232
+   3 │ 2024-01-08T15:43:47.366  2024-01-09T02:18:02.879  634.259
+   4 │ 2024-01-09T02:30:08.933  2024-01-09T03:08:20.572   38.194</code></pre><p>If we want to change the reference frames used in the analysis, we must provide a function <code>f_eci_to_ecef(r_i, jd)</code> that converts the vector <code>r_i</code> to the desired ECEF frame at the instant <code>jd</code> [Julian Day]. For example, let&#39;s use the more precise ITRF instead of the PEF (default):</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; const eop = fetch_iers_eop(Val(:IAU1980));</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; function f_eci_to_ecef(r_teme, jd)
            D_itrf_teme = r_eci_to_ecef(TEME(), ITRF(), jd, eop)
            r_itrf = D_itrf_teme * r_teme
            return r_itrf
@@ -49,10 +49,10 @@
 <span class="sgr1"> Row </span>│<span class="sgr1"> gap_beginning            gap_end                  duration </span>
      │<span class="sgr90"> DateTime                 DateTime                 Float64  </span>
 ─────┼────────────────────────────────────────────────────────────
-   1 │ 2024-01-08T03:09:17.512  2024-01-08T13:56:46.829  647.489
-   2 │ 2024-01-08T14:08:49.522  2024-01-08T15:39:26.373   90.6142
-   3 │ 2024-01-08T15:43:46.375  2024-01-09T02:18:04.190  634.297
-   4 │ 2024-01-09T02:30:10.280  2024-01-09T03:08:20.572   38.1715</code></pre><p>We can also perform analyses using multiple ground facilities. For example, let&#39;s find the accumulated gap if we consider the INPE&#39;s stations at Cuiabá, MT, Brazil, and Alcântara, MA, Brazil:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ground_facility_gaps(
+   1 │ 2024-01-08T03:09:16.312  2024-01-08T13:56:48.098  647.53
+   2 │ 2024-01-08T14:08:50.887  2024-01-08T15:39:28.281   90.6232
+   3 │ 2024-01-08T15:43:47.364  2024-01-09T02:18:02.880  634.259
+   4 │ 2024-01-09T02:30:08.935  2024-01-09T03:08:20.572   38.194</code></pre><p>We can also perform analyses using multiple ground facilities. For example, let&#39;s find the accumulated gap if we consider the INPE&#39;s stations at Cuiabá, MT, Brazil, and Alcântara, MA, Brazil:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ground_facility_gaps(
            orbp,
            [
                (-(15 + 33 / 60) |&gt; deg2rad, -(56 + 04 / 60) |&gt; deg2rad, 0)
@@ -65,12 +65,12 @@
 <span class="sgr1"> Row </span>│<span class="sgr1"> gap_beginning            gap_end                  duration </span>
      │<span class="sgr90"> DateTime                 DateTime                 Float64  </span>
 ─────┼────────────────────────────────────────────────────────────
-   1 │ 2024-01-08T03:09:17.511  2024-01-08T12:16:55.644  547.636
-   2 │ 2024-01-08T12:23:20.482  2024-01-08T13:52:43.916   89.3906
-   3 │ 2024-01-08T14:08:49.523  2024-01-08T15:39:26.373   90.6142
-   4 │ 2024-01-08T15:43:46.376  2024-01-09T00:43:23.658  539.621
-   5 │ 2024-01-09T00:53:26.160  2024-01-09T02:18:04.189   84.6338
-   6 │ 2024-01-09T02:32:06.176  2024-01-09T03:08:20.572   36.2399</code></pre><p>By default, the algorithm computes the accumulated gap, <em>i.e.</em>, it considers the gap active if neither station has visibility to the satellite. We can change this logic by overloading the function in the keyword parameter <code>reduction</code>. For example, let&#39;s compute the gap when the satellite does not have visibility to both ground stations at the same time:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ground_facility_gaps(
+   1 │ 2024-01-08T03:09:16.311  2024-01-08T12:16:55.777  547.658
+   2 │ 2024-01-08T12:23:20.782  2024-01-08T13:52:44.135   89.3892
+   3 │ 2024-01-08T14:08:50.888  2024-01-08T15:39:28.281   90.6232
+   4 │ 2024-01-08T15:43:47.366  2024-01-09T00:43:23.474  539.602
+   5 │ 2024-01-09T00:53:25.918  2024-01-09T02:18:02.879   84.616
+   6 │ 2024-01-09T02:32:05.994  2024-01-09T03:08:20.572   36.243</code></pre><p>By default, the algorithm computes the accumulated gap, <em>i.e.</em>, it considers the gap active if neither station has visibility to the satellite. We can change this logic by overloading the function in the keyword parameter <code>reduction</code>. For example, let&#39;s compute the gap when the satellite does not have visibility to both ground stations at the same time:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ground_facility_gaps(
            orbp,
            [
                (-(15 + 33 / 60) |&gt; deg2rad, -(56 + 04 / 60) |&gt; deg2rad, 0)
@@ -84,6 +84,6 @@
 <span class="sgr1"> Row </span>│<span class="sgr1"> gap_beginning            gap_end                  duration </span>
      │<span class="sgr90"> DateTime                 DateTime                 Float64  </span>
 ─────┼────────────────────────────────────────────────────────────
-   1 │ 2024-01-08T03:08:20.572  2024-01-08T13:56:46.830  648.438
-   2 │ 2024-01-08T14:04:29.402  2024-01-09T02:21:47.877  737.308
-   3 │ 2024-01-09T02:30:10.279  2024-01-09T03:08:20.572   38.1716</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ground_facility_accesses/">« Ground Facility Accesses</a><a class="docs-footer-nextpage" href="../ground_facility_visibility_circle/">Ground Facility Visibility Circle »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Monday 3 June 2024 17:44">Monday 3 June 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+   1 │ 2024-01-08T03:08:20.572  2024-01-08T13:56:48.099   648.459
+   2 │ 2024-01-08T14:04:29.601  2024-01-09T02:21:47.636   737.301
+   3 │ 2024-01-09T02:30:08.933  2024-01-09T03:08:20.572    38.194</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ground_facility_accesses/">« Ground Facility Accesses</a><a class="docs-footer-nextpage" href="../ground_facility_visibility_circle/">Ground Facility Visibility Circle »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Thursday 6 June 2024 17:03">Thursday 6 June 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
