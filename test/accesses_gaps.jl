@@ -96,8 +96,10 @@ end
 end
 
 # @testset "Test Old Functions" begin
-#     # Test old Implementation to actually proof the issue related to the LTp and ellipsoid not considered for the elevation computation between satellite and ground station.
-#     # Due to the issue the elevation will never be 90° (even if it should be) except for the ground station at the poles and the ground station at the equator.
+#     # Test old Implementation to actually proof the issue related to the LTP and ellipsoid are
+#     # not considered for the elevation computation between satellite and ground station.
+#     # Due to the issue the elevation will never be 90° (even if it should be) except for 
+#     # the ground station at the poles and the ground station at the equator.
     
 #     # Functions
 #     function is_ground_facility_visible_old(

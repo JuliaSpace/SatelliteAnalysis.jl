@@ -17,7 +17,6 @@ SatelliteToolbox = "6ac157d9-b43d-51bb-8fab-48bf53814f4a"
 Scratch = "6c6a2e73-6563-6170-7368-637461726353"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-TelecomUtils = "0c499ce9-5070-43f6-85c8-6d9cb66e1eb8"
 
 [weakdeps]
 GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
