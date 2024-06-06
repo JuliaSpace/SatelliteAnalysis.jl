@@ -158,6 +158,48 @@ end
 
     @test metadata(df, "Description") == "Accesses to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :s
+
+    # == Facility Outside the Equator ======================================================
+
+    # This test is used to verify the improvement provided by commit 43eea92.
+
+    jd₀ = date_to_jd(2026, 1, 1)
+
+    orb = KeplerianElements(
+        jd₀,
+        7130.982e3,
+        0.001111,
+        98.405 |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90 |> deg2rad,
+        0
+    )
+
+    orbp = Propagators.init(Val(:J2), orb)
+
+    gs_cuiaba = (
+        -15.555008 |> deg2rad,
+        -56.069569 |> deg2rad,
+        +237.03
+    )
+
+    df = ground_facility_accesses(
+        orbp,
+        gs_cuiaba;
+        duration = 1 * 86400,
+        f_eci_to_ecef = gf_tod_to_pef,
+        minimum_elevation = 5 |> deg2rad,
+    )
+
+    @test df.access_beginning[1] == DateTime("2026-01-01T01:07:42.514")
+    @test df.access_beginning[2] == DateTime("2026-01-01T02:44:26.689")
+    @test df.access_beginning[3] == DateTime("2026-01-01T13:43:36.365")
+    @test df.access_beginning[4] == DateTime("2026-01-01T15:25:45.067")
+
+    @test df.access_end[1] == DateTime("2026-01-01T01:15:20.453")
+    @test df.access_end[2] == DateTime("2026-01-01T02:56:03.137")
+    @test df.access_end[3] == DateTime("2026-01-01T13:55:32.697")
+    @test df.access_end[4] == DateTime("2026-01-01T15:30:58.667")
 end
 
 @testset "Function ground_facility_gaps" begin
