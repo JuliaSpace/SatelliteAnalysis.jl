@@ -132,10 +132,6 @@ function ground_facility_accesses(
     # Get the epoch of the propagator.
     jd₀ = Propagators.epoch(orbp)
 
-    # Convert the ground facilities positions to an ECEF vector to save
-    # computational burden.
-    vgs_r_e = [geodetic_to_ecef(gf_wgs84...) for gf_wgs84 in vgf_wgs84]
-
     # Vector that will contain the accesses.
     accesses = NTuple{2, DateTime}[]
 
@@ -143,7 +139,7 @@ function ground_facility_accesses(
     state = :initial
 
     # Pre-allocate the visibility vector to avoid a huge number of allocation.
-    visibility = zeros(Bool, length(vgs_r_e))
+    visibility = zeros(Bool, length(vgf_wgs84))
 
     # Lambda function to check the reduced visibility.
     function f(t)::Bool
@@ -151,7 +147,7 @@ function ground_facility_accesses(
         r_e = f_eci_to_ecef(r_i, jd₀ + t / 86400)
 
         @inbounds for i in eachindex(visibility)
-            visibility[i] = is_ground_facility_visible(r_e, vgs_r_e[i], minimum_elevation)
+            visibility[i] = is_ground_facility_visible(r_e, vgf_wgs84[i][1], vgf_wgs84[i][2], vgf_wgs84[i][3], minimum_elevation)
         end
 
         return reduction(visibility)
