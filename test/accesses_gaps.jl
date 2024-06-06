@@ -31,19 +31,20 @@
     vgs_lla = map(lats,lons) do lat,lon
         (lat=lat, lon=lon, alt=0.0)
     end
-
     vsat_lla = map(lats,lons,alts) do lat,lon,alt
         (lat=lat, lon=lon, alt=alt)
     end
-
     vsat_ecef = map(vsat_lla) do sat_lla
         geodetic_to_ecef(sat_lla.lat, sat_lla.lon, sat_lla.alt) # WGS84
+    end
+    vgs_ecef = map(vgs_lla) do gs_lla
+        geodetic_to_ecef(gs_lla.lat, gs_lla.lon, gs_lla.alt) # WGS84
     end
 
     # Test that the elevation is actually always 90°
     for i in 1:runs
         @test _get_elevation(vsat_ecef[i], vgs_lla[i][1], vgs_lla[i][2], vgs_lla[i][3]) ≈ pi/2
-        @test is_ground_facility_visible(vsat_ecef[i], vgs_lla[i][1], vgs_lla[i][2], vgs_lla[i][3], (pi/2) - 1e-6) == true
+        @test is_ground_facility_visible(vsat_ecef[i], vgs_ecef[i], (pi/2) - 1e-6) == true
     end
 end
 

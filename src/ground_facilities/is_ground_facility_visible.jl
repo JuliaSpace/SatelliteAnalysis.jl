@@ -9,6 +9,7 @@ export is_ground_facility_visible
 """
     is_ground_facility_visible(sat_r_e::AbstractVector, gf_lat::Number, gf_lon::Number, gf_h::Number, θ::Number) -> Bool
     is_ground_facility_visible(sat_r_e::AbstractVector, gf_r_e::AbstractVector, gf_rot_ecef_enu::SMatrix{3,3}, θ::Number) -> Bool
+    is_ground_facility_visible(sat_r_e::AbstractVector, gf_r_e::AbstractVector, θ::Number) -> Bool
 
 Check if the satellite with position vector `sat_r_e` (ECEF) is inside the visibility circle
 of a ground facility with latitude `gf_lat` [rad], longitude `gf_lon` [rad], altitude `gf_h`
@@ -45,4 +46,13 @@ function is_ground_facility_visible(
     θ = acos(-z/r)
     
     return (π/2 - θ) > minimum_elevation
+end
+
+function is_ground_facility_visible(
+    sat_r_e::AbstractVector,
+    gf_r_e::AbstractVector,
+    θ::Number
+)
+    gf_wgs84 = ecef_to_geodetic(gf_r_e)
+    return is_ground_facility_visible(sat_r_e, gf_wgs84..., θ)
 end
