@@ -1,6 +1,13 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.3.4
+-------------
+
+- ![Enhancement][badge-enhancement] The algorithm to compute the access to ground facilities
+  now uses the local reference frame (NED) to compute the elevation angle, leading to a
+  better precision. (PR [#5][gh-pr-5])
+
 Version 0.3.3
 -------------
 
@@ -59,3 +66,5 @@ Version 0.1.0
 [badge-info]: https://img.shields.io/badge/Info-gray.svg
 
 [gh-issue-3]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/issues/3
+
+[gh-pr-5]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/pull/5
