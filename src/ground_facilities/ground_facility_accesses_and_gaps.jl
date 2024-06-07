@@ -24,6 +24,11 @@ containing the WGS84 position of each ground facility `[(WGS84)]`:
 Those geodetic information are transformed to an ECEF vector using the function
 `geodetic_to_ecef`.
 
+!!! warning
+
+    This function computes the accesses using multiple threads. Hence, the function
+    `f_eci_to_ecef` must be thread safe.
+
 # Keywords
 
 - `duration::Number`: Duration of the analysis [s].
@@ -32,7 +37,7 @@ Those geodetic information are transformed to an ECEF vector using the function
     in the Earth-centered inertial (ECI) reference frame to the Earth-centered, Earth-fixed
     (ECEF) reference frame. The signature must be
 
-    ```julia
+    ```
     f_eci_to_ecef(r_i::AbstractVector, jd::Number) -> AbstractVector
     ```
 
@@ -44,6 +49,9 @@ Those geodetic information are transformed to an ECEF vector using the function
 - `minimum_elevation::Number`: Minimum elevation angle for communication between the
     satellite and the ground facilities [rad].
     (**Default** = 10°)
+- `num_chunks::Number`: Number of chunks the algorithm will divide the time vector to
+    compute the accesses.
+    (**Default** = `Threads.nthreads()`)
 - `reduction::Function`: A function that receives a boolean vector with the visibility
     between the satellite and each ground facility. It must return a boolean value
     indicating if the access must be computed or not. This is useful to merge access time
@@ -121,99 +129,115 @@ function ground_facility_accesses(
     f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
     initial_time::Number = 0,
     minimum_elevation::Number = 10 |> deg2rad,
+    num_chunks::Integer = Threads.nthreads(),
     reduction::Function = v -> |(v...),
     step::Number = 60,
     unit::Symbol = :s
 ) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
 
     # Time vector of the analysis.
-    t = float(initial_time):float(step):float(initial_time + duration)
+    vt = float(initial_time):float(step):float(initial_time + duration)
 
-    # Get the epoch of the propagator.
-    jd₀ = Propagators.epoch(orbp)
+    # Create the chunks with the time to be computed by each thread.
+    vt_chunks = _gf_access_time_vector_partition(vt, num_chunks) |> collect
 
-    # Vector that will contain the accesses.
-    accesses = NTuple{2, DateTime}[]
+    @debug begin
+        dtf = dateformat"yyyy-mm-ddTHH:MM:SS.sss"
 
-    # State to help the computation.
-    state = :initial
+        # Create a vector with the instants computed by each chunk.
+        dt₀ = julian2datetime(Propagators.epoch(orbp))
 
-    # Pre-allocate the visibility vector to avoid a huge number of allocation.
-    visibility = zeros(Bool, length(vgf_wgs84))
+        str_vt_chunks = [
+            Dates.format(dt₀ + Dates.Microsecond(round(Int, vt_chunks[k][begin] * 1e6)), dtf) *
+            " -- " *
+            Dates.format(dt₀ + Dates.Microsecond(round(Int, vt_chunks[k][end] * 1e6)), dtf)
+            for k in eachindex(vt_chunks)
+        ]
 
-    # Lambda function to check the reduced visibility.
-    function f(t)::Bool
-        r_i, ~ = Propagators.propagate!(orbp, t)
-        r_e = f_eci_to_ecef(r_i, jd₀ + t / 86400)
+        debug_msg = "Computing ground facility accesses using $(num_chunks) chunks:\n\n"
 
-        @inbounds for i in eachindex(visibility)
-            visibility[i] = is_ground_facility_visible(
-                r_e,
-                vgf_wgs84[i]...,
-                minimum_elevation
+        for k in eachindex(str_vt_chunks)
+            str_k = lpad(string(k), floor(Int, log10(num_chunks)) + 1)
+            debug_msg *= "Chunk $str_k: $(str_vt_chunks[k])\n"
+        end
+
+        debug_msg
+    end
+
+    # Create the tasks to compute by each thread.
+    tasks = map(1:num_chunks) do c
+        chunk_vt = vt_chunks[c]
+
+        # A propagation modified the propagator structure. Hence, we need to copy the
+        # structure for each thread to avoid racing conditions.
+        chunk_orbp = c == 1 ? orbp : deepcopy(orbp)
+
+        Threads.@spawn begin
+            _ground_facility_access_chunk(
+                chunk_orbp,
+                chunk_vt,
+                vgf_wgs84;
+                f_eci_to_ecef     = f_eci_to_ecef,
+                minimum_elevation = minimum_elevation,
+                reduction         = reduction
             )
         end
-
-        return reduction(visibility)
     end
 
-    access_beg  = DateTime(now())
-    access_end  = DateTime(now())
-    vaccess_beg = DateTime[]
-    vaccess_end = DateTime[]
+    # This variable stores the access information concatenation between all chunks.
+    concat_df = vcat(fetch.(tasks)...)
 
-    for k in t
-        # Check the initial state of the reduced visibility.
-        visible = f(k)
+    # Now, we need to merge the information into the output `DataFrame`.
 
-        # Handle the initial case.
-        if state == :initial
-            if visible
-                access_beg = jd_to_date(DateTime, jd₀) + Dates.Second(round(Int, initial_time))
-                state = :visible
+    # Vector with the concatenation access information that possibly has duplicated
+    # information given the chunks division.
+    concat_vaccess_beg::Vector{DateTime} = concat_df.access_beginning
+    concat_vaccess_end::Vector{DateTime} = concat_df.access_end
+
+    # Vector with the fused access information, i.e., without duplicated information.
+    vaccess_beg  = DateTime[]
+    vaccess_end  = DateTime[]
+
+    # Total number of accesses.
+    num_accesses = length(concat_vaccess_beg)
+
+    sizehint!(vaccess_beg, num_accesses)
+    sizehint!(vaccess_end, num_accesses)
+
+    @inbounds if num_accesses > 0
+        # The first access must always be added.
+        push!(vaccess_beg, concat_vaccess_beg[begin])
+
+        # Variable to store the candidate instant of the last access end.
+        last_access_end = concat_vaccess_end[begin]
+
+        for k in 1:(num_accesses - 1)
+            # If the last access end candidate is equal to the next access beginning, we
+            # need to merge this information. Hence, update the last access candidate and
+            # continue the loop. Otherwise, the candidate is actually the last access end.
+            if last_access_end == concat_vaccess_beg[k + begin]
+                last_access_end = concat_vaccess_end[k + begin]
+                continue
             else
-                state = :not_visible
+                push!(vaccess_end, last_access_end)
             end
 
-        # Handle transitions.
-        elseif (state == :not_visible) && visible
-            # Refine to find the edge.
-            k₀ = k - step
-            k₁ = k
-            kc = find_crossing(f, k₀, k₁, false, true)
-
-            state = :visible
-            access_beg = jd_to_date(DateTime, jd₀ + kc / 86400)
-
-        elseif (state == :visible) && !visible
-            # Refine to find the edge.
-            k₀ = k - step
-            k₁ = k
-            kc = find_crossing(f, k₀, k₁, true, false)
-
-            state = :not_visible
-            access_end = jd_to_date(DateTime, jd₀ + kc / 86400)
-
-            push!(vaccess_beg, access_beg)
-            push!(vaccess_end, access_end)
+            # If we reach this position, we have a new access to consider.
+            push!(vaccess_beg, concat_vaccess_beg[k + begin])
+            last_access_end = concat_vaccess_end[k + begin]
         end
-    end
 
-    # If the analysis finished during an access, then just add the end of the interval as
-    # the end of the access.
-    if state == :visible
-        access_end = jd_to_date(DateTime, jd₀ + (initial_time + duration) / 86400)
-        push!(vaccess_beg, access_beg)
-        push!(vaccess_end, access_end)
+        # The end of the last access should always be added.
+        push!(vaccess_end, last_access_end)
     end
 
     # Compute the access duration and convert to the desired unit.
-    duration = Dates.value.(vaccess_end .- vaccess_beg) ./ 1000
+    vaccess_duration = Dates.value.(vaccess_end .- vaccess_beg) ./ 1000
 
     if unit == :h
-        duration ./= 3600
+        vaccess_duration ./= 3600
     elseif unit == :m
-        duration ./= 60
+        vaccess_duration ./= 60
     else
         # If the symbol is not known, we must use seconds.
         unit = :s
@@ -223,7 +247,7 @@ function ground_facility_accesses(
     df = DataFrame(
         :access_beginning => vaccess_beg,
         :access_end       => vaccess_end,
-        :duration         => duration
+        :duration         => vaccess_duration
     )
 
     metadata!(df, "Description", "Accesses to the ground facilities.")
@@ -395,4 +419,127 @@ end
 function _ground_facilities_default_eci_to_ecef(r_eci::AbstractVector, jd::Number)
     D_ecef_eci = r_eci_to_ecef(TEME(), PEF(), jd)
     return D_ecef_eci * r_eci
+end
+
+# Return a generator that contains the time partition of vector `vt` into `np` parts.
+#
+# This code was adapted from the one in the blog post:
+#
+#   https://blog.glcs.io/parallel-processing
+function _gf_access_time_vector_partition(vt::AbstractVector, np::Integer)
+    len_vt = length(vt)
+    len, rem = divrem(len_vt, np)
+
+    # Treat the case in which we want more partitions than the number of elements.
+    if len == 0
+        np = len_vt
+    end
+
+    Base.Generator(1:np) do p
+        i₀ = firstindex(vt) + (p - 1) * len
+        i₁ = p < np ? i₀ + len : i₀ + len - 1
+
+        i₀ += p <= rem ? p - 1 : rem
+        i₁ += p <= rem ? p     : rem
+
+        chunk = vt[i₀:i₁]
+        chunk
+    end
+end
+
+# Compute the ground facility access for a specific time chunk.
+function _ground_facility_access_chunk(
+    orbp::OrbitPropagator,
+    vt::StepRangeLen,
+    vgf_wgs84::AbstractVector{T};
+    f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
+    minimum_elevation::Number = 10 |> deg2rad,
+    reduction::Function = v -> |(v...),
+) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
+
+    # Get the epoch of the propagator.
+    jd₀ = Propagators.epoch(orbp)
+
+    # Get the step in the time chunk.
+    Δt = step(vt)
+
+    # State to help the computation.
+    state = :initial
+
+    # Pre-allocate the visibility vector to avoid a huge number of allocation.
+    visibility = zeros(Bool, length(vgf_wgs84))
+
+    # Lambda function to check the reduced visibility.
+    function f(t)::Bool
+        r_i, ~ = Propagators.propagate!(orbp, t)
+        r_e = f_eci_to_ecef(r_i, jd₀ + t / 86400)
+
+        @inbounds for i in eachindex(visibility)
+            visibility[i] = is_ground_facility_visible(
+                r_e,
+                vgf_wgs84[i]...,
+                minimum_elevation
+            )
+        end
+
+        return reduction(visibility)
+    end
+
+    access_beg  = DateTime(now())
+    access_end  = DateTime(now())
+    vaccess_beg = DateTime[]
+    vaccess_end = DateTime[]
+
+    for k in vt
+        # Check the initial state of the reduced visibility.
+        visible = f(k)
+
+        # Handle the initial case.
+        if state == :initial
+            if visible
+                access_beg = jd_to_date(DateTime, jd₀) + Dates.Second(round(Int, vt[begin]))
+                state = :visible
+            else
+                state = :not_visible
+            end
+
+        # Handle transitions.
+        elseif (state == :not_visible) && visible
+            # Refine to find the edge.
+            k₀ = k - Δt
+            k₁ = k
+            kc = find_crossing(f, k₀, k₁, false, true)
+
+            state = :visible
+            access_beg = jd_to_date(DateTime, jd₀ + kc / 86400)
+
+        elseif (state == :visible) && !visible
+            # Refine to find the edge.
+            k₀ = k - Δt
+            k₁ = k
+            kc = find_crossing(f, k₀, k₁, true, false)
+
+            state = :not_visible
+            access_end = jd_to_date(DateTime, jd₀ + kc / 86400)
+
+            push!(vaccess_beg, access_beg)
+            push!(vaccess_end, access_end)
+        end
+    end
+
+    # If the analysis finished during an access, then just add the end of the interval as
+    # the end of the access.
+    if state == :visible
+        access_end = jd_to_date(DateTime, jd₀ + vt[end] / 86400)
+        push!(vaccess_beg, access_beg)
+        push!(vaccess_end, access_end)
+    end
+
+    # Create the DataFrame and write the metadata.
+    df = DataFrame(
+        :access_beginning => vaccess_beg,
+        :access_end       => vaccess_end,
+    )
+
+    return df
 end

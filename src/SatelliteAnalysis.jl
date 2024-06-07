@@ -3,6 +3,7 @@ module SatelliteAnalysis
 using Dates
 using Downloads
 using LinearAlgebra
+using Logging
 using PrettyNumbers
 using Reexport
 using Scratch
