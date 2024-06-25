@@ -20,7 +20,7 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles(
     countries_filename = fetch_country_polygons(; force_download = false)
 
     # Load the polygons of the countries.
-    country_polys = GeoMakie.GeoJSON.read(read(countries_filename))
+    country_polys = GeoMakie.GeoJSON.read(countries_filename)
 
     # Plot the ground trace.
     fig = Figure(; size = (1450, 800), kwargs...)
@@ -46,7 +46,7 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles(
 
     poly!(
         ax,
-        country_polys;
+        GeoMakie.to_multipoly(country_polys.geometry);
         color       = :white,
         strokecolor = :black,
         strokewidth = 1
