@@ -53,7 +53,7 @@ gf = ground_facility_visibility_circle(
 
 countries_filename = fetch_country_polygons(; force_download = false)
 
-country_polys = GeoMakie.GeoJSON.read(read(countries_filename))
+country_polys = GeoMakie.GeoJSON.read(countries_filename)
 
 fig = Figure(; size = (800, 800))
 
@@ -78,7 +78,7 @@ ax.yticks = -60:10:20
 
 poly!(
     ax,
-    country_polys;
+    GeoMakie.to_multipoly(country_polys.geometry);
     color       = :white,
     strokecolor = :black,
     strokewidth = 1
