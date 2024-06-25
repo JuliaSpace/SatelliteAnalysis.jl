@@ -1,6 +1,11 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.3.5
+-------------
+
+- ![Enhancement][badge-enhancement] We added the compatibility to GeoMakie 0.7.
+
 Version 0.3.4
 -------------
 
