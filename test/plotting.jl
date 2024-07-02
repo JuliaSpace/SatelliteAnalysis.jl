@@ -99,3 +99,20 @@ end
     )
 end
 
+# == File: ./src/plotting/world_map.jl =====================================================
+
+@testset "Function plot_world_map" begin
+    @test_throws(
+        "Wrong input or the package GeoMakie.jl is not loaded.",
+        plot_world_map(1)
+    )
+end
+
+@testset "Function plot_world_map [EXT]" begin
+    using GeoMakie
+
+    fig, ax = plot_world_map()
+
+    @test fig isa Figure
+    @test ax isa Axis
+end

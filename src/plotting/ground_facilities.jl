@@ -33,7 +33,7 @@ to **Makie.jl** documentation.
     parameter is `nothing`, no ground facility name is added to the figure.
     (**Default** = `nothing`)
 
-All other `kwargs...` are passed to the function `Figure`.
+All other `kwargs...` are passed to the function [`plot_world_map`](@ref).
 
 # Extended Help
 

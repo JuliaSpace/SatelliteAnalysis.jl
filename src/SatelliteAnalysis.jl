@@ -35,5 +35,6 @@ include("./ground_facilities/ground_facility_visibility_circle.jl")
 include("./plotting/fetch_country_polygons.jl")
 include("./plotting/ground_facilities.jl")
 include("./plotting/ground_track.jl")
+include("./plotting/world_map.jl")
 
 end # module
