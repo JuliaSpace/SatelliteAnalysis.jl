@@ -68,7 +68,12 @@ end
 @testset "Function plot_ground_facility_visibility_circles" begin
     @test_throws(
         "Wrong input or the package GeoMakie.jl is not loaded.",
-        plot_ground_track(1)
+        plot_ground_facility_visibility_circles(1)
+    )
+
+    @test_throws(
+        "Wrong input or the package GeoMakie.jl is not loaded.",
+        plot_ground_facility_visibility_circles!(1)
     )
 end
 
