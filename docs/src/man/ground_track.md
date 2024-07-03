@@ -173,7 +173,7 @@ ground_track_inclination(orb) |> rad2deg
 
 If the user loads the package [GeoMakie.jl](https://github.com/MakieOrg/GeoMakie.jl)
 together with a [Makie.jl](https://docs.makie.org/stable/) back end, an extension is loaded
-and adds the possibility to plot the ground track. In this case, the following function is
+and adds the possibility to plot the ground track. In this case, the following functions are
 available:
 
 ```julia
@@ -184,7 +184,22 @@ It plots the ground track `gt` computed using the function [`ground_track`](@ref
 returns the objects `Figure` and `Axis` used to plot the data. For more information, please,
 refer to [Makie.jl](https://docs.makie.org/stable/) documentation.
 
-All `kwargs...` are passed to the function `Figure`.
+!!! note
+
+    This function plots the countries' borders in the created figure using the file with the
+    country polygons fetched with the function [`fetch_country_polygons`](@ref). Hence, if
+    this files does not exist, the algorithm tries to download it.
+
+All `kwargs...` are passed to the function [`plot_world_map`](@ref).
+
+```julia
+plot_ground_track!(ax:Axis, gt::Vector{NTuple{2, Number}}) -> Nothing
+```
+
+It plots in the **Makie.jl** axis `ax` the ground track `gt` computed using the function
+[`ground_track`](@ref).
+
+The user can use this function to plot the ground track on top of an existing figure.
 
 ### Example
 

@@ -119,10 +119,10 @@ If we plot the result using Makie, we obtain:
 If the user loads the package [GeoMakie.jl](https://github.com/MakieOrg/GeoMakie.jl)
 together with a [Makie.jl](https://docs.makie.org/stable/) back end, an extension is loaded
 and adds the possibility to plot the ground facility visibility circle. In this case, the
-following function is available:
+following functions are available:
 
 ```julia
-plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, T}}}; kwargs...) where T <: Number -> Figure, Axis
+plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, Number}}}; kwargs...) -> Figure, Axis
 ```
 
 It plots the ground facility visibility circles in the vector `vgf_vc`, where each element
@@ -137,7 +137,31 @@ The following keywords are available:
     parameter is `nothing`, no ground facility name is added to the figure.
     (**Default** = `nothing`)
 
-All other `kwargs...` are passed to the function `Figure`.
+All other `kwargs...` are passed to the function [`plot_world_map`](@ref).
+
+!!! note
+
+    This function plots the countries' borders in the created figure using the file with the
+    country polygons fetched with the function [`fetch_country_polygons`](@ref). Hence, if
+    this files does not exist, the algorithm tries to download it.
+
+```julia
+plot_ground_facility_visibility_circles!(ax::Axis, vgf_vc::Vector{Vector{NTuple{2, Number}}}; kwargs...) -> Nothing
+```
+
+It plots in the [Makie.jl](https://docs.makie.org/stable/) axis `ax` the ground facility
+visibility circles in the vector `vgf_vc`, where each element is computed using the function
+[`ground_facility_visibility_circle`](@ref).
+
+The following keywords are available:
+
+- `ground_facility_names::Union{Nothing, Vector{String}}`: The user can provide a vector of
+    `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
+    parameter is `nothing`, no ground facility name is added to the figure.
+    (**Default** = `nothing`)
+
+The user can use this function to plot the ground facility visibility circle on top of an
+existing figure.
 
 ### Example
 
