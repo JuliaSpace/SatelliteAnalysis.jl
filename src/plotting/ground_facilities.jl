@@ -7,7 +7,7 @@
 export plot_ground_facility_visibility_circles, plot_ground_facility_visibility_circles!
 
 """
-    plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, T}}}; kwargs...) where T <: Number -> Figure, Axis
+    plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, Number}}}; kwargs...) -> Figure, Axis
 
 Plot the ground facility visibility circles in the vector `vgf_vc`, where each element
 is computed using the function [`ground_facility_visibility_circle`](@ref). It returns
