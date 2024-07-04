@@ -33,6 +33,11 @@ end
         "Wrong input or the package GeoMakie.jl is not loaded.",
         plot_ground_track(1)
     )
+
+    @test_throws(
+        "Wrong input or the package GeoMakie.jl is not loaded.",
+        plot_ground_track!(1)
+    )
 end
 
 @testset "Function plot_ground_track [EXT]" begin

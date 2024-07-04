@@ -60,7 +60,6 @@ julia> fig
 """
 function plot_ground_facility_visibility_circles(args...; kwargs...)
     error("Wrong input or the package GeoMakie.jl is not loaded.")
-    return nothing
 end
 
 """
@@ -107,5 +106,4 @@ julia> plot_ground_facility_visibility_circles!(
 """
 function plot_ground_facility_visibility_circles!(args...)
     error("Wrong input or the package GeoMakie.jl is not loaded.")
-    return nothing
 end

@@ -20,5 +20,4 @@ to the function `Figure`. For more information, please, refer to **Makie.jl** do
 """
 function plot_world_map(args...)
     error("Wrong input or the package GeoMakie.jl is not loaded.")
-    return nothing
 end
