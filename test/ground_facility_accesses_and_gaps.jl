@@ -200,6 +200,38 @@ end
     @test df.access_end[2] == DateTime("2026-01-01T02:56:03.137")
     @test df.access_end[3] == DateTime("2026-01-01T13:55:32.697")
     @test df.access_end[4] == DateTime("2026-01-01T15:30:58.667")
+
+    # == Debug Info ========================================================================
+
+    jd₀ = SatelliteAnalysis.date_to_jd(2021, 1, 1, 0, 0, 0)
+    orb = KeplerianElements(
+        jd₀,
+        7130.982e3,
+        0.001111,
+        98.405 |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90     |> deg2rad,
+        0
+    )
+    orbp = Propagators.init(Val(:J2), orb)
+
+    @test_logs(
+        (
+            :debug,
+            """
+            Computing ground facility accesses using 1 chunks:
+
+            Chunk 1: 2021-01-01T00:00:00.000 -- 2021-01-02T00:00:00.000
+            """
+        ),
+        min_level = Logging.Debug,
+        df = ground_facility_accesses(
+            orbp,
+            (0, 0, 0);
+            duration = 1 * 86400,
+            f_eci_to_ecef = gf_tod_to_pef
+        )
+    )
 end
 
 @testset "Function ground_facility_gaps" begin
