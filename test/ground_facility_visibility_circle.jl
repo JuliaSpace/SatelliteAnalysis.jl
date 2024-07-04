@@ -4,6 +4,16 @@
 #
 ############################################################################################
 
+# == File: ./src/ground_facilities/is_ground_facility_visible.jl ===========================
+
+@testset "Function is_ground_facility_visible" verbose = true begin
+    ret = is_ground_facility_visible([7000e3, 0, 0], [6378e3, 0, 0], 10 |> deg2rad)
+    @test ret == true
+
+    ret = is_ground_facility_visible([6500e3, 700e3, 0], [6378e3, 0, 0], 10 |> deg2rad)
+    @test ret == false
+end
+
 # == File: ./src/ground_facilities/ground_facility_visibility_circle.jl ====================
 
 # -- Function: ground_facility_visibility_circle -------------------------------------------
