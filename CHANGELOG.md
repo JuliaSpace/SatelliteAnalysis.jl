@@ -1,6 +1,13 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.3.7
+-------------
+
+- ![Bugfix][badge-bugfix] The interpretation of `duration` in `ground_track` was not
+  correct. It must be the number of seconds the ground track will be computed **after** the
+  initial time.
+
 Version 0.3.6
 -------------
 
