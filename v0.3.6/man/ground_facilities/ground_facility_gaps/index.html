@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Ground Facility Gaps · Satellite Analysis</title><meta name="title" content="Ground Facility Gaps · Satellite Analysis"/><meta property="og:title" content="Ground Facility Gaps · Satellite Analysis"/><meta property="twitter:title" content="Ground Facility Gaps · Satellite Analysis"/><meta name="description" content="Documentation for Satellite Analysis."/><meta property="og:description" content="Documentation for Satellite Analysis."/><meta property="twitter:description" content="Documentation for Satellite Analysis."/><meta property="og:url" content="https://juliaspace.github.io/SatelliteAnalysis.jl/stable/man/ground_facilities/ground_facility_gaps/"/><meta property="twitter:url" content="https://juliaspace.github.io/SatelliteAnalysis.jl/stable/man/ground_facilities/ground_facility_gaps/"/><link rel="canonical" href="https://juliaspace.github.io/SatelliteAnalysis.jl/stable/man/ground_facilities/ground_facility_gaps/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../../../"><img src="../../../assets/logo.png" alt="Satellite Analysis logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">Satellite Analysis</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Home</a></li><li><a class="tocitem" href="../../beta_angle/">Beta Angle</a></li><li><a class="tocitem" href="../../eclipse_time/">Eclipse Time</a></li><li><a class="tocitem" href="../../frozen_orbits/">Frozen Orbits</a></li><li><span class="tocitem">Ground Facilities</span><ul><li><a class="tocitem" href="../ground_facility_accesses/">Ground Facility Accesses</a></li><li class="is-active"><a class="tocitem" href>Ground Facility Gaps</a><ul class="internal"><li><a class="tocitem" href="#Examples"><span>Examples</span></a></li></ul></li><li><a class="tocitem" href="../ground_facility_visibility_circle/">Ground Facility Visibility Circle</a></li></ul></li><li><a class="tocitem" href="../../ground_track/">Ground Track</a></li><li><span class="tocitem">Orbits</span><ul><li><a class="tocitem" href="../../orbits/sun_synchronous_orbits/">Sun Synchronous Orbits</a></li></ul></li><li><a class="tocitem" href="../../world_map/">World Map</a></li><li><a class="tocitem" href="../../../lib/library/">Library</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Ground Facilities</a></li><li class="is-active"><a href>Ground Facility Gaps</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Ground Facility Gaps</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaSpace/SatelliteAnalysis.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/JuliaSpace/SatelliteAnalysis.jl/blob/main/docs/src/man/ground_facilities/ground_facility_gaps.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Ground-Facility-Gaps"><a class="docs-heading-anchor" href="#Ground-Facility-Gaps">Ground Facility Gaps</a><a id="Ground-Facility-Gaps-1"></a><a class="docs-heading-anchor-permalink" href="#Ground-Facility-Gaps" title="Permalink"></a></h1><p>We can use the function:</p><pre><code class="language-julia hljs">ground_facility_gaps(orbp, args...; duration::Number = 86400, initial_time::Number = 0, kwargs...) -&gt; DataFrame</code></pre><p>to compute the gaps between the accesses of ground facilities. The arguments and keywords are the same as the ones used in the function <a href="../../../lib/library/#SatelliteAnalysis.ground_facility_accesses-Union{Tuple{T3}, Tuple{T2}, Tuple{T1}, Tuple{OrbitPropagator, Tuple{T1, T2, T3}}} where {T1&lt;:Number, T2&lt;:Number, T3&lt;:Number}"><code>ground_facility_accesses</code></a> (see <a href="../ground_facility_accesses/#Ground-Facility-Accesses">Ground Facility Accesses</a>).</p><p>Notice that the gap analysis starts in the orbit propagator epoch plus <code>initial_time</code> and lasts for <code>duration</code> [s].</p><p>This function returns a <code>DataFrame</code> with three columns:</p><ul><li><code>access_beginning</code>: Time of the access beginning [UTC] encoded using <code>DateTime</code>.</li><li><code>access_end</code>: Time of the access end [UTC] encoded using <code>DateTime</code>.</li><li><code>duration</code>: Duration of the access [s]. The unit of the column <code>duration</code> is stored in the <code>DataFrame</code> using metadata.</li></ul><h2 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h2><p>Let&#39;s compute the gaps of the Amazonia-1 satellite to the INPE&#39;s ground station at Cuiabá, MT, Brazil.</p><p>First, we need to define an orbit propagator. In this case, we will use the TLE obtained from CelesTrak when this documentation was written:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; tle_amz1 = tle&quot;&quot;&quot;
+           AMAZONIA 1
+           1 47699U 21015A   24008.13079366  .00000299  00000+0  10693-3 0  9994
+           2 47699  98.4120  87.2350 0001570  92.1147 268.0222 14.40836963150331
+           &quot;&quot;&quot;</code><code class="nohighlight hljs ansi" style="display:block;">TLE:
+<span class="sgr1">                      Name : </span>AMAZONIA 1
+<span class="sgr1">          Satellite number : </span>47699
+<span class="sgr1">  International designator : </span>21015A
+<span class="sgr1">        Epoch (Year / Day) : </span>24 /   8.13079366 (2024-01-08T03:08:20.572)
+<span class="sgr1">        Element set number : </span>999
+<span class="sgr1">              Eccentricity : </span>  0.00015700
+<span class="sgr1">               Inclination : </span> 98.41200000 deg
+<span class="sgr1">                      RAAN : </span> 87.23500000 deg
+<span class="sgr1">       Argument of perigee : </span> 92.11470000 deg
+<span class="sgr1">              Mean anomaly : </span>268.02220000 deg
+<span class="sgr1">           Mean motion (n) : </span> 14.40836963 revs / day
+<span class="sgr1">         Revolution number : </span>15033
+<span class="sgr1">                        B* : </span>  0.00010693 1 / er
+<span class="sgr1">                     ṅ / 2 : </span>    2.99e-06 rev / day²
+<span class="sgr1">                     n̈ / 6 : </span>           0 rev / day³</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; orbp = Propagators.init(Val(:SGP4), tle_amz1)</code><code class="nohighlight hljs ansi" style="display:block;">OrbitPropagatorSgp4{Float64, Float64}:
+<span class="sgr1">   Propagator name :</span> SGP4 Orbit Propagator
+<span class="sgr1">  Propagator epoch :</span> 2024-01-08T03:08:20.572
+<span class="sgr1">  Last propagation :</span> 2024-01-08T03:08:20.572</code></pre><p>Now, we can compute the gaps during one day considering the INPE&#39;s station at Cuiabá:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ground_facility_gaps(
+           orbp,
+           [(-(15 + 33 / 60) |&gt; deg2rad, -(56 + 04 / 60) |&gt; deg2rad, 0)];
+           duration = 1 * 86400,
+           minimum_elevation = 5 |&gt; deg2rad,
+           unit = :m
+       )</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr1">4×3 DataFrame</span>
+<span class="sgr1"> Row </span>│<span class="sgr1"> gap_beginning            gap_end                  duration </span>
+     │<span class="sgr90"> DateTime                 DateTime                 Float64  </span>
+─────┼────────────────────────────────────────────────────────────
+   1 │ 2024-01-08T03:09:16.311  2024-01-08T13:56:48.099  647.53
+   2 │ 2024-01-08T14:08:50.888  2024-01-08T15:39:28.281   90.6232
+   3 │ 2024-01-08T15:43:47.366  2024-01-09T02:18:02.879  634.259
+   4 │ 2024-01-09T02:30:08.933  2024-01-09T03:08:20.572   38.194</code></pre><p>If we want to change the reference frames used in the analysis, we must provide a function <code>f_eci_to_ecef(r_i, jd)</code> that converts the vector <code>r_i</code> to the desired ECEF frame at the instant <code>jd</code> [Julian Day]. For example, let&#39;s use the more precise ITRF instead of the PEF (default):</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; const eop = fetch_iers_eop(Val(:IAU1980));</code><code class="nohighlight hljs ansi" style="display:block;"></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; function f_eci_to_ecef(r_teme, jd)
+           D_itrf_teme = r_eci_to_ecef(TEME(), ITRF(), jd, eop)
+           r_itrf = D_itrf_teme * r_teme
+           return r_itrf
+       end</code><code class="nohighlight hljs ansi" style="display:block;">f_eci_to_ecef (generic function with 1 method)</code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; ground_facility_gaps(
+           orbp,
+           [(-(15 + 33 / 60) |&gt; deg2rad, -(56 + 04 / 60) |&gt; deg2rad, 0)];
+           duration = 1 * 86400,
+           f_eci_to_ecef = f_eci_to_ecef,
+           minimum_elevation = 5 |&gt; deg2rad,
+           unit = :m
+       )</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr1">4×3 DataFrame</span>
+<span class="sgr1"> Row </span>│<span class="sgr1"> gap_beginning            gap_end                  duration </span>
+     │<span class="sgr90"> DateTime                 DateTime                 Float64  </span>
+─────┼────────────────────────────────────────────────────────────
+   1 │ 2024-01-08T03:09:16.312  2024-01-08T13:56:48.098  647.53
+   2 │ 2024-01-08T14:08:50.887  2024-01-08T15:39:28.281   90.6232
+   3 │ 2024-01-08T15:43:47.364  2024-01-09T02:18:02.880  634.259
+   4 │ 2024-01-09T02:30:08.935  2024-01-09T03:08:20.572   38.194</code></pre><p>We can also perform analyses using multiple ground facilities. For example, let&#39;s find the accumulated gap if we consider the INPE&#39;s stations at Cuiabá, MT, Brazil, and Alcântara, MA, Brazil:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ground_facility_gaps(
+           orbp,
+           [
+               (-(15 + 33 / 60) |&gt; deg2rad, -(56 + 04 / 60) |&gt; deg2rad, 0)
+               (-( 2 + 20 / 60) |&gt; deg2rad, -(44 + 24 / 60) |&gt; deg2rad, 0)
+           ];
+           duration = 1 * 86400,
+           minimum_elevation = 5 |&gt; deg2rad,
+           unit = :m
+       )</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr1">6×3 DataFrame</span>
+<span class="sgr1"> Row </span>│<span class="sgr1"> gap_beginning            gap_end                  duration </span>
+     │<span class="sgr90"> DateTime                 DateTime                 Float64  </span>
+─────┼────────────────────────────────────────────────────────────
+   1 │ 2024-01-08T03:09:16.311  2024-01-08T12:16:55.777  547.658
+   2 │ 2024-01-08T12:23:20.782  2024-01-08T13:52:44.135   89.3892
+   3 │ 2024-01-08T14:08:50.888  2024-01-08T15:39:28.281   90.6232
+   4 │ 2024-01-08T15:43:47.366  2024-01-09T00:43:23.474  539.602
+   5 │ 2024-01-09T00:53:25.918  2024-01-09T02:18:02.879   84.616
+   6 │ 2024-01-09T02:32:05.994  2024-01-09T03:08:20.572   36.243</code></pre><p>By default, the algorithm computes the accumulated gap, <em>i.e.</em>, it considers the gap active if neither station has visibility to the satellite. We can change this logic by overloading the function in the keyword parameter <code>reduction</code>. For example, let&#39;s compute the gap when the satellite does not have visibility to both ground stations at the same time:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; ground_facility_gaps(
+           orbp,
+           [
+               (-(15 + 33 / 60) |&gt; deg2rad, -(56 + 04 / 60) |&gt; deg2rad, 0)
+               (-( 2 + 20 / 60) |&gt; deg2rad, -(44 + 24 / 60) |&gt; deg2rad, 0)
+           ];
+           duration = 1 * 86400,
+           minimum_elevation = 5 |&gt; deg2rad,
+           reduction = v -&gt; (&amp;)(v...),
+           unit = :m
+       )</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr1">3×3 DataFrame</span>
+<span class="sgr1"> Row </span>│<span class="sgr1"> gap_beginning            gap_end                  duration </span>
+     │<span class="sgr90"> DateTime                 DateTime                 Float64  </span>
+─────┼────────────────────────────────────────────────────────────
+   1 │ 2024-01-08T03:08:20.572  2024-01-08T13:56:48.099   648.459
+   2 │ 2024-01-08T14:04:29.601  2024-01-09T02:21:47.636   737.301
+   3 │ 2024-01-09T02:30:08.933  2024-01-09T03:08:20.572    38.194</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../ground_facility_accesses/">« Ground Facility Accesses</a><a class="docs-footer-nextpage" href="../ground_facility_visibility_circle/">Ground Facility Visibility Circle »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.5.0 on <span class="colophon-date" title="Friday 5 July 2024 10:34">Friday 5 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
