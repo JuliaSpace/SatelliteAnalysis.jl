@@ -1,6 +1,15 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.3.6
+-------------
+
+- ![Feature][badge-feature] We added an in-place version of all plotting functions. Thus,
+  the user can plot the analysis on top of existing figures, leading to better analysis
+  options.
+- ![Feature][badge-feature] We added the function `plot_world_map` to create a figure with
+  only the world map.
+
 Version 0.3.5
 -------------
 
