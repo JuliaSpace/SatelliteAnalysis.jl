@@ -3,7 +3,7 @@ uuid = "101040f3-2a13-4d8c-b9b0-4a720fa906ce"
 license = "MIT"
 desc = "A package for Julia with several functions to perform satellite analysis."
 authors = ["Ronan Arraes Jardim Chagas <ronisbr@gmail.com>"]
-version = "0.3.7"
+version = "0.3.8"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
