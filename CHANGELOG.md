@@ -1,6 +1,12 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.3.8
+-------------
+
+- ![Info][badge-info] We updated the compat versions of the dependencies.
+- ![Info][badge-info] The package is now being tested against Julia 1.10.
+
 Version 0.3.7
 -------------
 
