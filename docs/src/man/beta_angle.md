@@ -23,7 +23,7 @@ receives in a particular orbit.
 We can compute the beta angle of an orbit using the function:
 
 ```julia
-beta_angle(orb::KerplerianElements{Tepoch, T}, Δjd::Number; kwargs...) -> Float64
+beta_angle(orb::KeplerianElements{Tepoch, T}, Δjd::Number; kwargs...) -> Float64
 ```
 
 This function computes the beta angle [rad] for the orbit `orb` after `Δjd` days from its
