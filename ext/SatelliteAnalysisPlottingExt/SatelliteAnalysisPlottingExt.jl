@@ -1,7 +1,5 @@
 module SatelliteAnalysisPlottingExt
 
-__precompile__(false)
-
 using SatelliteAnalysis
 using GeoMakie
 
