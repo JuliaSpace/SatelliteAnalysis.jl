@@ -1,6 +1,14 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.3.9
+-------------
+
+- ![Enhancement][badge-enhancement] Improve the default reduction function for ground
+  facilities. ([#10][gh-pr-10])
+- ![Enhancement][badge-enhancement] The GeoMakie.jl extension can now precompile. (PR
+  [#9][gh-pr-9])
+
 Version 0.3.8
 -------------
 
@@ -95,3 +103,5 @@ Version 0.1.0
 [gh-issue-3]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/issues/3
 
 [gh-pr-5]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/pull/5
+[gh-pr-9]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/pull/9
+[gh-pr-10]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/pull/10
