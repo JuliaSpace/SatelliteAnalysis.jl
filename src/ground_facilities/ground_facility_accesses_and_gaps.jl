@@ -56,7 +56,7 @@ Those geodetic information are transformed to an ECEF vector using the function
     between the satellite and each ground facility. It must return a boolean value
     indicating if the access must be computed or not. This is useful to merge access time
     between two or more facilities.
-    (**Default** = `v -> |(v...)` *i.e.* compute the access if at least one ground
+    (**Default** = `any` *i.e.* compute the access if at least one ground
     facilities is visible)
 - `step::Number`: The step [s] used to propagate the orbit. Notice that we perform a cross
     tuning to accurately obtain the access time. However, if an access is lower than the
@@ -130,10 +130,10 @@ function ground_facility_accesses(
     initial_time::Number = 0,
     minimum_elevation::Number = 10 |> deg2rad,
     num_chunks::Integer = Threads.nthreads(),
-    reduction::Function = v -> |(v...),
+    reduction::R = any,
     step::Number = 60,
     unit::Symbol = :s
-) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
+) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}, R <: Function}
 
     # Time vector of the analysis.
     vt = float(initial_time):float(step):float(initial_time + duration)
@@ -328,10 +328,10 @@ function ground_facility_gaps(
     f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
     initial_time::Number = 0,
     minimum_elevation::Number = 10 |> deg2rad,
-    reduction::Function = v -> |(v...),
+    reduction::R = any,
     step::Number = 60,
     unit::Symbol = :s
-) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
+) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}, R <: Function}
 
     # Get the epoch of the propagator.
     jd₀ = Propagators.epoch(orbp)
@@ -454,8 +454,8 @@ function _ground_facility_access_chunk(
     vgf_wgs84::AbstractVector{T};
     f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
     minimum_elevation::Number = 10 |> deg2rad,
-    reduction::Function = v -> |(v...),
-) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}}
+    reduction::R = any,
+) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}, R <: Function}
 
     # Get the epoch of the propagator.
     jd₀ = Propagators.epoch(orbp)
