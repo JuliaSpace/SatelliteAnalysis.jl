@@ -25,7 +25,7 @@ function SatelliteAnalysis.plot_world_map(; size = (1450, 800), kwargs...)
     xlims!(ax, -180, +180)
     ylims!(ax, -90,  +90)
     ax.xticks = -180:20:+180
-    ax.yticks = -90:20:90
+    ax.yticks = -90:15:90
 
     # Get the GeoJSON file with the countries.
     countries_filename = fetch_country_polygons(; force_download = false)
