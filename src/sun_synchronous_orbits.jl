@@ -17,8 +17,8 @@ export sun_sync_orbit_inclination
 """
     design_sun_sync_ground_repeating_orbit(minimum_repetition::Int, maximum_repetition::Int; kwargs...) -> DataFrame
 
-List all the Sun synchronous, ground repeating orbits in which their repetition period is in
-the interval `[minimum_repetition, maximum_repetition]` days.
+List all Sun-synchronous, ground-repeating orbits whose repetition period is in the interval
+`[minimum_repetition, maximum_repetition]` days.
 
 This function returns a `DataFrame` with the following columns:
 
@@ -26,9 +26,9 @@ This function returns a `DataFrame` with the following columns:
 - `altitude`: Orbit altitude above the Equator `(a - R0)`.
 - `inclination`: Orbit inclination.
 - `period`: Orbital period.
-- `rev_per_days`: If the keyword `pretify_rev_per_days` is `false`, this column contains
+- `rev_per_days`: If the keyword `pretty_rev_per_days` is `false`, this column contains
     `Tuple`s with the integer and rational parts of the number of revolutions per day.
-    Otherwise, it contains a string with a prety representation of the number of revolutions
+    Otherwise, it contains a string with a pretty representation of the number of revolutions
     per day.
 - `adjacent_gt_distance`: Distance between two adjacent ground tracks at Equator.
 - `adjacent_gt_angle`: Angle between two adjacent ground tracks at Equator measured from the
@@ -36,7 +36,7 @@ This function returns a `DataFrame` with the following columns:
 
 !!! note
 
-    The units of those columns depends on the keywords.
+    The units of those columns depend on the keywords.
 
 # Keywords
 
@@ -51,8 +51,8 @@ This function returns a `DataFrame` with the following columns:
 - `int_rev_per_day::Tuple`: `Tuple` with the integer parts of the number of revolutions per
     day to be analyzed.
     (**Default** = `(13, 14, 15, 16, 17)`)
-- `pretity_rev_per_days::Bool`: If `true`, the column with the revolutions per day will be
-    conveted to a string with a pretty representation of this information.
+- `pretty_rev_per_days::Bool`: If `true`, the column with the revolutions per day will be
+    converted to a string with a pretty representation of this information.
     (**Default**: `true`)
 - `maximum_altitude::Union{Nothing, Number}`: Maximum altitude [m] of the orbits in the
     output `DataFrame`. If it is `nothing`, the algorithm will not apply a higher limit to
@@ -81,7 +81,8 @@ function design_sun_sync_ground_repeating_orbit(
     distance_unit::Symbol = :km,
     eccentricity::Number = 0,
     int_rev_per_day::Tuple = (13, 14, 15, 16, 17),
-    pretify_rev_per_days::Bool = true,
+    pretty_rev_per_days::Union{Nothing, Bool} = nothing,
+    pretify_rev_per_days::Union{Nothing, Bool} = nothing,
     maximum_altitude::Union{Nothing, Number} = nothing,
     minimum_altitude::Union{Nothing, Number} = nothing,
     time_unit::Symbol = :m,
@@ -91,6 +92,7 @@ function design_sun_sync_ground_repeating_orbit(
     R0::Number = EARTH_EQUATORIAL_RADIUS,
     we::Number = EARTH_ANGULAR_SPEED
 )
+    pretty_rev_per_days = _resolve_pretty_rev_per_days(pretty_rev_per_days, pretify_rev_per_days)
     R₀ = EARTH_EQUATORIAL_RADIUS
     e  = eccentricity
 
@@ -117,7 +119,7 @@ function design_sun_sync_ground_repeating_orbit(
         altitude             = Float64[],
         inclination          = Float64[],
         period               = Float64[],
-        rev_per_days         = pretify_rev_per_days ? String[] : Tuple{Int, Rational}[],
+        rev_per_days         = pretty_rev_per_days ? String[] : Tuple{Int, Rational}[],
         adjacent_gt_distance = Float64[],
         adjacent_gt_angle    = Float64[]
     )
@@ -184,7 +186,7 @@ function design_sun_sync_ground_repeating_orbit(
                     h * dunit,
                     i * angunit,
                     orb_period * tunit,
-                    pretify_rev_per_days ?
+                    pretty_rev_per_days ?
                         _pretify_rev_per_days(int, num, den) :
                         (int, num // den),
                     ground_repeating_orbit_adjacent_track_distance(
@@ -507,8 +509,23 @@ function sun_sync_orbit_from_angular_velocity(
             ∂f₂_∂isqrt_a ∂f₂_∂cos_i
         ]
 
+        # A singular/non-finite Newton step cannot produce a meaningful orbit.  Return the
+        # best estimate and report non-convergence rather than throwing from a division by
+        # zero or allowing NaNs to spread through subsequent iterations.
+        if !all(isfinite, (f₁, f₂)) || !all(isfinite, J) || iszero(det(J))
+            converged = false
+            break
+        end
+
         # Compute the new estimate using the Newton-Raphson method.
-        isqrt_ā, cos_i = @SVector([isqrt_ā, cos_i]) - inv(J) * @SVector([f₁, f₂])
+        new_isqrt_ā, new_cos_i = @SVector([isqrt_ā, cos_i]) - J \ @SVector([f₁, f₂])
+
+        if !all(isfinite, (new_isqrt_ā, new_cos_i))
+            converged = false
+            break
+        end
+
+        isqrt_ā, cos_i = new_isqrt_ā, new_cos_i
 
         # If the maximum number of iterations allowed has been reached, then
         # indicate that the solution did not converged and exit loop.
@@ -750,8 +767,20 @@ function sun_sync_orbit_semi_major_axis(
         # Compute the derivative.
         ∂f₁_∂isqrt_a = -k₁ * (7 + 11k₂ * isqrt_ā⁴) * isqrt_ā⁶
 
+        if !isfinite(f₁) || !isfinite(∂f₁_∂isqrt_a) || iszero(∂f₁_∂isqrt_a)
+            converged = false
+            break
+        end
+
         # Update the estimate using the Newton-Raphson algorithm.
-        isqrt_ā = isqrt_ā - f₁ / ∂f₁_∂isqrt_a
+        new_isqrt_ā = isqrt_ā - f₁ / ∂f₁_∂isqrt_a
+
+        if !isfinite(new_isqrt_ā)
+            converged = false
+            break
+        end
+
+        isqrt_ā = new_isqrt_ā
 
         # If the maximum number of iterations allowed has been reached, indicate that the
         # solution did not converged and exit loop.
@@ -972,8 +1001,20 @@ function sun_sync_orbit_inclination(
         # Compute the derivative.
         ∂f₁_∂cos_i = -3 * A * cos²_i - B
 
+        if !isfinite(f₁) || !isfinite(∂f₁_∂cos_i) || iszero(∂f₁_∂cos_i)
+            converged = false
+            break
+        end
+
         # Update the estimate using the Newton-Raphson algorithm.
-        cos_i = cos_i - f₁ / ∂f₁_∂cos_i
+        new_cos_i = cos_i - f₁ / ∂f₁_∂cos_i
+
+        if !isfinite(new_cos_i)
+            converged = false
+            break
+        end
+
+        cos_i = new_cos_i
 
         # If the maximum number of iterations allowed has been reached, indicate that the
         # solution did not converged and exit loop.
@@ -1014,4 +1055,14 @@ function _pretify_rev_per_days(i::Int, num::Int, den::Int)
     else
         return string(i) * " + " * pretty_number(String, num // den)
     end
+end
+
+function _resolve_pretty_rev_per_days(pretty_rev_per_days, pretify_rev_per_days)
+    !isnothing(pretify_rev_per_days) && Base.depwarn(
+        "`pretify_rev_per_days` is deprecated; use `pretty_rev_per_days` instead.",
+        :design_sun_sync_ground_repeating_orbit
+    )
+    isnothing(pretty_rev_per_days) && return isnothing(pretify_rev_per_days) ? true : pretify_rev_per_days
+    (isnothing(pretify_rev_per_days) || pretty_rev_per_days == pretify_rev_per_days) && return pretty_rev_per_days
+    throw(ArgumentError("`pretty_rev_per_days` and deprecated `pretify_rev_per_days` must have the same value."))
 end

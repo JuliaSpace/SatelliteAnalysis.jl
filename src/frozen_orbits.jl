@@ -109,13 +109,15 @@ function frozen_orbit(
         gm = gravity_model
     end
 
+    gm_max_degree = GravityModels.maximum_degree(gm)
+
     # If `max_degree` is negative, use maximum degree available.
     if max_degree <= 0
-        max_degree = GravityModels.maximum_degree(grav_model)
+        max_degree = gm_max_degree
     end
 
     # The maximum degree must be at least 3.
-    max_degree = max(3, max_degree)
+    max_degree = min(gm_max_degree, max(3, max_degree))
 
     # Obtain the maximum `p` given the maximum degree.
     p_max = floor(Int, (max_degree - 1) / 2)
