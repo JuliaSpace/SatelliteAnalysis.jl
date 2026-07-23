@@ -4,7 +4,15 @@
 using SatelliteAnalysis
 using SatelliteToolbox: Propagators
 
-"""Create the representative J2 orbit propagator used by the harness."""
+"""
+    sample_propagator() -> Propagators.OrbitPropagator
+
+Create the representative J2 orbit propagator used by the harness.
+
+# Returns
+
+- `Propagators.OrbitPropagator`: Representative J2 orbit propagator.
+"""
 function sample_propagator()
     jd = date_to_jd(2021, 1, 1)
     orbit = KeplerianElements(
@@ -13,7 +21,20 @@ function sample_propagator()
     return Propagators.init(Val(:J2), orbit)
 end
 
-"""Warm up and measure one invocation of `f`, reporting its time and allocation."""
+"""
+    measure(name::AbstractString, f::Function) -> Any
+
+Warm up and measure one invocation of `f`, reporting its time and allocation.
+
+# Arguments
+
+- `name::AbstractString`: Label to print for the measurement.
+- `f::Function`: Function to invoke and measure.
+
+# Returns
+
+- `Any`: Value returned by the measured invocation of `f`.
+"""
 function measure(name, f)
     f()
     GC.gc()
