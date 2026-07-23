@@ -25,20 +25,14 @@ performance since the algorithm performs no reference frame conversion.
 - `Bool`: `true` if the satellite is inside the visibility circle, or `false` otherwise.
 """
 function is_ground_facility_visible(
-    sat_r_e::AbstractVector,
-    gf_lat::Number,
-    gf_lon::Number,
-    gf_h::Number,
-    θ::Number
+    sat_r_e::AbstractVector, gf_lat::Number, gf_lon::Number, gf_h::Number, θ::Number
 )
     r_ned = ecef_to_ned(sat_r_e, gf_lat, gf_lon, gf_h; translate = true)
     return is_ground_facility_visible(r_ned, θ)
 end
 
 function is_ground_facility_visible(
-    sat_r_e::AbstractVector,
-    gf_r_e::AbstractVector,
-    θ::Number
+    sat_r_e::AbstractVector, gf_r_e::AbstractVector, θ::Number
 )
     gf_wgs84 = ecef_to_geodetic(gf_r_e)
     return is_ground_facility_visible(sat_r_e, gf_wgs84..., θ)

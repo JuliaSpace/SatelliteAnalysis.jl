@@ -90,10 +90,7 @@ Dict{Symbol, Dict{String, Symbol}} with 3 entries:
 ```
 """
 function eclipse_time_summary(
-    orbp::OrbitPropagator;
-    num_days::Number = 365,
-    step::Number = -1,
-    unit::Symbol = :s
+    orbp::OrbitPropagator; num_days::Number = 365, step::Number = -1, unit::Symbol = :s
 )
     jd₀ = Propagators.epoch(orbp)
     dt₀ = julian2datetime(jd₀)
@@ -111,7 +108,7 @@ function eclipse_time_summary(
     Δt₀ = step < 0 ? time_type(orb_period * (one(orb_period) / 2) / 360) : time_type(step)
 
     # Vector of the days in which the eclipse time will be computed.
-    days = 0:1:num_days-1
+    days = 0:1:(num_days - 1)
 
     # Pre-allocate the output variables.
     date          = Vector{DateTime}(undef, num_days)
@@ -152,7 +149,7 @@ function eclipse_time_summary(
                     orbp,
                     d,
                     s_i,
-                    old_state
+                    old_state,
                 )
 
                 # Times to be added in the old and new states.
@@ -160,33 +157,16 @@ function eclipse_time_summary(
                 Δts₁ = t_k₁ - t_kc
 
                 _accumulate(
-                    Δts₀,
-                    old_state,
-                    d + 1,
-                    sunlight_time,
-                    penumbra_time,
-                    umbra_time
+                    Δts₀, old_state, d + 1, sunlight_time, penumbra_time, umbra_time
                 )
 
                 _accumulate(
-                    Δts₁,
-                    new_state,
-                    d + 1,
-                    sunlight_time,
-                    penumbra_time,
-                    umbra_time
+                    Δts₁, new_state, d + 1, sunlight_time, penumbra_time, umbra_time
                 )
 
-            # If not, just add the time step to the current state.
+                # If not, just add the time step to the current state.
             else
-                _accumulate(
-                    Δt,
-                    new_state,
-                    d + 1,
-                    sunlight_time,
-                    penumbra_time,
-                    umbra_time
-                )
+                _accumulate(Δt, new_state, d + 1, sunlight_time, penumbra_time, umbra_time)
             end
 
             old_state = new_state
@@ -218,18 +198,18 @@ function eclipse_time_summary(
     end
 
     # Create and returns the DataFrame.
-    df = DataFrame(
+    df = DataFrame(;
         date = Date.(date),
         sunlight = sunlight_time,
         penumbra = penumbra_time,
-        umbra = umbra_time
+        umbra = umbra_time,
     )
 
     # Add metadata to the DataFrame.
     metadata!(df, "Description", "Eclipse time PER ORBIT computed at each day.")
     colmetadata!(df, :sunlight, "Unit", unit)
     colmetadata!(df, :penumbra, "Unit", unit)
-    colmetadata!(df, :umbra,    "Unit", unit)
+    colmetadata!(df, :umbra, "Unit", unit)
 
     return df
 end
@@ -245,7 +225,7 @@ function _accumulate(
     ind::Integer,
     sunlight_time::AbstractArray,
     penumbra_time::AbstractArray,
-    umbra_time::AbstractArray
+    umbra_time::AbstractArray,
 )
     @inbounds if state == :sunlight
         sunlight_time[ind] += Δts
@@ -261,10 +241,7 @@ end
 # Without the `@noinline` we get **a lot** of allocations when calling the function
 # `find_crossing`.
 @noinline function _get_lighting_condition(
-    orbp::OrbitPropagator,
-    t::Number,
-    d::Number,
-    s_i::AbstractVector
+    orbp::OrbitPropagator, t::Number, d::Number, s_i::AbstractVector
 )
     r_i, ~ = Propagators.propagate!(orbp, 86400d + t)
     return lighting_condition(r_i, s_i)
@@ -273,11 +250,7 @@ end
 # Function used in `find_crossing` to precisely obtain the instant in which the lightning
 # condition changed.
 @noinline function _lighting_condition_crossing(
-    t::Number,
-    orbp::OrbitPropagator,
-    d::Number,
-    s_i::AbstractVector,
-    old_state::Symbol
+    t::Number, orbp::OrbitPropagator, d::Number, s_i::AbstractVector, old_state::Symbol
 )
     return _get_lighting_condition(orbp, t, d, s_i) == old_state
 end

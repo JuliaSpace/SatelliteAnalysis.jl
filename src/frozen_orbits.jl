@@ -99,7 +99,7 @@ function frozen_orbit(
     a::Number,
     i::Number;
     gravity_model::Union{Nothing, AbstractGravityModel} = nothing,
-    max_degree::Int = 53
+    max_degree::Int = 53,
 )
 
     # Fetch EGM-96 gravity model if the user does not specify one.
@@ -142,7 +142,7 @@ function frozen_orbit(
     # Compute the numerator and denominator of the frozen eccentricity as indicated in Eq.
     # 38 [3, p. 1297].
     for p in 1:p_max
-        C_2p_0  = -(GravityModels.coefficients(gm, 2p,     0) |> first) |> big
+        C_2p_0  = -(GravityModels.coefficients(gm, 2p, 0) |> first) |> big
         C_2p1_0 = -(GravityModels.coefficients(gm, 2p + 1, 0) |> first) |> big
 
         if unnormalize

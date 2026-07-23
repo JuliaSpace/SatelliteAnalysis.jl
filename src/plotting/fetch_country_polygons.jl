@@ -24,7 +24,7 @@ a scratch space. The function returns a `String` with the file path.
 """
 function fetch_country_polygons(
     url = "https://pkgstore.datahub.io/core/geo-countries/countries/archive/23f420f929e0e09c39d916b8aaa166fb/countries.geojson";
-    force_download::Bool = false
+    force_download::Bool = false,
 )
     filename = "countries.geojson"
 
@@ -40,7 +40,6 @@ function fetch_country_polygons(
         isempty(readdir(cache_dir)) ||
         !isfile(filepath) ||
         !isfile(filepath_timestamp)
-
         download_file = true
     end
 
@@ -48,7 +47,7 @@ function fetch_country_polygons(
         @info "Downloading the file '$filename' from '$url'..."
         Downloads.download(url, filepath)
         open(filepath_timestamp, "w") do f
-            write(f, string(now()))
+            return write(f, string(now()))
         end
     end
 

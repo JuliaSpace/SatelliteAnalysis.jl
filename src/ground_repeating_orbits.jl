@@ -64,7 +64,7 @@ function ground_repeating_orbit_adjacent_track_angle(
     J4::Number = EGM_2008_J4,
     R0::Number = EARTH_EQUATORIAL_RADIUS,
     m0::Number = GM_EARTH,
-    we::Number = EARTH_ANGULAR_SPEED
+    we::Number = EARTH_ANGULAR_SPEED,
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
     T   = float(promote_type(T1, T2, T3))
     R₀  = T(R0)
@@ -72,26 +72,12 @@ function ground_repeating_orbit_adjacent_track_angle(
 
     # Compute the orbital period [s].
     ΔT = orbital_period(
-        a,
-        e,
-        i;
-        perturbation = perturbation,
-        J2 = J2,
-        J4 = J4,
-        R0 = R0,
-        m0 = m0
+        a, e, i; perturbation = perturbation, J2 = J2, J4 = J4, R0 = R0, m0 = m0
     )
 
     # Compute the RAAN time derivative [rad / s].
     ∂Ω_∂t = raan_time_derivative(
-        a,
-        e,
-        i;
-        perturbation = perturbation,
-        J2 = J2,
-        J4 = J4,
-        m0 = m0,
-        R0 = R0
+        a, e, i; perturbation = perturbation, J2 = J2, J4 = J4, m0 = m0, R0 = R0
     )
 
     # Angle between one ground track and the middle of the region between the two adjacent
@@ -105,15 +91,7 @@ function ground_repeating_orbit_adjacent_track_angle(
     # need to find the ground trace inclination [rad], which is a composition between the
     # Earth's rotation rate and the satellite speed.
     i_gt = ground_track_inclination(
-        a,
-        e,
-        i;
-        J2 = J2,
-        J4 = J4,
-        R0 = R0,
-        m0 = m0,
-        perturbation = perturbation,
-        we = we
+        a, e, i; J2 = J2, J4 = J4, R0 = R0, m0 = m0, perturbation = perturbation, we = we
     )
 
     sin_i_gt, cos_i_gt = sincos(i_gt)
@@ -179,7 +157,7 @@ function ground_repeating_orbit_adjacent_track_distance(
     J4::Number = EGM_2008_J4,
     R0::Number = EARTH_EQUATORIAL_RADIUS,
     m0::Number = GM_EARTH,
-    we::Number = EARTH_ANGULAR_SPEED
+    we::Number = EARTH_ANGULAR_SPEED,
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
     T   = float(promote_type(T1, T2, T3))
     R₀  = T(R0)
@@ -187,26 +165,12 @@ function ground_repeating_orbit_adjacent_track_distance(
 
     # Compute the orbital period [s].
     ΔT = orbital_period(
-        a,
-        e,
-        i;
-        perturbation = perturbation,
-        J2 = J2,
-        J4 = J4,
-        R0 = R0,
-        m0 = m0
+        a, e, i; perturbation = perturbation, J2 = J2, J4 = J4, R0 = R0, m0 = m0
     )
 
     # Compute the RAAN time derivative [rad / s].
     ∂Ω_∂t = raan_time_derivative(
-        a,
-        e,
-        i;
-        perturbation = perturbation,
-        J2 = J2,
-        J4 = J4,
-        m0 = m0,
-        R0 = R0
+        a, e, i; perturbation = perturbation, J2 = J2, J4 = J4, m0 = m0, R0 = R0
     )
 
     # Angle between one ground track and the middle of the region between the two adjacent
@@ -220,15 +184,7 @@ function ground_repeating_orbit_adjacent_track_distance(
     # need to find the ground trace inclination [rad], which is a composition between the
     # Earth's rotation rate and the satellite speed.
     i_gt = ground_track_inclination(
-        a,
-        e,
-        i;
-        J2 = J2,
-        J4 = J4,
-        R0 = R0,
-        m0 = m0,
-        perturbation = perturbation,
-        we = we
+        a, e, i; J2 = J2, J4 = J4, R0 = R0, m0 = m0, perturbation = perturbation, we = we
     )
 
     sin_i_gt, cos_i_gt = sincos(i_gt)

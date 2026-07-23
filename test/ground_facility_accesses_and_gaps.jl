@@ -22,18 +22,15 @@ end
         0.001111,
         98.405 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90     |> deg2rad,
-        0
+        90 |> deg2rad,
+        0,
     )
     orbp = Propagators.init(Val(:J2), orb)
 
     # == Single Facility ===================================================================
 
     df = ground_facility_accesses(
-        orbp,
-        (0, 0, 0);
-        duration = 1 * 86400,
-        f_eci_to_ecef = gf_tod_to_pef
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef
     )
 
     @test size(df) == (2, 3)
@@ -58,7 +55,7 @@ end
         orbp,
         [(0, 0, 0), (0, π / 4, 0)];
         duration = 1 * 86400,
-        f_eci_to_ecef = gf_tod_to_pef
+        f_eci_to_ecef = gf_tod_to_pef,
     )
 
     @test size(df) == (4, 3)
@@ -89,7 +86,7 @@ end
         [(0, 0, 0), (0, π / 4, 0)];
         duration = 1 * 86400,
         f_eci_to_ecef = gf_tod_to_pef,
-        reduction = v -> (&)(v...)
+        reduction = v -> (&)(v...),
     )
 
     @test size(df) == (0, 3)
@@ -102,11 +99,7 @@ end
     # -- Minutes ---------------------------------------------------------------------------
 
     df = ground_facility_accesses(
-        orbp,
-        (0, 0, 0);
-        duration = 1 * 86400,
-        f_eci_to_ecef = gf_tod_to_pef,
-        unit = :m
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :m
     )
 
     @test size(df) == (2, 3)
@@ -122,11 +115,7 @@ end
     # -- Hours -----------------------------------------------------------------------------
 
     df = ground_facility_accesses(
-        orbp,
-        (0, 0, 0);
-        duration = 1 * 86400,
-        f_eci_to_ecef = gf_tod_to_pef,
-        unit = :h
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :h
     )
 
     @test size(df) == (2, 3)
@@ -146,7 +135,7 @@ end
         (0, 0, 0);
         duration = 1 * 86400,
         f_eci_to_ecef = gf_tod_to_pef,
-        unit = :not_know
+        unit = :not_know,
     )
 
     @test size(df) == (2, 3)
@@ -172,16 +161,12 @@ end
         98.405 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
         90 |> deg2rad,
-        0
+        0,
     )
 
     orbp = Propagators.init(Val(:J2), orb)
 
-    gs_cuiaba = (
-        -15.555008 |> deg2rad,
-        -56.069569 |> deg2rad,
-        +237.03
-    )
+    gs_cuiaba = (-15.555008 |> deg2rad, -56.069569 |> deg2rad, +237.03)
 
     df = ground_facility_accesses(
         orbp,
@@ -210,8 +195,8 @@ end
         0.001111,
         98.405 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90     |> deg2rad,
-        0
+        90 |> deg2rad,
+        0,
     )
     orbp = Propagators.init(Val(:J2), orb)
 
@@ -222,20 +207,19 @@ end
             Computing ground facility accesses using 1 chunks:
 
             Chunk 1: 2021-01-01T00:00:00.000 -- 2021-01-02T00:00:00.000
-            """
+            """,
         ),
         min_level = Logging.Debug,
         df = ground_facility_accesses(
-            orbp,
-            (0, 0, 0);
-            duration = 1 * 86400,
-            f_eci_to_ecef = gf_tod_to_pef
+            orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef
         )
     )
 
     # Chunks share their boundary sample so transitions are not missed between tasks. More
     # chunks than time samples, including an extreme request, must remain valid.
-    chunks = collect(SatelliteAnalysis._gf_access_time_vector_partition([0.0, 1.0], typemax(Int)))
+    chunks = collect(
+        SatelliteAnalysis._gf_access_time_vector_partition([0.0, 1.0], typemax(Int))
+    )
     @test length(chunks) == 2
     @test length.(chunks) == [2, 1]
 
@@ -244,7 +228,7 @@ end
         (0, 0, 0);
         duration = 0,
         num_chunks = typemax(Int),
-        f_eci_to_ecef = gf_tod_to_pef
+        f_eci_to_ecef = gf_tod_to_pef,
     )
     @test size(df, 2) == 3
 end
@@ -257,20 +241,16 @@ end
         0.001111,
         98.405 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90     |> deg2rad,
-        0
+        90 |> deg2rad,
+        0,
     )
     orbp = Propagators.init(Val(:J2), orb)
 
     # == Single Facility ===================================================================
 
     df = ground_facility_gaps(
-        orbp,
-        (0, 0, 0);
-        duration = 1 * 86400,
-        f_eci_to_ecef = gf_tod_to_pef
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef
     )
-
 
     @test size(df) == (3, 3)
 
@@ -297,7 +277,7 @@ end
         orbp,
         [(0, 0, 0), (0, π / 4, 0)];
         duration = 1 * 86400,
-        f_eci_to_ecef = gf_tod_to_pef
+        f_eci_to_ecef = gf_tod_to_pef,
     )
 
     @test size(df) == (5, 3)
@@ -332,7 +312,7 @@ end
         [(0, 0, 0), (0, π / 4, 0)];
         duration = 1 * 86400,
         f_eci_to_ecef = gf_tod_to_pef,
-        reduction = v -> (&)(v...)
+        reduction = v -> (&)(v...),
     )
 
     @test size(df) == (1, 3)
@@ -351,11 +331,7 @@ end
     # -- Minutes ---------------------------------------------------------------------------
 
     df = ground_facility_gaps(
-        orbp,
-        (0, 0, 0);
-        duration = 1 * 86400,
-        f_eci_to_ecef = gf_tod_to_pef,
-        unit = :m
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :m
     )
 
     @test size(df) == (3, 3)
@@ -380,11 +356,7 @@ end
     # -- Hours -----------------------------------------------------------------------------
 
     df = ground_facility_gaps(
-        orbp,
-        (0, 0, 0);
-        duration = 1 * 86400,
-        f_eci_to_ecef = gf_tod_to_pef,
-        unit = :h
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :h
     )
 
     @test size(df) == (3, 3)
@@ -413,7 +385,7 @@ end
         (0, 0, 0);
         duration = 1 * 86400,
         f_eci_to_ecef = gf_tod_to_pef,
-        unit = :not_known
+        unit = :not_known,
     )
 
     @test size(df) == (3, 3)

@@ -19,5 +19,5 @@ to the function `Figure`. For more information, please refer to **Makie.jl** doc
     this file does not exist, the algorithm tries to download it.
 """
 function plot_world_map(args...)
-    error("Wrong input or the package GeoMakie.jl is not loaded.")
+    return error("Wrong input or the package GeoMakie.jl is not loaded.")
 end

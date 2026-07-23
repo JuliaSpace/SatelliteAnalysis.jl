@@ -90,43 +90,44 @@ function design_sun_sync_ground_repeating_orbit(
     J2::Number = EGM_2008_J2,
     m0::Number = GM_EARTH,
     R0::Number = EARTH_EQUATORIAL_RADIUS,
-    we::Number = EARTH_ANGULAR_SPEED
+    we::Number = EARTH_ANGULAR_SPEED,
 )
-    pretty_rev_per_days = _resolve_pretty_rev_per_days(pretty_rev_per_days, pretify_rev_per_days)
+    pretty_rev_per_days = _resolve_pretty_rev_per_days(
+        pretty_rev_per_days, pretify_rev_per_days
+    )
     R₀ = EARTH_EQUATORIAL_RADIUS
-    e  = eccentricity
+    e = eccentricity
 
     # Check if the inputs are valid.
-    minimum_repetition <= 0 && throw(
-        ArgumentError("The minimum repetition must be greater than 0.")
-    )
+    minimum_repetition <= 0 &&
+        throw(ArgumentError("The minimum repetition must be greater than 0."))
 
-    maximum_repetition <= 0 && throw(
-        ArgumentError("The maximum repetition must be greater than 0.")
-    )
+    maximum_repetition <= 0 &&
+        throw(ArgumentError("The maximum repetition must be greater than 0."))
 
     maximum_repetition < minimum_repetition && throw(
-        ArgumentError("The minimum repetition must be smaller or equal than the maximum repetition.")
+        ArgumentError(
+            "The minimum repetition must be smaller or equal than the maximum repetition.",
+        ),
     )
 
-    !(0 <= e < 1) && throw(
-        ArgumentError("The eccentricity must be within the interval [0, 1).")
-    )
+    !(0 <= e < 1) &&
+        throw(ArgumentError("The eccentricity must be within the interval [0, 1)."))
 
     # Create an empty `DataFrame` that will store the list of orbits.
-    df = DataFrame(
+    df = DataFrame(;
         semi_major_axis      = Float64[],
         altitude             = Float64[],
         inclination          = Float64[],
         period               = Float64[],
         rev_per_days         = pretty_rev_per_days ? String[] : Tuple{Int, Rational}[],
         adjacent_gt_distance = Float64[],
-        adjacent_gt_angle    = Float64[]
+        adjacent_gt_angle    = Float64[],
     )
 
     # Check the units for the values.
-    dunit   = distance_unit === :km  ? 1.e-3     : 1.0
-    angunit = angle_unit    === :deg ? 180.0 / π : 1.0
+    dunit   = distance_unit === :km ? 1.e-3 : 1.0
+    angunit = angle_unit === :deg ? 180.0 / π : 1.0
     tunit   = begin
         if time_unit == :h
             1.0 / 3600
@@ -152,12 +153,7 @@ function design_sun_sync_ground_repeating_orbit(
 
                 # Find a Sun synchronous orbit with that angular velocity.
                 a, i, converged = sun_sync_orbit_from_angular_velocity(
-                    n,
-                    e;
-                    no_warnings = true,
-                    J2 = J2,
-                    m0 = m0,
-                    R0 = R0
+                    n, e; no_warnings = true, J2 = J2, m0 = m0, R0 = R0
                 )
 
                 # If the algorithm has not converged or if the orbit is not valid, skip this
@@ -167,13 +163,7 @@ function design_sun_sync_ground_repeating_orbit(
 
                 # If we reach this point, add the orbit to the `DataFrame`.
                 orb_angvel = orbital_angular_velocity(
-                    a,
-                    e,
-                    i;
-                    perturbation = :J2,
-                    J2 = J2,
-                    m0 = m0,
-                    R0 = R0
+                    a, e, i; perturbation = :J2, J2 = J2, m0 = m0, R0 = R0
                 )
 
                 orb_period = 2π / orb_angvel
@@ -181,35 +171,23 @@ function design_sun_sync_ground_repeating_orbit(
 
                 h = a - R₀
 
-                push!(df, (
-                    a * dunit,
-                    h * dunit,
-                    i * angunit,
-                    orb_period * tunit,
-                    pretty_rev_per_days ?
-                        _pretify_rev_per_days(int, num, den) :
+                push!(
+                    df,
+                    (
+                        a * dunit,
+                        h * dunit,
+                        i * angunit,
+                        orb_period * tunit,
+                        pretty_rev_per_days ? _pretify_rev_per_days(int, num, den) :
                         (int, num // den),
-                    ground_repeating_orbit_adjacent_track_distance(
-                        a,
-                        e,
-                        i,
-                        orb_cycle;
-                        J2 = J2,
-                        m0 = m0,
-                        R0 = R0,
-                        we = we
-                    ) * dunit,
-                    ground_repeating_orbit_adjacent_track_angle(
-                        a,
-                        e,
-                        i,
-                        orb_cycle;
-                        J2 = J2,
-                        m0 = m0,
-                        R0 = R0,
-                        we = we
-                    ) * angunit
-                ))
+                        ground_repeating_orbit_adjacent_track_distance(
+                            a, e, i, orb_cycle; J2 = J2, m0 = m0, R0 = R0, we = we
+                        ) * dunit,
+                        ground_repeating_orbit_adjacent_track_angle(
+                            a, e, i, orb_cycle; J2 = J2, m0 = m0, R0 = R0, we = we
+                        ) * angunit,
+                    ),
+                )
             end
         end
     end
@@ -227,7 +205,7 @@ function design_sun_sync_ground_repeating_orbit(
 
             return true
         end,
-        df
+        df,
     )
 
     # Sort the `DataFrame` by the semi-major axis.
@@ -399,9 +377,8 @@ function sun_sync_orbit_from_angular_velocity(
     # Constants.
     J2::Number = EGM_2008_J2,
     m0::Number = GM_EARTH,
-    R0::Number = EARTH_EQUATORIAL_RADIUS
+    R0::Number = EARTH_EQUATORIAL_RADIUS,
 ) where {T1 <: Number, T2 <: Number}
-
     T = float(promote_type(T1, T2))
 
     # Constant to convert [rad / s] to [deg / day].
@@ -412,7 +389,8 @@ function sun_sync_orbit_from_angular_velocity(
 
     # Check if the arguments are valid.
     angvel <= 0 && throw(ArgumentError("The angular velocity must be greater than 0."))
-    !(0 <= e < 1) && throw(ArgumentError("The eccentricity must be within the interval [0, 1)."))
+    !(0 <= e < 1) &&
+        throw(ArgumentError("The eccentricity must be within the interval [0, 1)."))
 
     # Obtain the tolerance.
     tol = isnothing(tolerance) ? (√eps(T), √eps(T)) : (T(tolerance[1]), T(tolerance[2]))
@@ -468,14 +446,14 @@ function sun_sync_orbit_from_angular_velocity(
     converged = true
 
     while (abs(f₁) > tol[1]) || (abs(f₂) > tol[2])
-        isqrt_ā² = isqrt_ā  * isqrt_ā
+        isqrt_ā² = isqrt_ā * isqrt_ā
         isqrt_ā³ = isqrt_ā² * isqrt_ā
         isqrt_ā⁴ = isqrt_ā² * isqrt_ā²
         isqrt_ā⁶ = isqrt_ā³ * isqrt_ā³
         isqrt_ā⁷ = isqrt_ā⁴ * isqrt_ā³
         isqrt_ā⁸ = isqrt_ā⁴ * isqrt_ā⁴
 
-        cos²_i = cos_i  * cos_i
+        cos²_i = cos_i * cos_i
         cos³_i = cos²_i * cos_i
         cos⁴_i = cos²_i * cos²_i
 
@@ -539,10 +517,11 @@ function sun_sync_orbit_from_angular_velocity(
 
     # If `cos_i` absolute value is larger than 1, the solution does not have physical
     # meaning.
-    (abs(cos_i) > 1) &&
-        throw(ArgumentError(
-            "It is not possible to find a Sun-synchronous orbit with the selected parameters (ang. vel = $(angvel) rad / s, e = $e)."
-        ))
+    (abs(cos_i) > 1) && throw(
+        ArgumentError(
+            "It is not possible to find a Sun-synchronous orbit with the selected parameters (ang. vel = $(angvel) rad / s, e = $e).",
+        ),
+    )
 
     a = R₀ / (isqrt_ā * isqrt_ā)
     i = acos(cos_i)
@@ -555,8 +534,7 @@ function sun_sync_orbit_from_angular_velocity(
         The algorithm to compute the Sun-synchronous orbit has not converged!
         Residues :
           f₁ = $f₁ ° / day
-          f₂ = $f₂ ° / min"""
-    )
+          f₂ = $f₂ ° / min""")
 
     # Return.
     return a, i, converged
@@ -681,16 +659,16 @@ function sun_sync_orbit_semi_major_axis(
     # Constants.
     J2::Number = EGM_2008_J2,
     m0::Number = GM_EARTH,
-    R0::Number = EARTH_EQUATORIAL_RADIUS
+    R0::Number = EARTH_EQUATORIAL_RADIUS,
 ) where {T1 <: Number, T2 <: Number}
-
     T = float(promote_type(T1, T2))
 
     # Constant to convert [rad / s] to [deg / day].
     rs_to_dd = T(86400 * 180 / π)
 
     # Check the inputs.
-    !(0 <= e < 1) && throw(ArgumentError("The eccentricity must be within the interval [0, 1)."))
+    !(0 <= e < 1) &&
+        throw(ArgumentError("The eccentricity must be within the interval [0, 1)."))
 
     # Obtain the tolerance.
     tol = isnothing(tolerance) ? √(eps(T)) : T(tolerance)
@@ -725,10 +703,11 @@ function sun_sync_orbit_semi_major_axis(
 
     # If `k₁` is negative, Ω̇ will be also be negative. Hence, it is impossible to find a
     # Sun-synchronous orbit.
-    k₁ < 0 &&
-        throw(ArgumentError(
-            "It is not possible to find a Sun-synchronous orbit with the selected parameters (i = $(rad2deg(i))°, e = $e)."
-        ))
+    k₁ < 0 && throw(
+        ArgumentError(
+            "It is not possible to find a Sun-synchronous orbit with the selected parameters (i = $(rad2deg(i))°, e = $e).",
+        ),
+    )
 
     # We will change the units of the desired values to improve the numerical stability.
     k₁ *= rs_to_dd
@@ -750,7 +729,7 @@ function sun_sync_orbit_semi_major_axis(
     converged = true
 
     while abs(f₁) > tol
-        isqrt_ā³ = isqrt_ā  * isqrt_ā  * isqrt_ā
+        isqrt_ā³ = isqrt_ā * isqrt_ā * isqrt_ā
         isqrt_ā⁴ = isqrt_ā³ * isqrt_ā
         isqrt_ā⁶ = isqrt_ā³ * isqrt_ā³
         isqrt_ā⁷ = isqrt_ā⁶ * isqrt_ā
@@ -795,8 +774,7 @@ function sun_sync_orbit_semi_major_axis(
 
     !converged && @warn("""
         The algorithm to compute the Sun-synchronous orbit semi-major axis has not converged!
-        Residue: $f₁ ° / day """
-    )
+        Residue: $f₁ ° / day """)
 
     # Compute the semi-major axis from the normalized semi-major axis.
     a = R₀ / (isqrt_ā * isqrt_ā)
@@ -923,16 +901,17 @@ function sun_sync_orbit_inclination(
     # Constants.
     J2::Number = EGM_2008_J2,
     m0::Number = GM_EARTH,
-    R0::Number = EARTH_EQUATORIAL_RADIUS
+    R0::Number = EARTH_EQUATORIAL_RADIUS,
 ) where {T1 <: Number, T2 <: Number}
-
-    T  = float(promote_type(T1, T2))
+    T = float(promote_type(T1, T2))
     R₀ = T(EARTH_EQUATORIAL_RADIUS)
     rs_to_dd = T(86400 * 180 / π)
 
     # Check if the arguments are valid.
-    !(0 <= e < 1) && throw(ArgumentError("The eccentricity must be within the interval [0, 1)."))
-    (a * (1 - e) <= R₀) && throw(ArgumentError("The perigee must be larger than the Earth's radius."))
+    !(0 <= e < 1) &&
+        throw(ArgumentError("The eccentricity must be within the interval [0, 1)."))
+    (a * (1 - e) <= R₀) &&
+        throw(ArgumentError("The perigee must be larger than the Earth's radius."))
 
     # Obtain the tolerance.
     tol = isnothing(tolerance) ? √(eps(T)) : T(tolerance)
@@ -986,7 +965,7 @@ function sun_sync_orbit_inclination(
     converged = true
 
     while abs(f₁) > tol
-        cos²_i = cos_i  * cos_i
+        cos²_i = cos_i * cos_i
         cos³_i = cos²_i * cos_i
 
         # Compute the residue using the current estimate.
@@ -1029,15 +1008,15 @@ function sun_sync_orbit_inclination(
 
     !converged && @warn("""
         The algorithm to compute the Sun-synchronous orbit inclination has not converged!
-        Residue: $f₁ ° / day """
-    )
+        Residue: $f₁ ° / day """)
 
     # If `cos_i` absolute value is larger than 1, the solution does not have physical
     # meaning.
-    (abs(cos_i) > 1) &&
-        throw(ArgumentError(
-            "It is not possible to find a Sun-synchronous orbit with the selected parameters (a = $(a / 1000) km, e = $e)."
-        ))
+    (abs(cos_i) > 1) && throw(
+        ArgumentError(
+            "It is not possible to find a Sun-synchronous orbit with the selected parameters (a = $(a / 1000) km, e = $e).",
+        ),
+    )
 
     # Recover the inclination.
     i = acos(cos_i)
@@ -1060,9 +1039,15 @@ end
 function _resolve_pretty_rev_per_days(pretty_rev_per_days, pretify_rev_per_days)
     !isnothing(pretify_rev_per_days) && Base.depwarn(
         "`pretify_rev_per_days` is deprecated; use `pretty_rev_per_days` instead.",
-        :design_sun_sync_ground_repeating_orbit
+        :design_sun_sync_ground_repeating_orbit,
     )
-    isnothing(pretty_rev_per_days) && return isnothing(pretify_rev_per_days) ? true : pretify_rev_per_days
-    (isnothing(pretify_rev_per_days) || pretty_rev_per_days == pretify_rev_per_days) && return pretty_rev_per_days
-    throw(ArgumentError("`pretty_rev_per_days` and deprecated `pretify_rev_per_days` must have the same value."))
+    isnothing(pretty_rev_per_days) &&
+        return isnothing(pretify_rev_per_days) ? true : pretify_rev_per_days
+    (isnothing(pretify_rev_per_days) || pretty_rev_per_days == pretify_rev_per_days) &&
+        return pretty_rev_per_days
+    return throw(
+        ArgumentError(
+            "`pretty_rev_per_days` and deprecated `pretify_rev_per_days` must have the same value.",
+        ),
+    )
 end

@@ -84,7 +84,6 @@ function ground_facility_visibility_circle(
     azimuth_step::Number = 0.1 |> deg2rad,
     minimum_elevation::Number = 10 |> deg2rad,
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
-
     gf_lat, gf_lon, gf_h = gf_wgs84
 
     # Vector with the azimuth angles in the ground facility that we will consider in the

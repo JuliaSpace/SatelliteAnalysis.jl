@@ -73,7 +73,7 @@ julia> fig
 ```
 """
 function plot_ground_track(::Any; kwargs...)
-    error("Wrong input or the package GeoMakie.jl is not loaded.")
+    return error("Wrong input or the package GeoMakie.jl is not loaded.")
 end
 
 """
@@ -133,5 +133,5 @@ julia> plot_ground_track!(ax, gt)
 ```
 """
 function plot_ground_track!(args...)
-    error("Wrong input or the package GeoMakie.jl is not loaded.")
+    return error("Wrong input or the package GeoMakie.jl is not loaded.")
 end

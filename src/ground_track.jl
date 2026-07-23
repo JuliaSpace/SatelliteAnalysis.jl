@@ -135,7 +135,7 @@ function ground_track(
     initial_time::Number = 0,
     f_eci_to_ecef::Function = _ground_track_default_eci_to_ecef,
     step::Union{Nothing, Number} = nothing,
-    track_types::Symbol = :all
+    track_types::Symbol = :all,
 )
 
     # == Prepare the Inputs ================================================================
@@ -316,7 +316,7 @@ function ground_track_inclination(
     R0::Number = EARTH_EQUATORIAL_RADIUS,
     m0::Number = GM_EARTH,
     perturbation::Symbol = :J2,
-    we::Number = EARTH_ANGULAR_SPEED
+    we::Number = EARTH_ANGULAR_SPEED,
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
     T   = float(promote_type(T1, T2, T3))
     μ   = T(m0)
@@ -324,26 +324,12 @@ function ground_track_inclination(
 
     # Satellite mean angular velocity [rad / s].
     ω_s = orbital_angular_velocity(
-        a,
-        e,
-        i;
-        perturbation = perturbation,
-        m0 = m0,
-        R0 = R0,
-        J2 = J2,
-        J4 = J4
+        a, e, i; perturbation = perturbation, m0 = m0, R0 = R0, J2 = J2, J4 = J4
     )
 
     # The ground track inclination depends on the RAAN time derivative [rad / s].
     ∂Ω_∂t = raan_time_derivative(
-        a,
-        e,
-        i;
-        perturbation = perturbation,
-        J2 = J2,
-        J4 = J4,
-        m0 = m0,
-        R0 = R0
+        a, e, i; perturbation = perturbation, J2 = J2, J4 = J4, m0 = m0, R0 = R0
     )
 
     # Finally, we can compute the ground track inclination at Equator.

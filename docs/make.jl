@@ -1,9 +1,9 @@
 using Documenter
 using SatelliteAnalysis
 
-makedocs(
+makedocs(;
     modules = [SatelliteAnalysis],
-    format = Documenter.HTML(
+    format = Documenter.HTML(;
         prettyurls = !("local" in ARGS),
         canonical = "https://juliaspace.github.io/SatelliteAnalysis.jl/stable/",
     ),
@@ -17,18 +17,13 @@ makedocs(
         "Ground Facilities" => [
             "Ground Facility Accesses" => "man/ground_facilities/ground_facility_accesses.md",
             "Ground Facility Gaps" => "man/ground_facilities/ground_facility_gaps.md",
-            "Ground Facility Visibility Circle" => "man/ground_facilities/ground_facility_visibility_circle.md"
+            "Ground Facility Visibility Circle" => "man/ground_facilities/ground_facility_visibility_circle.md",
         ],
         "Ground Track" => "man/ground_track.md",
-        "Orbits" => [
-            "Sun Synchronous Orbits" => "man/orbits/sun_synchronous_orbits.md",
-        ],
+        "Orbits" => ["Sun Synchronous Orbits" => "man/orbits/sun_synchronous_orbits.md"],
         "World Map" => "man/world_map.md",
         "Library" => "lib/library.md",
     ],
 )
 
-deploydocs(
-    repo = "github.com/JuliaSpace/SatelliteAnalysis.jl.git",
-    target = "build",
-)
+deploydocs(; repo = "github.com/JuliaSpace/SatelliteAnalysis.jl.git", target = "build")

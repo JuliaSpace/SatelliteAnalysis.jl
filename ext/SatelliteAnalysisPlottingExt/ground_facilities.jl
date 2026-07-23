@@ -7,13 +7,16 @@
 function SatelliteAnalysis.plot_ground_facility_visibility_circles!(
     ax::Axis,
     vgf_vc::Vector{Vector{NTuple{2, T}}};
-    ground_facility_names::Union{Nothing, Vector{String}} = nothing
-) where T<:Number
+    ground_facility_names::Union{Nothing, Vector{String}} = nothing,
+) where {T <: Number}
     # Check inputs.
-    if !isnothing(ground_facility_names) && (length(vgf_vc) != length(ground_facility_names))
-        throw(ArgumentError(
-            "The number of elements in `vgf_vc` and `ground_facility_names` must be equal."
-        ))
+    if !isnothing(ground_facility_names) &&
+        (length(vgf_vc) != length(ground_facility_names))
+        throw(
+            ArgumentError(
+                "The number of elements in `vgf_vc` and `ground_facility_names` must be equal.",
+            ),
+        )
     end
 
     # Plot the visibility circles.
@@ -51,17 +54,14 @@ end
 function SatelliteAnalysis.plot_ground_facility_visibility_circles(
     vgf_vc::Vector{Vector{NTuple{2, T}}};
     ground_facility_names::Union{Nothing, Vector{String}} = nothing,
-    kwargs...
-) where T <: Number
-
+    kwargs...,
+) where {T <: Number}
     fig, ax = plot_world_map(; kwargs...)
 
     ax.title = "Ground Facility Visibility Circles"
 
     plot_ground_facility_visibility_circles!(
-        ax,
-        vgf_vc;
-        ground_facility_names = ground_facility_names
+        ax, vgf_vc; ground_facility_names = ground_facility_names
     )
 
     return fig, ax

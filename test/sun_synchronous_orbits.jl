@@ -16,51 +16,58 @@
 
     @test size(df) == (5, 7)
 
-    @test df[begin, :semi_major_axis]       ≈ 6382.409  (atol = 1e-3)
-    @test df[begin, :altitude]              ≈ 4.272     (atol = 1e-3)
-    @test df[begin, :inclination]           ≈ 95.6949   (atol = 1e-4)
-    @test df[begin, :period]                ≈ 84.706    (atol = 1e-3)
-    @test df[begin, :rev_per_days]         == "17"
-    @test df[begin, :adjacent_gt_distance]  ≈ 2327.845  (atol = 1e-3)
-    @test df[begin, :adjacent_gt_angle]     ≈ 169.1250  (atol = 1e-4)
+    @test df[begin, :semi_major_axis] ≈ 6382.409 (atol = 1e-3)
+    @test df[begin, :altitude] ≈ 4.272 (atol = 1e-3)
+    @test df[begin, :inclination] ≈ 95.6949 (atol = 1e-4)
+    @test df[begin, :period] ≈ 84.706 (atol = 1e-3)
+    @test df[begin, :rev_per_days] == "17"
+    @test df[begin, :adjacent_gt_distance] ≈ 2327.845 (atol = 1e-3)
+    @test df[begin, :adjacent_gt_angle] ≈ 169.1250 (atol = 1e-4)
 
-    @test df[end,   :semi_major_axis]       ≈ 7635.252  (atol = 1e-3)
-    @test df[end,   :altitude]              ≈ 1257.115  (atol = 1e-3)
-    @test df[end,   :inclination]           ≈ 100.7057  (atol = 1e-4)
-    @test df[end,   :period]                ≈ 110.769   (atol = 1e-3)
-    @test df[end,   :rev_per_days]         == "13"
-    @test df[end,   :adjacent_gt_distance]  ≈ 2976.209  (atol = 1e-3)
-    @test df[end,   :adjacent_gt_angle]     ≈ 91.7639   (atol = 1e-4)
+    @test df[end, :semi_major_axis] ≈ 7635.252 (atol = 1e-3)
+    @test df[end, :altitude] ≈ 1257.115 (atol = 1e-3)
+    @test df[end, :inclination] ≈ 100.7057 (atol = 1e-4)
+    @test df[end, :period] ≈ 110.769 (atol = 1e-3)
+    @test df[end, :rev_per_days] == "13"
+    @test df[end, :adjacent_gt_distance] ≈ 2976.209 (atol = 1e-3)
+    @test df[end, :adjacent_gt_angle] ≈ 91.7639 (atol = 1e-4)
 
     # == Altitude filter ===================================================================
 
     df = design_sun_sync_ground_repeating_orbit(
-        5,
-        5;
-        minimum_altitude = 750e3,
-        maximum_altitude = 760e3
+        5, 5; minimum_altitude = 750e3, maximum_altitude = 760e3
     )
 
     @test size(df) == (1, 7)
-    @test df[begin, :semi_major_axis]       ≈ 7130.984   (atol = 1e-3)
-    @test df[begin, :altitude]              ≈ 752.847    (atol = 1e-3)
-    @test df[begin, :inclination]           ≈ 98.4106    (atol = 1e-4)
-    @test df[begin, :period]                ≈ 100.000    (atol = 1e-3)
-    @test df[begin, :rev_per_days]         == "14 + ²/₅"
-    @test df[begin, :adjacent_gt_distance]  ≈ 543.811    (atol = 1e-3)
-    @test df[begin, :adjacent_gt_angle]     ≈ 39.425     (atol = 1e-3)
+    @test df[begin, :semi_major_axis] ≈ 7130.984 (atol = 1e-3)
+    @test df[begin, :altitude] ≈ 752.847 (atol = 1e-3)
+    @test df[begin, :inclination] ≈ 98.4106 (atol = 1e-4)
+    @test df[begin, :period] ≈ 100.000 (atol = 1e-3)
+    @test df[begin, :rev_per_days] == "14 + ²/₅"
+    @test df[begin, :adjacent_gt_distance] ≈ 543.811 (atol = 1e-3)
+    @test df[begin, :adjacent_gt_angle] ≈ 39.425 (atol = 1e-3)
 
-    corrected = design_sun_sync_ground_repeating_orbit(5, 5;
-        minimum_altitude = 750e3, maximum_altitude = 760e3, pretty_rev_per_days = false)
+    corrected = design_sun_sync_ground_repeating_orbit(
+        5,
+        5;
+        minimum_altitude = 750e3,
+        maximum_altitude = 760e3,
+        pretty_rev_per_days = false,
+    )
     @test corrected[begin, :rev_per_days] == (14, 2 // 5)
     same_value = @test_deprecated design_sun_sync_ground_repeating_orbit(
-        5, 5;
-        minimum_altitude = 750e3, maximum_altitude = 760e3,
-        pretty_rev_per_days = false, pretify_rev_per_days = false)
+        5,
+        5;
+        minimum_altitude = 750e3,
+        maximum_altitude = 760e3,
+        pretty_rev_per_days = false,
+        pretify_rev_per_days = false,
+    )
     @test same_value[begin, :rev_per_days] == (14, 2 // 5)
     @test_deprecated begin
         @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
-            5, 5; pretty_rev_per_days = true, pretify_rev_per_days = false)
+            5, 5; pretty_rev_per_days = true, pretify_rev_per_days = false
+        )
     end
 
     # == Revolutions per day ===============================================================
@@ -70,65 +77,49 @@
         5;
         minimum_altitude = 750e3,
         maximum_altitude = 760e3,
-        pretify_rev_per_days = false
+        pretify_rev_per_days = false,
     )
 
     @test size(df) == (1, 7)
-    @test df[begin, :semi_major_axis]       ≈ 7130.984     (atol = 1e-3)
-    @test df[begin, :altitude]              ≈ 752.847      (atol = 1e-3)
-    @test df[begin, :inclination]           ≈ 98.4106      (atol = 1e-4)
-    @test df[begin, :period]                ≈ 100.000      (atol = 1e-3)
-    @test df[begin, :rev_per_days]         == (14, 2 // 5)
-    @test df[begin, :adjacent_gt_distance]  ≈ 543.811    (atol = 1e-3)
-    @test df[begin, :adjacent_gt_angle]     ≈ 39.425     (atol = 1e-3)
+    @test df[begin, :semi_major_axis] ≈ 7130.984 (atol = 1e-3)
+    @test df[begin, :altitude] ≈ 752.847 (atol = 1e-3)
+    @test df[begin, :inclination] ≈ 98.4106 (atol = 1e-4)
+    @test df[begin, :period] ≈ 100.000 (atol = 1e-3)
+    @test df[begin, :rev_per_days] == (14, 2 // 5)
+    @test df[begin, :adjacent_gt_distance] ≈ 543.811 (atol = 1e-3)
+    @test df[begin, :adjacent_gt_angle] ≈ 39.425 (atol = 1e-3)
 
     # == Test units ========================================================================
 
     # -- Angle -----------------------------------------------------------------------------
 
     df = design_sun_sync_ground_repeating_orbit(
-        5,
-        5;
-        minimum_altitude = 750e3,
-        maximum_altitude = 760e3,
-        angle_unit = :rad,
+        5, 5; minimum_altitude = 750e3, maximum_altitude = 760e3, angle_unit = :rad
     )
 
-    @test df[begin, :inclination]       ≈ 98.4106 |> deg2rad (atol = 2e-6)
-    @test df[begin, :adjacent_gt_angle] ≈ 39.425  |> deg2rad (atol = 8e-5)
+    @test df[begin, :inclination] ≈ 98.4106 |> deg2rad (atol = 2e-6)
+    @test df[begin, :adjacent_gt_angle] ≈ 39.425 |> deg2rad (atol = 8e-5)
 
     # -- Distance --------------------------------------------------------------------------
 
     df = design_sun_sync_ground_repeating_orbit(
-        5,
-        5;
-        minimum_altitude = 750e3,
-        maximum_altitude = 760e3,
-        distance_unit = :m,
+        5, 5; minimum_altitude = 750e3, maximum_altitude = 760e3, distance_unit = :m
     )
 
-    @test df[begin, :semi_major_axis]      ≈ 7130.984e3 (atol = 1)
-    @test df[begin, :altitude]             ≈ 752.847e3  (atol = 1)
-    @test df[begin, :adjacent_gt_distance] ≈ 543.811e3  (atol = 1)
+    @test df[begin, :semi_major_axis] ≈ 7130.984e3 (atol = 1)
+    @test df[begin, :altitude] ≈ 752.847e3 (atol = 1)
+    @test df[begin, :adjacent_gt_distance] ≈ 543.811e3 (atol = 1)
 
     # -- Time ------------------------------------------------------------------------------
 
     df = design_sun_sync_ground_repeating_orbit(
-        5,
-        5;
-        minimum_altitude = 750e3,
-        maximum_altitude = 760e3,
-        time_unit = :s,
+        5, 5; minimum_altitude = 750e3, maximum_altitude = 760e3, time_unit = :s
     )
 
     @test df[begin, :period] ≈ 6000.000 (atol = 1e-3)
 
     df = design_sun_sync_ground_repeating_orbit(
-        5,
-        5;
-        minimum_altitude = 750e3,
-        maximum_altitude = 760e3,
-        time_unit = :h,
+        5, 5; minimum_altitude = 750e3, maximum_altitude = 760e3, time_unit = :h
     )
 
     @test df[begin, :period] ≈ 1.66667 (atol = 1e-5)
@@ -138,7 +129,9 @@
     @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(0, 10)
     @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(3, -3)
     @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(3, 2)
-    @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(1, 5; eccentricity = 1)
+    @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
+        1, 5; eccentricity = 1
+    )
 end
 
 # -- Function: sun_sync_orbit_from_angular_velocity ----------------------------------------
@@ -179,8 +172,7 @@ end
     # == Test When Algorithm Did Not Converge ==============================================
 
     a, i, c = (@test_logs(
-        (:warn,),
-        sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad; max_iterations = 3)
+        (:warn,), sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad; max_iterations = 3)
     ))
     @test c == false
 
@@ -197,8 +189,8 @@ end
 
 @testset "Function sun_sync_orbit_from_angular_velocity" begin
     @test_throws ArgumentError sun_sync_orbit_from_angular_velocity(-0.01)
-    @test_throws ArgumentError sun_sync_orbit_from_angular_velocity(+0.06  |> deg2rad, -0.01)
-    @test_throws ArgumentError sun_sync_orbit_from_angular_velocity(+0.06  |> deg2rad, -1.1)
+    @test_throws ArgumentError sun_sync_orbit_from_angular_velocity(+0.06 |> deg2rad, -0.01)
+    @test_throws ArgumentError sun_sync_orbit_from_angular_velocity(+0.06 |> deg2rad, -1.1)
     @test_throws ArgumentError sun_sync_orbit_from_angular_velocity(+0.004 |> deg2rad, -1.1)
 end
 
@@ -232,16 +224,15 @@ end
     # == Test When Algorithm Did Not Converge ==============================================
 
     a, c = (@test_logs(
-        (:warn,),
-        sun_sync_orbit_inclination(7130.982e3, 0.05; max_iterations = 2)
+        (:warn,), sun_sync_orbit_inclination(7130.982e3, 0.05; max_iterations = 2)
     ))
     @test c == false
 end
 
 @testset "Function sun_sync_orbit_inclination [ERRORS]" begin
-    @test_throws ArgumentError sun_sync_orbit_inclination(7130.982e3,  1.1)
+    @test_throws ArgumentError sun_sync_orbit_inclination(7130.982e3, 1.1)
     @test_throws ArgumentError sun_sync_orbit_inclination(7130.982e3, -0.1)
-    @test_throws ArgumentError sun_sync_orbit_inclination(7130.982e3,  0.4)
+    @test_throws ArgumentError sun_sync_orbit_inclination(7130.982e3, 0.4)
 
     # == Test When the Orbit Is Not Valid ==================================================
 

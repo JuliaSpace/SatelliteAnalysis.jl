@@ -44,8 +44,8 @@ function find_crossing(
     vargs::Vararg{Any, N};
     Δ = 1e-3,
     max = 100,
-    kwargs...
-) where N
+    kwargs...,
+) where {N}
     it = 0
 
     T = typeof((t₁ + t₀) / 2)

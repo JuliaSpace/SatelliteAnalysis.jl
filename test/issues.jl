@@ -8,31 +8,17 @@
     epoch = DateTime("2024-01-01")
     gs = (0.0, 0.0, 0.0)
     orb = KeplerianElements(
-        epoch |> datetime2julian,
-        7878.14e3,
-        0.0,
-        deg2rad(60),
-        0.0,
-        0.0,
-        0.0
+        epoch |> datetime2julian, 7878.14e3, 0.0, deg2rad(60), 0.0, 0.0, 0.0
     )
 
     orbp = Propagators.init(Val(:J2), orb)
 
     acc = ground_facility_accesses(
-        orbp,
-        gs;
-        minimum_elevation = deg2rad(60),
-        duration = 24 * 3600,
-        step = 120
+        orbp, gs; minimum_elevation = deg2rad(60), duration = 24 * 3600, step = 120
     )
 
     gap = ground_facility_gaps(
-        orbp,
-        gs;
-        minimum_elevation = deg2rad(60),
-        duration = 24 * 3600,
-        step = 120
+        orbp, gs; minimum_elevation = deg2rad(60), duration = 24 * 3600, step = 120
     )
 
     @test nrow(acc) == 1

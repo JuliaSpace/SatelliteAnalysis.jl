@@ -31,7 +31,7 @@
     # == Comparing with analytical solution ================================================
 
     # Let's compute the frozen orbit analytically considering only the third degree.
-    J₂   =  0.0010826266835531513
+    J₂   = 0.0010826266835531513
     J₃   = -2.5326564853322355e-6
     e_d3 = - (6.3781363e6 / 7130.982e3) * J₃ / J₂ * sind(98.410) / 2
 

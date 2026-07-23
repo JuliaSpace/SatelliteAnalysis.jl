@@ -115,9 +115,7 @@ julia> ground_facility_accesses(orbp, (0, 0, 0); unit = :m)
 ```
 """
 function ground_facility_accesses(
-    orbp::OrbitPropagator,
-    gf_wgs84::Tuple{T1, T2, T3};
-    kwargs...
+    orbp::OrbitPropagator, gf_wgs84::Tuple{T1, T2, T3}; kwargs...
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
     return ground_facility_accesses(orbp, [gf_wgs84]; kwargs...)
 end
@@ -132,8 +130,10 @@ function ground_facility_accesses(
     num_chunks::Integer = Threads.nthreads(),
     reduction::R = any,
     step::Number = 60,
-    unit::Symbol = :s
-) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}, R <: Function}
+    unit::Symbol = :s,
+) where {
+    T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}, R <: Function
+}
 
     # Time vector of the analysis.
     vt = float(initial_time):float(step):float(initial_time + duration)
@@ -151,7 +151,9 @@ function ground_facility_accesses(
         dt₀ = julian2datetime(Propagators.epoch(orbp))
 
         str_vt_chunks = [
-            Dates.format(dt₀ + Dates.Microsecond(round(Int, vt_chunks[k][begin] * 1e6)), dtf) *
+            Dates.format(
+                dt₀ + Dates.Microsecond(round(Int, vt_chunks[k][begin] * 1e6)), dtf
+            ) *
             " -- " *
             Dates.format(dt₀ + Dates.Microsecond(round(Int, vt_chunks[k][end] * 1e6)), dtf)
             for k in eachindex(vt_chunks)
@@ -182,7 +184,7 @@ function ground_facility_accesses(
                 vgf_wgs84;
                 f_eci_to_ecef     = f_eci_to_ecef,
                 minimum_elevation = minimum_elevation,
-                reduction         = reduction
+                reduction         = reduction,
             )
         end
     end
@@ -198,8 +200,8 @@ function ground_facility_accesses(
     concat_vaccess_end::Vector{DateTime} = concat_df.access_end
 
     # Vector with the fused access information, i.e., without duplicated information.
-    vaccess_beg  = DateTime[]
-    vaccess_end  = DateTime[]
+    vaccess_beg = DateTime[]
+    vaccess_end = DateTime[]
 
     # Total number of accesses.
     num_accesses = length(concat_vaccess_beg)
@@ -250,7 +252,7 @@ function ground_facility_accesses(
     df = DataFrame(
         :access_beginning => vaccess_beg,
         :access_end       => vaccess_end,
-        :duration         => vaccess_duration
+        :duration         => vaccess_duration,
     )
 
     metadata!(df, "Description", "Accesses to the ground facilities.")
@@ -317,9 +319,7 @@ julia> ground_facility_gaps(orbp, (0, 0, 0); unit = :m)
 ```
 """
 function ground_facility_gaps(
-    orbp::OrbitPropagator,
-    gf_wgs84::Tuple{T1, T2, T3};
-    kwargs...
+    orbp::OrbitPropagator, gf_wgs84::Tuple{T1, T2, T3}; kwargs...
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
     return ground_facility_gaps(orbp, [gf_wgs84]; kwargs...)
 end
@@ -333,8 +333,10 @@ function ground_facility_gaps(
     minimum_elevation::Number = 10 |> deg2rad,
     reduction::R = any,
     step::Number = 60,
-    unit::Symbol = :s
-) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}, R <: Function}
+    unit::Symbol = :s,
+) where {
+    T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}, R <: Function
+}
 
     # Get the epoch of the propagator.
     jd₀ = Propagators.epoch(orbp)
@@ -349,7 +351,7 @@ function ground_facility_gaps(
         initial_time,
         minimum_elevation,
         step,
-        reduction
+        reduction,
     )
 
     # Compute the last propagation instant.
@@ -401,11 +403,7 @@ function ground_facility_gaps(
     end
 
     # Create the DataFrame and write the metadata.
-    dfg = DataFrame(
-        :gap_beginning => vgap_beg,
-        :gap_end       => vgap_end,
-        :duration      => duration
-    )
+    dfg = DataFrame(:gap_beginning => vgap_beg, :gap_end       => vgap_end, :duration      => duration)
 
     metadata!(dfg, "Description", "Gaps to the ground facilities.")
     colmetadata!(dfg, :duration, "Unit", unit)
@@ -448,10 +446,10 @@ function _gf_access_time_vector_partition(vt::AbstractVector, np::Integer)
         i₁ = p < np ? i₀ + len : i₀ + len - 1
 
         i₀ += p <= rem ? p - 1 : rem
-        i₁ += p <= rem ? p     : rem
+        i₁ += p <= rem ? p : rem
 
         chunk = vt[i₀:i₁]
-        chunk
+        return chunk
     end
 end
 
@@ -463,7 +461,9 @@ function _ground_facility_access_chunk(
     f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
     minimum_elevation::Number = 10 |> deg2rad,
     reduction::R = any,
-) where {T<:Tuple{T1, T2, T3} where {T1<:Number, T2<:Number, T3<:Number}, R <: Function}
+) where {
+    T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}, R <: Function
+}
 
     # Get the epoch of the propagator.
     jd₀ = Propagators.epoch(orbp)
@@ -476,9 +476,8 @@ function _ground_facility_access_chunk(
 
     # Pre-allocate the visibility vector for custom reductions only. The built-in
     # reductions evaluate visibility directly and do not need one.
-    visibility = (reduction === any || reduction === all) ?
-        nothing :
-        zeros(Bool, length(vgf_wgs84))
+    visibility =
+        (reduction === any || reduction === all) ? nothing : zeros(Bool, length(vgf_wgs84))
 
     # Lambda function to check the reduced visibility.
     function f(t)::Bool
@@ -504,9 +503,7 @@ function _ground_facility_access_chunk(
 
         @inbounds for i in eachindex(visibility)
             visibility[i] = is_ground_facility_visible(
-                r_e,
-                vgf_wgs84[i]...,
-                minimum_elevation
+                r_e, vgf_wgs84[i]..., minimum_elevation
             )
         end
 
@@ -531,7 +528,7 @@ function _ground_facility_access_chunk(
                 state = :not_visible
             end
 
-        # Handle transitions.
+            # Handle transitions.
         elseif (state == :not_visible) && visible
             # Refine to find the edge.
             k₀ = k - Δt
@@ -564,10 +561,7 @@ function _ground_facility_access_chunk(
     end
 
     # Create the DataFrame and write the metadata.
-    df = DataFrame(
-        :access_beginning => vaccess_beg,
-        :access_end       => vaccess_end,
-    )
+    df = DataFrame(:access_beginning => vaccess_beg, :access_end       => vaccess_end)
 
     return df
 end

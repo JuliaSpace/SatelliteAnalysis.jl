@@ -16,8 +16,8 @@
         0.001111,
         98.405 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90     |> deg2rad,
-        0
+        90 |> deg2rad,
+        0,
     )
 
     β = beta_angle(orb, 5)

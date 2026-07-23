@@ -9,7 +9,7 @@ function SatelliteAnalysis.plot_world_map(; size = (1450, 800), kwargs...)
     fig = Figure(; size = size, kwargs...)
 
     ax = Axis(
-        fig[1, 1],
+        fig[1, 1];
         aspect         = 2,
         title          = "World Map",
         titlegap       = 16,
@@ -23,7 +23,7 @@ function SatelliteAnalysis.plot_world_map(; size = (1450, 800), kwargs...)
     )
 
     xlims!(ax, -180, +180)
-    ylims!(ax, -90,  +90)
+    ylims!(ax, -90, +90)
     ax.xticks = -180:20:+180
     ax.yticks = -90:15:90
 
@@ -38,7 +38,7 @@ function SatelliteAnalysis.plot_world_map(; size = (1450, 800), kwargs...)
         GeoMakie.to_multipoly(country_polys.geometry);
         color       = :white,
         strokecolor = :black,
-        strokewidth = 1
+        strokewidth = 1,
     )
 
     return fig, ax

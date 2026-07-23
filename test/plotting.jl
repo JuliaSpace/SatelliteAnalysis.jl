@@ -12,14 +12,14 @@
     SatelliteAnalysis.Scratch.clear_scratchspaces!(SatelliteAnalysis)
 
     f1 = @test_logs(
-        (:info, "Downloading the file 'countries.geojson' from 'https://pkgstore.datahub.io/core/geo-countries/countries/archive/23f420f929e0e09c39d916b8aaa166fb/countries.geojson'..."),
+        (
+            :info,
+            "Downloading the file 'countries.geojson' from 'https://pkgstore.datahub.io/core/geo-countries/countries/archive/23f420f929e0e09c39d916b8aaa166fb/countries.geojson'...",
+        ),
         fetch_country_polygons()
     )
 
-    f2 = @test_logs(
-        min_level = Logging.Warn,
-        fetch_country_polygons()
-    )
+    f2 = @test_logs(min_level = Logging.Warn, fetch_country_polygons())
 
     @test f1 == f2
 end
@@ -30,13 +30,11 @@ end
 
 @testset "Function plot_ground_track" begin
     @test_throws(
-        "Wrong input or the package GeoMakie.jl is not loaded.",
-        plot_ground_track(1)
+        "Wrong input or the package GeoMakie.jl is not loaded.", plot_ground_track(1)
     )
 
     @test_throws(
-        "Wrong input or the package GeoMakie.jl is not loaded.",
-        plot_ground_track!(1)
+        "Wrong input or the package GeoMakie.jl is not loaded.", plot_ground_track!(1)
     )
 end
 
@@ -47,13 +45,7 @@ end
     2.4592155e6
 
     orb = KeplerianElements(
-        jd₀,
-        7130.982e3,
-        0.001111,
-        98.405 |> deg2rad,
-        ltdn_to_raan(10.5, jd₀),
-        π / 2,
-        0
+        jd₀, 7130.982e3, 0.001111, 98.405 |> deg2rad, ltdn_to_raan(10.5, jd₀), π / 2, 0
     )
 
     orbp = Propagators.init(Val(:J2), orb)
@@ -86,11 +78,12 @@ end
     using GeoMakie
 
     gfv1 = ground_facility_visibility_circle((0, 0, 0), EARTH_EQUATORIAL_RADIUS + 700e3);
-    gfv2 = ground_facility_visibility_circle((-40 |> deg2rad, -60 |> deg2rad, 0), EARTH_EQUATORIAL_RADIUS + 700e3);
+    gfv2 = ground_facility_visibility_circle(
+        (-40 |> deg2rad, -60 |> deg2rad, 0), EARTH_EQUATORIAL_RADIUS + 700e3
+    );
 
     fig, ax = plot_ground_facility_visibility_circles(
-        [gfv1, gfv2];
-        ground_facility_names = ["GF 1", "GF 2"]
+        [gfv1, gfv2]; ground_facility_names = ["GF 1", "GF 2"]
     )
 
     @test fig isa Figure
@@ -99,18 +92,14 @@ end
     # == Errors ============================================================================
 
     @test_throws ArgumentError plot_ground_facility_visibility_circles(
-        [gfv1, gfv2];
-        ground_facility_names = ["GF 1", "GF 2", "GF 3"]
+        [gfv1, gfv2]; ground_facility_names = ["GF 1", "GF 2", "GF 3"]
     )
 end
 
 # == File: ./src/plotting/world_map.jl =====================================================
 
 @testset "Function plot_world_map" begin
-    @test_throws(
-        "Wrong input or the package GeoMakie.jl is not loaded.",
-        plot_world_map(1)
-    )
+    @test_throws("Wrong input or the package GeoMakie.jl is not loaded.", plot_world_map(1))
 end
 
 @testset "Function plot_world_map [EXT]" begin

@@ -12,15 +12,7 @@
     f(t, a) = sin(t - a) ≥ 0
 
     for a in (-0.5, 0, 0.5)
-        t = SatelliteAnalysis.find_crossing(
-            f,
-            a - 0.1,
-            a + 0.1,
-            false,
-            true,
-            a;
-            Δ = 1e-20
-        )
+        t = SatelliteAnalysis.find_crossing(f, a - 0.1, a + 0.1, false, true, a; Δ = 1e-20)
 
         @test t ≈ a
     end
@@ -30,12 +22,6 @@ end
     f(t, a) = :test
 
     @test_throws Exception SatelliteAnalysis.find_crossing(
-        f,
-        -0.1,
-        +0.1,
-        false,
-        true,
-        10;
-        Δ = 1e-20
+        f, -0.1, +0.1, false, true, 10; Δ = 1e-20
     )
 end
