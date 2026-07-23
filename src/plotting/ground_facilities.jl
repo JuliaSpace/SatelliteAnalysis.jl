@@ -11,19 +11,19 @@ export plot_ground_facility_visibility_circles, plot_ground_facility_visibility_
 
 Plot the ground facility visibility circles in the vector `vgf_vc`, where each element
 is computed using the function [`ground_facility_visibility_circle`](@ref). It returns
-the objects `Figure` and `Axis` used to plot the data. For more information, please, refer
+the objects `Figure` and `Axis` used to plot the data. For more information, please refer
 to **Makie.jl** documentation.
 
 !!! note
 
     This function plots the countries' borders in the created figure using the file with the
     country polygons fetched with the function [`fetch_country_polygons`](@ref). Hence, if
-    this files does not exist, the algorithm tries to download it.
+    this file does not exist, the algorithm tries to download it.
 
 !!! warning
 
     This function **only works** after loading the package **GeoMakie.jl**. Furthermore, the
-    user must also load one Makie.jl back end (CairoMakie.jl or GLMakie.jl, for example) to
+    user must also load one Makie.jl backend (CairoMakie.jl or GLMakie.jl, for example) to
     see the result.
 
 # Keywords
@@ -72,7 +72,7 @@ Plot in the **Makie.jl** axis `ax` the ground facility visibility circles in the
 !!! warning
 
     This function **only works** after loading the package **GeoMakie.jl**. Furthermore, the
-    user must also load one Makie.jl back end (CairoMakie.jl or GLMakie.jl, for example) to
+    user must also load one Makie.jl backend (CairoMakie.jl or GLMakie.jl, for example) to
     see the result.
 
 # Keywords

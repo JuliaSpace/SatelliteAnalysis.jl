@@ -1,5 +1,10 @@
 # Sun-Synchronous Orbits
 
+The `design_sun_sync_ground_repeating_orbit` function uses the correctly spelled
+`pretty_rev_per_days` keyword for formatted revolution counts. The misspelled
+`pretify_rev_per_days` remains as a deprecated compatibility alias. If both are supplied,
+they must have the same value; conflicting values raise an `ArgumentError`.
+
 ```@meta
 CurrentModule = SatelliteAnalysis
 ```
@@ -50,7 +55,7 @@ parameter.
     perturbations caused by the ``J_2`` term. Thus, the semi-major axis, eccentricity, and
     inclination do not suffer from secular effects.
 
-Finally, we can design a Sun-syncrhonous orbit by selecting the semi-major axis and
+Finally, we can design a Sun-synchronous orbit by selecting the semi-major axis and
 inclination that leads to:
 
 ```math
@@ -292,7 +297,7 @@ The function:
 design_sun_sync_ground_repeating_orbit(minimum_repetition::Int, maximum_repetition::Int; kwargs...) -> DataFrame
 ```
 
-lists all the Sun synchronous, ground repeating orbits in which their repetition period is
+lists all the Sun-synchronous, ground-repeating orbits whose repetition period is
 in the interval `[minimum_repetition, maximum_repetition]` days.
 
 This function returns a `DataFrame` with the following columns:
@@ -301,9 +306,9 @@ This function returns a `DataFrame` with the following columns:
 - `altitude`: Orbit altitude above the Equator `(a - R0)`.
 - `inclination`: Orbit inclination.
 - `period`: Orbital period.
-- `rev_per_days`: If the keyword `pretify_rev_per_days` is `false`, this column contains
+- `rev_per_days`: If the keyword `pretty_rev_per_days` is `false`, this column contains
     `Tuple`s with the integer and rational parts of the number of revolutions per day.
-    Otherwise, it contains a string with a prety representation of the number of revolutions
+    Otherwise, it contains a string with a pretty representation of the number of revolutions
     per day.
 - `adjacent_gt_distance`: Distance between two adjacent ground tracks at Equator.
 - `adjacent_gt_angle`: Angle between two adjacent ground tracks at Equator measured from the
@@ -311,7 +316,7 @@ This function returns a `DataFrame` with the following columns:
 
 !!! note
 
-    The units of those columns depends on the keywords.
+    The units of those columns depend on the keywords.
 
 The following keywords are available:
 
@@ -326,8 +331,8 @@ The following keywords are available:
 - `int_rev_per_day::Tuple`: `Tuple` with the integer parts of the number of revolutions per
     day to be analyzed.
     (**Default** = `(13, 14, 15, 16, 17)`)
-- `pretity_rev_per_days::Bool`: If `true`, the column with the revolutions per day will be
-    conveted to a string with a pretty representation of this information.
+- `pretty_rev_per_days::Bool`: If `true`, the column with the revolutions per day will be
+    converted to a string with a pretty representation of this information.
     (**Default**: `true`)
 - `maximum_altitude::Union{Nothing, Number}`: Maximum altitude [m] of the orbits in the
     output `DataFrame`. If it is `nothing`, the algorithm will not apply a higher limit to

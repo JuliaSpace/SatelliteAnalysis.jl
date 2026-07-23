@@ -117,7 +117,7 @@ If we plot the result using Makie, we obtain:
 ## Plotting
 
 If the user loads the package [GeoMakie.jl](https://github.com/MakieOrg/GeoMakie.jl)
-together with a [Makie.jl](https://docs.makie.org/stable/) back end, an extension is loaded
+together with a [Makie.jl](https://docs.makie.org/stable/) backend, an extension is loaded
 and adds the possibility to plot the ground facility visibility circle. In this case, the
 following functions are available:
 
@@ -127,7 +127,7 @@ plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, Number}}
 
 It plots the ground facility visibility circles in the vector `vgf_vc`, where each element
 is computed using the function [`ground_facility_visibility_circle`](@ref). It returns the
-objects `Figure` and `Axis` used to plot the data. For more information, please, refer to
+objects `Figure` and `Axis` used to plot the data. For more information, please refer to
 [Makie.jl](https://docs.makie.org/stable/) documentation.
 
 The following keywords are available:
@@ -143,7 +143,7 @@ All other `kwargs...` are passed to the function [`plot_world_map`](@ref).
 
     This function plots the countries' borders in the created figure using the file with the
     country polygons fetched with the function [`fetch_country_polygons`](@ref). Hence, if
-    this files does not exist, the algorithm tries to download it.
+    this file does not exist, the algorithm tries to download it.
 
 ```julia
 plot_ground_facility_visibility_circles!(ax::Axis, vgf_vc::Vector{Vector{NTuple{2, Number}}}; kwargs...) -> Nothing

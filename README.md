@@ -12,7 +12,7 @@ This package contains several functions to perform analysis related to satellite
 functions were split from the package
 [SatelliteToolbox.jl](https://github.com/JuliaSpace/SatelliteToolbox.jl).
 
-## Instalation
+## Installation
 
 This package can be installed using:
 

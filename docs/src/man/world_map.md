@@ -9,7 +9,7 @@ using SatelliteAnalysis
 ```
 
 **SatelliteAnalysis.jl** has a built-in algorithm to plot the World Map provided that the
-user loaded **GeoMakie.jl** and one of the **Makie.jl**'s back end. This empty plot can be
+user loaded **GeoMakie.jl** and one of the **Makie.jl** backends. This empty plot can be
 used to add analysis on top of it. We can create it using the function:
 
 ```julia
@@ -23,7 +23,7 @@ to the function `Figure`.
 
     This function plots the countries' borders in the created figure using the file with the
     country polygons fetched with the function [`fetch_country_polygons`](@ref). Hence, if
-    this files does not exist, the algorithm tries to download it.
+    this file does not exist, the algorithm tries to download it.
 
 ```@repl world_map
 using GeoMakie, CairoMakie

@@ -73,7 +73,7 @@ Equator, ``\omega_e`` is the Earth angular speed, and ``\Omega`` is the RAAN.
 
 Formally, we should use the satellite instantaneous angular speed at the Equator in
 ``\omega_s``. However, given the perturbations caused by the Earth's gravitational
-potential, this speed is not simple to compute. The calculation would required to implement
+potential, this speed is not simple to compute. The calculation would require implementing
 an orbit propagator. Thus, we simplify it by assuming that the orbit eccentricity is small.
 This assumption is reasonable given the missions that would benefit from the computation of
 the ground track inclination. In this case, we approximate ``\omega_s`` as the mean
@@ -172,7 +172,7 @@ ground_track_inclination(orb) |> rad2deg
 ## Plotting
 
 If the user loads the package [GeoMakie.jl](https://github.com/MakieOrg/GeoMakie.jl)
-together with a [Makie.jl](https://docs.makie.org/stable/) back end, an extension is loaded
+together with a [Makie.jl](https://docs.makie.org/stable/) backend, an extension is loaded
 and adds the possibility to plot the ground track. In this case, the following functions are
 available:
 
@@ -188,7 +188,7 @@ refer to [Makie.jl](https://docs.makie.org/stable/) documentation.
 
     This function plots the countries' borders in the created figure using the file with the
     country polygons fetched with the function [`fetch_country_polygons`](@ref). Hence, if
-    this files does not exist, the algorithm tries to download it.
+    this file does not exist, the algorithm tries to download it.
 
 All `kwargs...` are passed to the function [`plot_world_map`](@ref).
 
