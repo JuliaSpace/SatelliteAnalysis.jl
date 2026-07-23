@@ -11,7 +11,7 @@
 @testset "Function find_crossing" begin
     f(t, a) = sin(t - a) ≥ 0
 
-    for a in (-0.5 .+ 0.5rand(3))
+    for a in (-0.5, 0, 0.5)
         t = SatelliteAnalysis.find_crossing(
             f,
             a - 0.1,
@@ -39,4 +39,3 @@ end
         Δ = 1e-20
     )
 end
-

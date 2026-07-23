@@ -232,6 +232,21 @@ end
             f_eci_to_ecef = gf_tod_to_pef
         )
     )
+
+    # Chunks share their boundary sample so transitions are not missed between tasks. More
+    # chunks than time samples, including an extreme request, must remain valid.
+    chunks = collect(SatelliteAnalysis._gf_access_time_vector_partition([0.0, 1.0], typemax(Int)))
+    @test length(chunks) == 2
+    @test length.(chunks) == [2, 1]
+
+    df = ground_facility_accesses(
+        orbp,
+        (0, 0, 0);
+        duration = 0,
+        num_chunks = typemax(Int),
+        f_eci_to_ecef = gf_tod_to_pef
+    )
+    @test size(df, 2) == 3
 end
 
 @testset "Function ground_facility_gaps" begin

@@ -39,7 +39,7 @@ end
 end
 
 @testset "Orbits" verbose = true begin
-    include("./sun_syncrhonous_orbits.jl")
+    include("./sun_synchronous_orbits.jl")
 end
 
 @testset "Issues" verbose = true begin

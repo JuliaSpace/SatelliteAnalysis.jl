@@ -15,6 +15,13 @@
     @test e ≈ 0.0011641853028456078 atol = 1e-20
     @test ω == π / 2
 
+    # A non-positive degree selects the model's available maximum degree, rather than the
+    # default truncation at degree 53.  This also guards against the undefined `grav_model`
+    # variable.
+    e_max, ω_max = frozen_orbit(7130.982e3, 98.410 |> deg2rad; max_degree = 0)
+    @test e_max ≈ 0.010085085903178675 atol = 1e-20
+    @test ω_max == π / 2
+
     # == Lower maximum degree ==============================================================
 
     e, ω = frozen_orbit(7130.982e3, 98.410 |> deg2rad; max_degree = 5)
@@ -58,4 +65,3 @@
     @test e ≈ 0.001163484769069545 atol = 1e-20
     @test ω == π / 2
 end
-

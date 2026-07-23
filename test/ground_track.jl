@@ -54,6 +54,11 @@
     gt = ground_track(orbp; step = 1000, duration = 1000, track_types = :ascending)
 
     @test isempty(gt) == true
+
+    # The output element type follows promoted floating-point time inputs rather than being
+    # fixed to Float64.
+    gt = ground_track(orbp; step = big"1000", duration = big"1000")
+    @test eltype(gt) == NTuple{2, BigFloat}
 end
 
 # -- Function: ground_track_inclination ----------------------------------------------------
