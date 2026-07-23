@@ -476,7 +476,9 @@ function _ground_facility_access_chunk(
 
     # Pre-allocate the visibility vector for custom reductions only. The built-in
     # reductions evaluate visibility directly and do not need one.
-    visibility = reduction === any || reduction === all ? nothing : zeros(Bool, length(vgf_wgs84))
+    visibility = (reduction === any || reduction === all) ?
+        nothing :
+        zeros(Bool, length(vgf_wgs84))
 
     # Lambda function to check the reduced visibility.
     function f(t)::Bool
@@ -491,21 +493,24 @@ function _ground_facility_access_chunk(
                 is_ground_facility_visible(r_e, gf..., minimum_elevation) && return true
             end
             return false
-        elseif reduction === all
+        end
+
+        if reduction === all
             @inbounds for gf in vgf_wgs84
                 is_ground_facility_visible(r_e, gf..., minimum_elevation) || return false
             end
             return true
-        else
-            @inbounds for i in eachindex(visibility)
-                visibility[i] = is_ground_facility_visible(
-                    r_e,
-                    vgf_wgs84[i]...,
-                    minimum_elevation
-                )
-            end
-            return reduction(visibility)
         end
+
+        @inbounds for i in eachindex(visibility)
+            visibility[i] = is_ground_facility_visible(
+                r_e,
+                vgf_wgs84[i]...,
+                minimum_elevation
+            )
+        end
+
+        return reduction(visibility)
     end
 
     access_beg  = DateTime(now())
