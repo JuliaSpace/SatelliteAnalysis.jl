@@ -7,11 +7,12 @@
 export ground_track, ground_track_inclination
 
 """
-    ground_track(orbp::OrbitPropagator; kwargs...) -> Vector{NTuple{2, Float64}}
+    ground_track(orbp::OrbitPropagator; kwargs...) -> Vector{NTuple{2, T}}
 
 Compute the satellite ground track using the orbit propagator `orbp`. It returns a vector of
-`NTuple{2, Float64}` where the first element is the latitude [rad] and the second is the
-longitude [rad] of each point in the ground track.
+`NTuple{2, T}` where `T` is the promoted floating-point type of the time inputs, the first
+element is the latitude [rad], and the second is the longitude [rad] of each point in the
+ground track.
 
 # Keywords
 
@@ -163,8 +164,11 @@ function ground_track(
     # Time vector to compute the ground track.
     vt = float(initial_time):float(step):float(initial_time + duration)
 
-    # Allocate the output vector.
-    gt = NTuple{2, Float64}[]
+    # Keep the precision of the time inputs in the output. In particular, do not force a
+    # BigFloat (or another floating-point type) through Float64 merely because NaNs may be
+    # inserted in the track.
+    T = float(promote_type(typeof(initial_time), typeof(step), typeof(duration)))
+    gt = NTuple{2, T}[]
     sizehint!(gt, length(vt))
 
     # We need to compute the first point previously to analyze if we are in an ascending or
@@ -192,7 +196,7 @@ function ground_track(
             continue
         end
 
-        isempty(gt) && push!(gt, (lat_k_1, lon_k_1))
+        isempty(gt) && push!(gt, (T(lat_k_1), T(lon_k_1)))
 
         # Check if we need to add NaNs to improve plotting.
         if add_nans
@@ -200,10 +204,10 @@ function ground_track(
             Δlat = lat_k - first(gt_k_1)
             Δlon = lon_k - last(gt_k_1)
 
-            ((abs(Δlat) > π / 2) || (abs(Δlon) > π)) && push!(gt, (NaN, NaN))
+            ((abs(Δlat) > π / 2) || (abs(Δlon) > π)) && push!(gt, (T(NaN), T(NaN)))
         end
 
-        push!(gt, (lat_k, lon_k))
+        push!(gt, (T(lat_k), T(lon_k)))
         lat_k_1 = lat_k
         lon_k_1 = lon_k
     end

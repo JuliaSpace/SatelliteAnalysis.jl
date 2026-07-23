@@ -51,7 +51,9 @@ function is_ground_facility_visible(r_ned::AbstractVector, minimum_elevation::Nu
     # then: el = π / 2 - θ.
     z = r_ned[3]
     r = norm(r_ned)
-    θ = acos(-z / r)
-
-    return (π / 2 - θ) > minimum_elevation
+    # Since acos is decreasing, el > minimum_elevation is equivalent to
+    # -z / r > cos(π / 2 - minimum_elevation) = sin(minimum_elevation).
+    # This avoids the loss of precision (and the relatively expensive acos) near the
+    # visibility boundary.
+    return -z > r * sin(minimum_elevation)
 end

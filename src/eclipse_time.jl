@@ -107,16 +107,17 @@ function eclipse_time_summary(
     orb_period = orbital_period(mean_elements)
 
     # Check the propagation step we need to use.
-    Δt₀ = step < 0 ? orb_period * 0.5 / 360 : Float64(step)
+    time_type = promote_type(typeof(orb_period), typeof(step))
+    Δt₀ = step < 0 ? time_type(orb_period * (one(orb_period) / 2) / 360) : time_type(step)
 
     # Vector of the days in which the eclipse time will be computed.
     days = 0:1:num_days-1
 
     # Pre-allocate the output variables.
     date          = Vector{DateTime}(undef, num_days)
-    sunlight_time = zeros(num_days)
-    penumbra_time = zeros(num_days)
-    umbra_time    = zeros(num_days)
+    sunlight_time = zeros(time_type, num_days)
+    penumbra_time = zeros(time_type, num_days)
+    umbra_time    = zeros(time_type, num_days)
 
     # == Loop ==============================================================================
 

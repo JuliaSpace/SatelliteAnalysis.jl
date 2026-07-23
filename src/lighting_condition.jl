@@ -37,17 +37,18 @@ function lighting_condition(r_i::AbstractVector, s_i::AbstractVector)
     R₀ = EARTH_EQUATORIAL_RADIUS
     Rs = SUN_RADIUS
 
-    # Distance from the Earth to the Sun.
+    # Distance from the Earth to the Sun and the signed length of the projection of the
+    # satellite position on the Sun direction.  Keeping the projection as a scalar avoids
+    # constructing a temporary vector for every lighting-condition query.
     norm_s_i = norm(s_i)
-
-    # Projection of the satellite position vector on the Sun direction [1].
-    rs_i = (r_i ⋅ s_i) * s_i / (norm_s_i * norm_s_i)
+    projection = (r_i ⋅ s_i) / norm_s_i
 
     # Check if the satellite is under sunlight, umbra or penumbra.
-    if (rs_i ⋅ s_i / norm_s_i) < 0
+    if projection < 0
         # Distance of the umbral cone and the spacecraft [1].
-        Δ_i = r_i - rs_i
-        norm_Δ_i = norm(Δ_i)
+        norm_rs_i = -projection
+        # This is the norm of the component perpendicular to the Sun direction.
+        norm_Δ_i = sqrt(max(zero(projection), (r_i ⋅ r_i) - projection^2))
 
         # Penumbra section [1].
         xp = R₀ * norm_s_i / (Rs + R₀)
@@ -55,7 +56,7 @@ function lighting_condition(r_i::AbstractVector, s_i::AbstractVector)
 
         # Location of the penumbral cone terminator at the projected spacecraft
         # location [1].
-        kp_i = (xp + norm(rs_i)) * tan(αp)
+        kp_i = (xp + norm_rs_i) * tan(αp)
 
         if norm_Δ_i > kp_i
             return :sunlight
@@ -66,7 +67,7 @@ function lighting_condition(r_i::AbstractVector, s_i::AbstractVector)
 
             # Location of the umbral cone terminator at the projected spacecraft
             # location [1].
-            ep_i = (xu - norm(rs_i)) * tan(αu)
+            ep_i = (xu - norm_rs_i) * tan(αu)
 
             if norm_Δ_i < ep_i
                 return :umbra

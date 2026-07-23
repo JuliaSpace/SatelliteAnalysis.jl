@@ -139,6 +139,9 @@ function ground_facility_accesses(
     vt = float(initial_time):float(step):float(initial_time + duration)
 
     # Create the chunks with the time to be computed by each thread.
+    # There is no useful work in creating more tasks than propagation instants. Clamp the
+    # requested count also so extreme values cannot create invalid chunk indices.
+    num_chunks = min(max(num_chunks, 1), max(length(vt), 1))
     vt_chunks = _gf_access_time_vector_partition(vt, num_chunks) |> collect
 
     @debug begin
@@ -165,7 +168,7 @@ function ground_facility_accesses(
     end
 
     # Create the tasks to compute by each thread.
-    tasks = map(1:num_chunks) do c
+    tasks = map(eachindex(vt_chunks)) do c
         chunk_vt = vt_chunks[c]
 
         # A propagation modified the propagator structure. Hence, we need to copy the
@@ -428,6 +431,11 @@ end
 #   https://blog.glcs.io/parallel-processing
 function _gf_access_time_vector_partition(vt::AbstractVector, np::Integer)
     len_vt = length(vt)
+
+    # An empty time vector has no partitions. This also keeps the helper well-defined for
+    # callers requesting an extreme number of chunks.
+    len_vt == 0 && return Base.Generator(identity, 1:0)
+
     len, rem = divrem(len_vt, np)
 
     # Treat the case in which we want more partitions than the number of elements.
@@ -466,23 +474,38 @@ function _ground_facility_access_chunk(
     # State to help the computation.
     state = :initial
 
-    # Pre-allocate the visibility vector to avoid a huge number of allocation.
-    visibility = zeros(Bool, length(vgf_wgs84))
+    # Pre-allocate the visibility vector for custom reductions only. The built-in
+    # reductions evaluate visibility directly and do not need one.
+    visibility = reduction === any || reduction === all ? nothing : zeros(Bool, length(vgf_wgs84))
 
     # Lambda function to check the reduced visibility.
     function f(t)::Bool
         r_i, ~ = Propagators.propagate!(orbp, t)
         r_e = f_eci_to_ecef(r_i, jd₀ + t / 86400)
 
-        @inbounds for i in eachindex(visibility)
-            visibility[i] = is_ground_facility_visible(
-                r_e,
-                vgf_wgs84[i]...,
-                minimum_elevation
-            )
+        # `any` and `all` are the common reductions. Evaluate them directly so that each
+        # propagation instant does not require constructing/filling a Bool vector. Custom
+        # reductions retain the historical vector-based API.
+        if reduction === any
+            @inbounds for gf in vgf_wgs84
+                is_ground_facility_visible(r_e, gf..., minimum_elevation) && return true
+            end
+            return false
+        elseif reduction === all
+            @inbounds for gf in vgf_wgs84
+                is_ground_facility_visible(r_e, gf..., minimum_elevation) || return false
+            end
+            return true
+        else
+            @inbounds for i in eachindex(visibility)
+                visibility[i] = is_ground_facility_visible(
+                    r_e,
+                    vgf_wgs84[i]...,
+                    minimum_elevation
+                )
+            end
+            return reduction(visibility)
         end
-
-        return reduction(visibility)
     end
 
     access_beg  = DateTime(now())
