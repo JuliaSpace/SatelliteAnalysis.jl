@@ -1,12 +1,13 @@
 SatelliteAnalysis
 =================
 
-[![CI](https://github.com/JuliaSpace/SatelliteAnalysis.jl/actions/workflows/ci.yml/badge.svg)](https://github.com/JuliaSpace/SatelliteAnalysis.jl/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/JuliaSpace/SatelliteAnalysis.jl/branch/main/graph/badge.svg?token=62H85L1AHF)](https://codecov.io/gh/JuliaSpace/SatelliteAnalysis.jl)
-[![](https://img.shields.io/badge/docs-stable-blue.svg)][docs-stable-url]
-[![](https://img.shields.io/badge/docs-dev-blue.svg)][docs-dev-url]
-[![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
-[![DOI](https://zenodo.org/badge/435605310.svg)](https://zenodo.org/doi/10.5281/zenodo.10501188)
+[![CI](https://img.shields.io/github/actions/workflow/status/JuliaSpace/SatelliteAnalysis.jl/ci.yml?style=flat-square&logo=githubactions&logoColor=white&labelColor=475569&label=CI)](https://github.com/JuliaSpace/SatelliteAnalysis.jl/actions/workflows/ci.yml)
+[![Codecov](https://img.shields.io/codecov/c/github/JuliaSpace/SatelliteAnalysis.jl?token=62H85L1AHF&style=flat-square&logo=codecov&logoColor=white&labelColor=475569)](https://codecov.io/gh/JuliaSpace/SatelliteAnalysis.jl)
+[![docs-stable](https://img.shields.io/badge/docs-stable-16A34A?style=flat-square&logo=gitbook&logoColor=white&labelColor=475569)][docs-stable-url]
+[![docs-dev](https://img.shields.io/badge/docs-dev-D97706?style=flat-square&logo=gitbook&logoColor=white&labelColor=475569)][docs-dev-url]
+[![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495D1?style=flat-square&logo=julia&logoColor=white&labelColor=475569)](https://github.com/invenia/BlueStyle)
+[![License](https://img.shields.io/github/license/JuliaSpace/SatelliteAnalysis.jl?style=flat-square&logo=readme&logoColor=white&labelColor=475569&color=0284C7)](https://github.com/JuliaSpace/SatelliteAnalysis.jl/blob/main/LICENSE.txt)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.10501188-DB2777?style=flat-square&logo=doi&logoColor=white&labelColor=475569)](https://zenodo.org/doi/10.5281/zenodo.10501188)
 
 This package contains several functions to perform analysis related to satellites. Those
 functions were split from the package
