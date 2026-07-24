@@ -64,11 +64,9 @@
         pretify_rev_per_days = false,
     )
     @test same_value[begin, :rev_per_days] == (14, 2 // 5)
-    @test_deprecated begin
-        @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
-            5, 5; pretty_rev_per_days = true, pretify_rev_per_days = false
-        )
-    end
+    @test_deprecated @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
+        5, 5; pretty_rev_per_days = true, pretify_rev_per_days = false
+    )
 
     # == Revolutions per day ===============================================================
 
