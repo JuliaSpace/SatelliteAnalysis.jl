@@ -1,6 +1,16 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.3.10
+--------------
+
+- ![Enhancement][badge-enhancement] Optimize analysis hot paths while preserving numerical
+  precision.
+- ![Bugfix][badge-bugfix] Fix world-map ticks to display the Equator.
+- ![Bugfix][badge-bugfix] Harden frozen- and Sun-synchronous-orbit solvers, including degree
+  handling, safeguards, and keyword compatibility.
+- ![Info][badge-info] Expand orbit and analysis regression coverage.
+
 Version 0.3.9
 -------------
 
@@ -93,12 +103,12 @@ Version 0.1.0
 
 - Initial version.
 
-[badge-breaking]: https://img.shields.io/badge/BREAKING-red.svg
-[badge-deprecation]: https://img.shields.io/badge/Deprecation-orange.svg
-[badge-feature]: https://img.shields.io/badge/Feature-green.svg
-[badge-enhancement]: https://img.shields.io/badge/Enhancement-blue.svg
-[badge-bugfix]: https://img.shields.io/badge/Bugfix-purple.svg
-[badge-info]: https://img.shields.io/badge/Info-gray.svg
+[badge-breaking]: https://img.shields.io/badge/Breaking-DC2626?style=flat-square
+[badge-deprecation]: https://img.shields.io/badge/Deprecation-D97706?style=flat-square
+[badge-feature]: https://img.shields.io/badge/Feature-16A34A?style=flat-square
+[badge-enhancement]: https://img.shields.io/badge/Enhancement-0284C7?style=flat-square
+[badge-bugfix]: https://img.shields.io/badge/Bugfix-DB2777?style=flat-square
+[badge-info]: https://img.shields.io/badge/Info-475569?style=flat-square
 
 [gh-issue-3]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/issues/3
 
