@@ -132,6 +132,19 @@ end
     @test colmetadata(df_u, :apogee_altitude,  "Unit") == :km
     @test colmetadata(df_u, :perigee_altitude, "Unit") == :km
 
+    df_y = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        F107                = 140.0,
+        Ap                  = 15.0,
+        time_unit           = :y
+    )
+
+    @test df_y.time ≈ df.time ./ (365.25 * 86400)
+    @test colmetadata(df_y, :time, "Unit") == :y
+
     # Unknown unit symbols must fall back to the defaults.
     df_f = decay_analysis(
         orb;

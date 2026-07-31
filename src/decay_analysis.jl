@@ -62,7 +62,8 @@ by the Earth shadow.
 - `tf::Number`: Maximum propagation time [s] after the orbit epoch.
     (**Default**: `30 * 365.25 * 86400`, or 30 years)
 - `time_unit::Symbol`: Unit of the column `time` in the output `DataFrame`. It can be `:s`
-    for seconds, `:m` for minutes, `:h` for hours, or `:d` for days.
+    for seconds, `:m` for minutes, `:h` for hours, `:d` for days, or `:y` for Julian years
+    (365.25 days).
     (**Default**: `:s`)
 
 # Returns

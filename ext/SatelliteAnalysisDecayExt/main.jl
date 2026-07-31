@@ -149,6 +149,9 @@ function _decay_analysis(
         time ./= 3600
     elseif time_unit == :d
         time ./= 86400
+    elseif time_unit == :y
+        # Julian year, consistent with the default `tf` of 30 years.
+        time ./= 365.25 * 86400
     else
         # If the symbol is not known, we must use seconds.
         time_unit = :s
