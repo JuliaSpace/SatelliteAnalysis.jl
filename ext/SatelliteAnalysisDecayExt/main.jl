@@ -12,10 +12,10 @@ function SatelliteAnalysis.decay_analysis(
     # Optional keywords.
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
     num_sampling_points_per_orbit::Int = 33,
-    Ap::Number = 15.0,
+    Ap::Union{Nothing, Number} = nothing,
     C_d::Number = 2.2,
     C_r::Number = 1.25,
-    F107::Number = 140.0,
+    F107::Union{Nothing, Number} = nothing,
     tf::Number = 30 * 365.25 * 86400.0,
 )
     M = true_to_mean_anomaly(orb.e, orb.f)

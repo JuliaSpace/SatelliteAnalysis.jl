@@ -35,10 +35,12 @@ atmospheric drag using quadrature equally spaced in true anomaly and temporal we
     - `num_sampling_points_per_orbit::Int`: Number of quadrature points for averaging.
     - `satellite_mass::Number`: Spacecraft mass [kg].
     - `satellite_mean_area::Number`: Effective cross-sectional area [m²].
-    - `Ap::Number`: Geomagnetic index.
+    - `Ap::Union{Nothing, Number}`: Geomagnetic index, or `nothing` to retrieve it from
+        the space indices.
     - `C_d::Number`: Drag coefficient [-].
     - `C_r::Number`: Reflectivity coefficient [-].
-    - `F107::Number`: Solar flux index.
+    - `F107::Union{Nothing, Number}`: Solar flux index, or `nothing` to retrieve it from
+        the space indices.
 
 # Returns
 
@@ -60,14 +62,19 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
     rsun_tod::SVector{3, T},
     params::NamedTuple
 ) where T<:Number
-    Ap        = params.Ap
     C_d       = params.C_d
     C_r       = params.C_r
-    F107      = params.F107
     N         = params.num_sampling_points_per_orbit
     gm        = params.gm
     mass      = params.satellite_mass
     mean_area = params.satellite_mean_area
+
+    # Resolve the space indices once per evaluation since `jd_utc` is constant here,
+    # avoiding one interpolation per sampling point.
+    F107 = isnothing(params.F107) ?
+        space_index(Val(:F10obs_avg_center81), jd_utc) :
+        params.F107
+    Ap = isnothing(params.Ap) ? space_index(Val(:Ap_daily), jd_utc) : params.Ap
 
     μ = GravityModels.gravity_constant(gm)
 
