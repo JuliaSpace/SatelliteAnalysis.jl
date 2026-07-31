@@ -272,18 +272,21 @@ function _mean_to_osculating_elements(
     e = max(e, 1e-6)
     i = max(i, 1e-6)
 
-    # Convert to osculating.
-    orb_tod = KeplerianElements(0.0, a, e, i, Ω, ω, mean_to_true_anomaly(e, M))
-    Propagators.init!(orbp, orb_tod)
-    r_tod, v_tod = Propagators.propagate!(orbp, 0.0)
-    ke           = rv_to_kepler(r_tod, v_tod)
+    # Convert to osculating. The J2 osculating conversion is not total: for unphysical
+    # states evaluated by the integrator in trial stages (mainly with loose tolerances),
+    # the short-period corrections can push the osculating eccentricity outside [0, 1),
+    # which throws inside the propagator. In this case, fall back to the mean elements so
+    # the right-hand side remains finite and the step error control can act.
+    ap, ep, ip, Ωp, ωp, Mp = try
+        orb_tod = KeplerianElements(0.0, a, e, i, Ω, ω, mean_to_true_anomaly(e, M))
+        Propagators.init!(orbp, orb_tod)
+        r_tod, v_tod = Propagators.propagate!(orbp, 0.0)
+        ke           = rv_to_kepler(r_tod, v_tod)
 
-    ap = ke.a
-    ep = ke.e
-    ip = ke.i
-    Ωp = ke.Ω
-    ωp = ke.ω
-    Mp = true_to_mean_anomaly(ke.e, ke.f)
+        ke.a, ke.e, ke.i, ke.Ω, ke.ω, true_to_mean_anomaly(ke.e, ke.f)
+    catch
+        a, e, i, Ω, ω, M
+    end
 
     # Return new state.
     return ap, ep, ip, Ωp, ωp, Mp
