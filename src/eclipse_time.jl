@@ -48,8 +48,10 @@ each day.
 ```julia-repl
 julia> using SatelliteAnalysis
 
+julia> jd₀ = date_to_jd(2021, 1, 1, 0, 0, 0)
+
 julia> orb = KeplerianElements(
-           date_to_jd(2021, 1, 1, 0, 0, 0),
+           jd₀,
            7130.982e3,
            0.001111,
            98.405 |> deg2rad,
