@@ -132,14 +132,16 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
         adrag_hill = D_hill_tod * adrag_tod
         asrp_hill  = D_hill_tod * asrp_tod
 
-        # Gauss equations with mean parameters
-        Ak, Bk = _gauss_variational_matrices(ā, ē, ī, ω̄, f̄k, rk, p̄, h̄, η̄, n̄)
+        # Gauss equations with mean parameters. The Kepler term `B` is not added here
+        # because it is already accounted for in the conservative average, avoiding
+        # counting the mean motion multiple times in the mean anomaly rate.
+        Ak, _ = _gauss_variational_matrices(ā, ē, ī, ω̄, f̄k, rk, p̄, h̄, η̄, n̄)
 
         # Temporal weighting.
         w_t = rk² / h̄
 
-        ∂u_drag = ∂u_drag + w_t * (Ak * adrag_hill + Bk)
-        ∂u_srp  = ∂u_srp  + w_t * (Ak * asrp_hill  + Bk)
+        ∂u_drag = ∂u_drag + w_t * (Ak * adrag_hill)
+        ∂u_srp  = ∂u_srp  + w_t * (Ak * asrp_hill)
 
         Wsum += w_t
     end
