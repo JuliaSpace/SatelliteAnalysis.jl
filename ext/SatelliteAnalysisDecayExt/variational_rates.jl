@@ -180,102 +180,115 @@ end
 
 """
     J₂²_variational_rates(
-        ā::T,
-        ē::T,
-        ī::T,
+        ā::T,
+        ē::T,
+        ī::T,
         ω̄::T,
         gm::AbstractGravityModel
-    ) where T<:Number -> SVector{6, T}
+    ) where T <: Number -> SVector{6, T}
 
-Compute averaged Gauss variation rates due to Earth's J₂² mean effects.
+Compute the averaged variation rates of the mean classical orbital elements due to the
+second-order zonal harmonic effects (J₂²) for an orbit with mean semi-major axis `ā` [m],
+mean eccentricity `ē` [-], mean inclination `ī` [rad], and mean argument of perigee `ω̄`
+[rad]. The J₂ coefficient is obtained from the gravity model `gm`.
 
-This routine calculates the mean (averaged) rates of change of the orbital elements under
-second-order zonal harmonic effects (J2 squared), using the closed-form expressions for the
-long-term (secular and long-period) variations.
-
-# Arguments
-
-- `ā::T`: Mean semi-major axis [m].
-- `ē::T`: Mean eccentricity [-].
-- `ī::T`: Mean inclination [rad].
-- `ω̄::T`: Mean argument of perigee [rad].
-- `gm::AbstractGravityModel`: Gravity model for Earth.
+The returned rates contain **only** the terms proportional to J₂². The first-order secular
+rates are already captured by numerically averaging the zonal gravitational acceleration
+over the mean orbit, so they must not be included here. The secular J₂² rates of `Ω`, `ω`,
+and `M` follow the same analytical theory used by the J4 orbit propagator of
+**SatelliteToolbox.jl** **[1]**, and the long-period rates of `e` and `i` follow **[2]**.
+The long-period J₂² rates of the angular elements are neglected since they do not affect
+the decay evolution.
 
 # Returns
 
-- `SVector{6, T}`: Averaged Gauss rates due to J₂² effects.
+- `SVector{6, T}`: Averaged rates `[∂a, ∂e, ∂i, ∂Ω, ∂ω, ∂M]` due to J₂² effects, in
+    [m/s; 1/s; rad/s; rad/s; rad/s; rad/s].
+
+# References
+
+- **[1]** Kozai, Y (1959). The Motion of a Close Earth Satellite. The Astronomical
+    Journal, v. 64, no. 1274, pp. 367 -- 377.
+- **[2]** Vallado, D. A (2013). *Fundamentals of Astrodynamics and Applications*. 4th ed.
+    Microcosm Press, Hawthorne, CA, sec. 9.6.
 """
 function J₂²_variational_rates(
-    ā::T,
-    ē::T,
-    ī::T,
+    ā::T,
+    ē::T,
+    ī::T,
     ω̄::T,
     gm::AbstractGravityModel
-) where T<:Number
+) where T <: Number
     μ    = GravityModels.gravity_constant(gm)
     Re   = GravityModels.radius(gm)
     C₂_₀ = GravityModels.coefficients(gm, 2, 0) |> first
     J₂   = -C₂_₀ * √5
 
     # Regularization.
-    ē = max(ē, 1e-6)
-    ī = max(ī, 1e-6)
+    ē = max(ē, 1e-6)
+    ī = max(ī, 1e-6)
 
     # Auxiliary variables.
-    ē²    = ē^2
-    ē⁴    = ē²^2
-    η̄²    = 1 - ē²
-    η̄     = √η̄²
-    p̄     = ā * η̄²
-    n̄     = √(μ / ā^3)
-    R̄e    = Re / p̄
-    R̄e²   = R̄e^2
-    R̄e⁴   = R̄e²^2
-    J₂²   = J₂^2
-    k₁     = n̄ * J₂² * R̄e⁴
+    ē²  = ē^2
+    η̄²  = 1 - ē²
+    η̄   = √η̄²
+    p̄   = ā * η̄²
+    n₀  = √(μ / ā^3)
+    R̄e² = (Re / p̄)^2
+    R̄e⁴ = R̄e²^2
+    J₂² = J₂^2
 
-    sin_ī, cos_ī   = sincos(ī)
-    sin_ī²         = sin_ī^2
-    sin_ī⁴         = sin_ī²^2
-    sin_2ω̄, cos_2ω̄ = sincos(2ω̄)
+    sin_ī, cos_ī = sincos(ī)
+    sin_ī²  = sin_ī^2
+    sin_ī⁴  = sin_ī²^2
+    cos_ī⁴  = cos_ī^4
+    sin_2ω̄  = sin(2ω̄)
 
-    # Mean J₂² rates.
-    ∂a = T(0)
+    kn₂  = J₂  * R̄e²
+    kn₂₂ = J₂² * R̄e⁴
 
-    ∂e = (-3 // 2) * k₁ * sin_ī² * (14 - 15 * sin_ī^2) * ē * η̄² * sin_2ω̄
-
-    ∂i = (+3 // 64) * k₁ * sin(2ī) * (14 - 15 * sin_ī²) * ē² * sin_2ω̄
-
-    ∂Ω = (-3 //  2) * k₁ * cos_ī * (
-        ((9 // 4) + (3 // 2) * η̄) -
-        ((5 // 2) + (9 // 4) * η̄) * sin_ī² +
-        (1 // 4) * (1 + (5 // 4) * sin_ī²) * ē²
-    ) + (-3 // 16) * n̄ * J₂² * R̄e⁴ * cos_ī * (7 - 15sin_ī²) * ē² * cos_2ω̄
-
-    ∂ω = (+3 // 4) * k₁ * (
-        12 - (103 // 4) * sin_ī² + (215 // 16) * sin_ī⁴ + (
-            (7 // 4) - (9 // 8) * sin_ī² - (45 // 32) * sin_ī⁴
-        ) * ē^2 + (3 // 2) * (1 - (3 // 2) * sin_ī²) * (4 - 5 * sin_ī²) * η̄
-    ) + (3 // 64) * k₁ * (
-            -2 * (14 - 15 * sin_ī²) * sin_ī² + (28 - 158 * sin_ī² + 135 * sin_ī⁴) * ē^2
-        ) * cos_2ω̄
-
-    ∂M = (+3 // 2) * n̄ * R̄e² * (1 - (3 // 2) * sin_ī²) * η̄² * (-15 // 8) * k₁ * (
-        (-1 + (5 // 2) * sin_ī² - (13 // 8) * sin_ī⁴) +
-        (1 // 2) * ē² * (-1 + sin_ī² + (5 // 8) * sin_ī⁴)
-    ) + (+3 //  2) * k₁ * (1 - (3 // 2) * sin_ī²)^2 * η̄² +
-        (-9 // 64) * k₁ * sin_ī² * (14 - 15 * sin_ī²) * ē² * η̄ * cos_2ω̄ +
-        (+3 // 32) * k₁ * sin_ī² * (14 - 15 * sin_ī²) * η̄^3 * cos_2ω̄ +
-        (+9 //  8) * k₁ / η̄ * (
-            (3 - (15 // 2) * sin_ī² + (47 // 8) * sin_ī⁴) +
-            ((3 // 2) - 5 * sin_ī² + (117 // 16) * sin_ī⁴) * ē² +
-            (1 // 8) * (1 + 5 * sin_ī² - (101 // 8) * sin_ī⁴) * ē² +
-            (1 // 24) * sin_ī² * (
-                (70 - 123 * sin_ī²) * ē² +
-                2 * (28 - 33 * sin_ī²) * ē⁴
-            ) * cos_2ω̄ +
-            (9 // 128) * ē⁴ * sin_ī⁴ * cos(4ω̄)
+    # Perturbed mean motion considering the J₂ and J₂² secular terms [1].
+    n̄ = n₀ * (
+        1 +
+        (3 // 4) * kn₂ * η̄ * (2 - 3sin_ī²) +
+        (3 // 128) * kn₂₂ * η̄ * (
+            120 + 64η̄ - 40η̄² +
+            (-240 - 192η̄ + 40η̄²) * sin_ī² +
+            (105 + 144η̄ + 25η̄²) * sin_ī⁴
         )
+    )
+
+    # == Secular J₂² Rates =================================================================
+    #
+    # The expressions below are the full (J₂ + J₂²) secular rates [1] minus the first-order
+    # J₂ secular rates evaluated with the Kepler mean motion of the mean elements, which is
+    # exactly the part captured by the numerical averaging of the zonal acceleration.
+
+    ∂M = (n̄ - n₀) - (3 // 4) * n₀ * kn₂ * η̄ * (2 - 3sin_ī²)
+
+    ∂ω = (3 // 4) * (n̄ - n₀) * kn₂ * (4 - 5sin_ī²) +
+        (3 // 128) * n̄ * kn₂₂ * (
+            384 + 96ē² - 384η̄ +
+            (-824 - 116ē² + 1056η̄) * sin_ī² +
+            (430 - 5ē² - 720η̄) * sin_ī⁴
+        ) -
+        (15 // 16) * n₀ * kn₂₂ * ē² * cos_ī⁴
+
+    ∂Ω = -(3 // 2) * (n̄ - n₀) * kn₂ * cos_ī +
+        (3 // 32) * n̄ * kn₂₂ * cos_ī * (
+            -36 - 4ē² + 48η̄ + (40 - 5ē² - 72η̄) * sin_ī²
+        )
+
+    # == Long-Period J₂² Rates =============================================================
+    #
+    # The pair (∂e, ∂i) satisfies the exact invariant of zonal fields H = √(μ p̄) cos ī,
+    # i.e., ∂i = -(ē ∂e cos ī) / (η̄² sin ī).
+
+    ∂e = -(3 // 32) * n₀ * kn₂₂ * sin_ī² * (14 - 15sin_ī²) * ē * η̄² * sin_2ω̄
+
+    ∂i = +(3 // 64) * n₀ * kn₂₂ * sin(2ī) * (14 - 15sin_ī²) * ē² * sin_2ω̄
+
+    ∂a = zero(T)
 
     return @SVector T[∂a, ∂e, ∂i, ∂Ω, ∂ω, ∂M]
 end
