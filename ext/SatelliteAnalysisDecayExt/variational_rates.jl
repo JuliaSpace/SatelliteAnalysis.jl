@@ -78,8 +78,9 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
 
     μ = GravityModels.gravity_constant(gm)
 
-    # Auxiliaries with mean elements.
-    ē  = max(ē, 1e-6)
+    # Auxiliaries with mean elements. See `_dynamics!` for the rationale of the clamps.
+    ā  = max(ā, 0.9 * EARTH_EQUATORIAL_RADIUS)
+    ē  = clamp(ē, 1e-6, max(1e-6, 1 - EARTH_EQUATORIAL_RADIUS / ā))
     ī  = max(ī, 1e-6)
     ē² = ē^2
     η̄² = 1 - ē²

@@ -55,6 +55,11 @@ function _atmospheric_drag_acceleration(
 
     lat, lon, h = ecef_to_geodetic(r_ecef)
 
+    # The altitude can be negative when the integrator evaluates trial stages with
+    # unphysical states near the decay end. Clamp it to keep the atmospheric model valid so
+    # that the error control can reject the step.
+    h = max(h, 0.0)
+
     F107′ = isnothing(F107) ? space_index(Val(:F10obs_avg_center81), jd_utc) : F107
     Ap′   = isnothing(Ap) ? space_index(Val(:Ap_daily), jd_utc) : Ap
 

@@ -16,6 +16,7 @@ function SatelliteAnalysis.decay_analysis(
     C_d::Number = 2.2,
     C_r::Number = 1.25,
     F107::Union{Nothing, Number} = nothing,
+    terminate_altitude::Number = 120e3,
     tf::Number = 30 * 365.25 * 86400.0,
 )
     M = true_to_mean_anomaly(orb.e, orb.f)
@@ -39,6 +40,7 @@ function SatelliteAnalysis.decay_analysis(
         F107                          = F107,
         gm                            = gm,
         jd₀_utc                       = orb.t,
+        terminate_altitude            = terminate_altitude,
     )
 
     cbset = CallbackSet(ContinuousCallback(_cb_altitude_condition, _cb_altitude_affect!))
@@ -64,13 +66,13 @@ end
 function _cb_altitude_condition(u, t, integrator)
     a_mean, e_mean, i_mean, Ω_mean, ω_mean, M_mean = _equinoctial_to_classical(u)
 
-    a_osc, e_osc, i_osc, Ω_osc, ω_osc, M_osc =
-        _mean_to_osculating_elements(a_mean, e_mean, i_mean, Ω_mean, ω_mean, M_mean)
+    # Terminate on the perigee altitude of the mean orbit. This condition is a smooth,
+    # monotonically decreasing function of the mean elements, whereas the instantaneous
+    # altitude oscillates between the perigee and apogee altitudes within a single
+    # integrator step, which can make the callback root finder miss the crossing.
+    perigee_altitude = a_mean * (1 - e_mean) - EARTH_EQUATORIAL_RADIUS
 
-    r_tod, _ = _coe_to_rv(a_osc, e_osc, i_osc, Ω_osc, ω_osc, M_osc)
-    altitude = norm(r_tod) - EARTH_EQUATORIAL_RADIUS
-
-    return altitude - 120e3
+    return perigee_altitude - integrator.p.terminate_altitude
 end
 
 function _cb_altitude_affect!(integrator)

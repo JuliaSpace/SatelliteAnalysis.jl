@@ -53,7 +53,13 @@ function _dynamics!(
 
     # Unpack mean orbital elements.
     ā, ē, ī, Ω̄, ω̄, M̄ = _equinoctial_to_classical(u)
-    ē = max(ē, 1e-6)
+
+    # Clamp the mean elements to a physically meaningful region. The adaptive integrator
+    # can evaluate trial stages with unphysical states (e.g. e > 1) near the decay end.
+    # The right-hand side must remain finite for those states so that the error control
+    # can reject the step instead of throwing a domain error.
+    ā = max(ā, 0.9 * EARTH_EQUATORIAL_RADIUS)
+    ē = clamp(ē, 1e-6, max(1e-6, 1 - EARTH_EQUATORIAL_RADIUS / ā))
     ī = max(ī, 1e-6)
 
     # Auxiliaries with mean elements.
