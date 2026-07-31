@@ -5,32 +5,31 @@
 ############################################################################################
 
 """
-    _dynamics!(
-        du::AbstractVector{T},
-        state_mean::AbstractVector{T},
-        params::Dict,
-        t::Real
-    ) -> Nothing
+    _dynamics!(du::AbstractVector{T}, u::AbstractVector{T}, params::NamedTuple, t::Real) where T <: Number -> Nothing
 
-Compute Gauss mean-element derivatives with averaged perturbations.
+Compute in `du` the time derivatives of the mean equinoctial orbital elements `u` at the
+time `t` [s] after the epoch using Gauss variational equations with averaged perturbations.
 
-This routine computes the time derivatives of the mean orbital elements using Gauss'
-variational equations. It evaluates instantaneous forces on the mean-reference orbit for
-conservative perturbations (Earth gravity, third bodies) and adds temporally averaged rates
-for non-conservative perturbations (Atmospheric Drag and Solar Radiation Pressure).
+This routine evaluates instantaneous forces on the mean-reference orbit for conservative
+perturbations (Earth gravity and third bodies) and adds temporally averaged rates for
+non-conservative perturbations (atmospheric drag and solar radiation pressure), together
+with closed-form J₂² rates.
 
 !!! note
 
-    - Conservative perturbations are evaluated on the mean orbit at evenly spaced mean anomalies.
+    - Conservative perturbations are evaluated on the mean orbit at evenly spaced mean
+      anomalies.
     - Non-conservative perturbations are added via averaged routines (drag and SRP).
     - Units must be consistent: meters, seconds, kilograms.
 
-# Keywords
+# Arguments
 
-- `du::AbstractVector{T}`: Output derivative vector `[da, de, di, dΩ, dω, dM]`.
-- `state_mean::AbstractVector{T}`: Mean orbital elements `[a, e, i, Ω, ω, M]`.
-- `params::Dict`: Dictionary with environment/model parameters (e.g., `jd0_utc`, `F107`, `Ap`).
-- `t::Real`: Time since epoch [s].
+- `du::AbstractVector{T}`: Output derivative vector of the mean equinoctial elements
+    `[da, dψ, de_x, de_y, di_x, di_y]`. This vector is modified in place.
+- `u::AbstractVector{T}`: Mean equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`.
+- `params::NamedTuple`: Named tuple with the integration parameters. See
+    `_decay_analysis`.
+- `t::Real`: Time since the orbit epoch [s].
 
 # References
 
@@ -127,7 +126,7 @@ function _dynamics!(
 
     # The J₂² rates are expressed in classical elements. Convert them to equinoctial
     # rates using the Jacobian of the transformation.
-    Jec    = _coe_to_rv_jacobian(ē, ī, Ω̄, ω̄)
+    Jec    = _classical_to_equinoctial_jacobian(ē, ī, Ω̄, ω̄)
     ∂u_J₂² = Jec * J₂²_variational_rates(ā, ē, ī, ω̄, gm)
 
     # Non-conservative perturbations (averaged)

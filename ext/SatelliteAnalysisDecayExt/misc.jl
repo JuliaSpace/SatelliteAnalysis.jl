@@ -82,7 +82,7 @@ function _coe_to_rv(a::T, e::T, i::T, Ω::T, ω::T, M::T) where T <: Number
 end
 
 """
-    _coe_to_rv_jacobian(e::T, i::T, Ω::T, ω::T) where T <: Number -> SMatrix{6, 6, T}
+    _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where T <: Number -> SMatrix{6, 6, T}
 
 Compute the Jacobian matrix of the transformation from Classical Orbital Elements (COE) to
 Equinoctial Elements.
@@ -101,11 +101,11 @@ sensitivity analysis, covariance propagation, and orbit determination.
 
 # Returns
 
-- `SMatrix{T, 6, 6}`: Jacobian matrix `J` of size `6x6`, where each entry corresponds to the
+- `SMatrix{6, 6, T}`: Jacobian matrix `J` of size `6x6`, where each entry corresponds to the
     partial derivative of an equinoctial element with respect to a classical orbital
     element.
 """
-function _coe_to_rv_jacobian(e::T, i::T, Ω::T, ω::T) where T <: Number
+function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where T <: Number
     ξ = Ω + ω
 
     sin_ξ, cos_ξ = sincos(ξ)
@@ -409,8 +409,8 @@ end
     ) where T <: Number -> SMatrix{3, 3, T}
 
 Compute the Direction Cosine Matrix (DCM) from an Earth Centered Inertial (ECI) frame to the
-Hill frame (also known as then RTN or RSW frame), given the satellite position [m] and
-satellite velocity [m/s] in the eci reference frame.
+Hill frame (also known as the RTN or RSW frame), given the satellite position [m] and
+satellite velocity [m/s] in the ECI reference frame.
 
 The Hill frame is defined as follows:
 

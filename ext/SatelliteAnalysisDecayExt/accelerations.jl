@@ -176,8 +176,8 @@ assumption is used, where the effective area is always normal to the Sun directi
 
 # Arguments
 
-- `sat_pos::AbstractVector{T}`: Spacecraft position vector [m] in an ECI frame.
-- `sun_pos::AbstractVector{T}`: Sun position vector [m] in an ECI frame.
+- `rsat_eci::AbstractVector{T}`: Spacecraft position vector [m] in an ECI frame.
+- `rsun_eci::AbstractVector{T}`: Sun position vector [m] in an ECI frame.
 - `area::Number`: Effective cross-sectional area [m²] exposed to Sun.
 - `mass::Number`: Spacecraft mass [kg].
 - `C_r::Number`: Solar radiation pressure coefficient [-].

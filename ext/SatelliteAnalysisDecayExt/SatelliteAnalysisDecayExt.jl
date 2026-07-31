@@ -9,13 +9,13 @@ using StaticArrays
 #                                        Constants                                         #
 ############################################################################################
 
-# Solar radiation pressure at 1 AU [N/m²].
-const _SOLAR_PRESSURE_1AU = 1367 / 299792457.999999984
+# Solar radiation pressure at 1 AU [N / m²].
+const _SOLAR_PRESSURE_1AU = 1367 / 299792458
 
-# Sun gravitational parameters [m³/s²].
+# Sun gravitational parameter [m³ / s²].
 const _μ_SUN  = 1.32712440018e20
 
-# Moon gravitational parameters [m³/s²].
+# Moon gravitational parameter [m³ / s²].
 const _μ_MOON = 4.9027988e12
 
 ############################################################################################
