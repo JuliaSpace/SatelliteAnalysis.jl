@@ -178,7 +178,7 @@ function ground_track(
     r_ecef = f_eci_to_ecef(r_i, epoch + t / 86400)
     lat_k_1, lon_k_1, ~ = ecef_to_geodetic(r_ecef)
 
-    for t in vt[2:end]
+    for t in @view(vt[2:end])
         # Propagate the orbit and convert to ECEF.
         r_i, ~ = Propagators.propagate!(orbp, t)
         r_ecef = f_eci_to_ecef(r_i, epoch + t / 86400)
