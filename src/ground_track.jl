@@ -144,7 +144,7 @@ function ground_track(
 
     if isnothing(step)
         # If the user did not specify the step, let's obtain the step roughly equivalent to
-        # 5° in the mean anomaly.
+        # 1° in the mean anomaly.
         orb = Propagators.mean_elements(orbp)
 
         # If the propagator cannot return the mean elements, we will compute the orbit
@@ -189,7 +189,7 @@ function ground_track(
         # Check if this is an ascending or descending path.
         current_type = (lat_k - lat_k_1) > 0 ? :ascending : :descending
 
-        # Check if we need to add this point to the groun track vector.
+        # Check if we need to add this point to the ground track vector.
         if (track_types != current_type) && (track_types != :all)
             lat_k_1 = lat_k
             lon_k_1 = lon_k

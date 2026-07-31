@@ -54,7 +54,7 @@ in **[1]**.
 
 # Extended Help
 
-Due to the Earth's gravitational perturbation, the orbit of a salite will experience
+Due to the Earth's gravitational perturbation, the orbit of a satellite will experience
 secular changes in the argument of perigee. Hence, the satellite mean altitude per latitude
 will differ during the mission. This effect can be problematic, especially if we must
 compare images by a camera onboard the satellite in different periods. The altitude
@@ -135,7 +135,7 @@ function frozen_orbit(
 
     sin_i, cos_i = sincos(ib)
 
-    # Auxiliar variables to compute (R_e / a)^2p.
+    # Auxiliary variables to compute (R_e / a)^2p.
     fact = R_e / ab
     prod = fact * fact # ............................................... (R_e / a)^2 (p = 0)
 
@@ -159,7 +159,7 @@ function frozen_orbit(
         prod *= fact # ............................................. (R_e / a)^(2 * (p + 1))
     end
 
-    # Compute the eccentricy and convert it back to `Float64`.
+    # Compute the eccentricity and convert it back to `Float64`.
     e = Float64(2 * num / den)
 
     # If `e` is positive, the argument of perigee must be at 90°. Otherwise, it must be at
@@ -181,7 +181,7 @@ end
 """
     _F_and_∂F_l0p(l::Integer, p::Integer, i::Number) -> BigFloat, BigFloat
 
-Compute the inclination function `F_{l,0,p}(i)` and its derivative `∂F_{l,0,p} / ∂i`as
+Compute the inclination function `F_{l,0,p}(i)` and its derivative `∂F_{l,0,p} / ∂i` as
 defined in **[1, p. 642]**.
 
 !!! note

@@ -1,6 +1,6 @@
 ## Description #############################################################################
 #
-# Functions to verify is a ground facility is visible given a satellite position.
+# Functions to verify if a ground facility is visible given a satellite position.
 #
 ############################################################################################
 

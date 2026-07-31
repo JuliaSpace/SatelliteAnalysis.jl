@@ -99,7 +99,7 @@ function ground_facility_visibility_circle(
     # Compute the distance `r` from the ground facility to the satellite considering the
     # minimum elevation angle. We obtained this equation from the law of cosines.
     #
-    # NOTE: Only one of the two answers make sense becanse `r` must be positive.
+    # NOTE: Only one of the two answers make sense because `r` must be positive.
     sin_θ, cos_θ = sincos(minimum_elevation)
     r = -r_gf * sin_θ + √(satellite_position_norm^2 - (r_gf * cos_θ)^2)
 

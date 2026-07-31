@@ -249,7 +249,7 @@ end
     return lighting_condition(r_i, s_i)
 end
 
-# Function used in `find_crossing` to precisely obtain the instant in which the lightning
+# Function used in `find_crossing` to precisely obtain the instant in which the lighting
 # condition changed.
 @noinline function _lighting_condition_crossing(
     t::Number, orbp::OrbitPropagator, d::Number, s_i::AbstractVector, old_state::Symbol

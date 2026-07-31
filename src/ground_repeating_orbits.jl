@@ -17,7 +17,7 @@ export ground_repeating_orbit_adjacent_track_distance
 
 Compute the adjacent track angle [rad] at Equator in a ground repeating orbit measured from
 the satellite position. The orbit is described by its semi-major axis `a` [m], eccentricity
-[ ], inclination `i` [rad], and orbit cycle `orbit_cyle` [day].
+[ ], inclination `i` [rad], and orbit cycle `orbit_cycle` [day].
 
 !!! warning
 
@@ -49,7 +49,7 @@ the satellite position. The orbit is described by its semi-major axis `a` [m], e
 A ground repeating orbit is any orbit that the number of revolutions per day is a rational
 number. Hence, this type of orbit repeats its ground trace after a finite number of days.
 
-The information `orbit_cyle` is redundant given that we have `a`, `e`, and `i`. However,
+The information `orbit_cycle` is redundant given that we have `a`, `e`, and `i`. However,
 it is necessary to improve the algorithm precision. Otherwise, the `orbit_cycle` must be
 obtained by computing the orbit period using `a`, `e`, and `i` and then converting it to a
 rational number, leading to numerical problems.

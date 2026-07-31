@@ -12,7 +12,7 @@
 export beta_angle
 
 """
-    beta_angle(orb::KerplerianElements{Tepoch, T}, Δjd::Number; kwargs...) -> Float64
+    beta_angle(orb::KeplerianElements{Tepoch, T}, Δjd::Number; kwargs...) -> Float64
 
 Compute the beta angle [rad] for the orbit `orb` after `Δjd` days from its epoch.
 
@@ -27,7 +27,7 @@ The algorithm was obtained from **[1]**.
 # Keywords
 
 - `perturbation::Symbol`: Select the perturbation terms that must be used when propagating
-  the right ascencion of the ascending node. The possible values are:
+  the right ascension of the ascending node. The possible values are:
     - `:J0`: Consider a Keplerian orbit.
     - `:J2`: Consider the perturbation terms up to J₂.
     - `:J4`: Consider the perturbation terms J₂, J₂², and J₄.
