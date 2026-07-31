@@ -64,7 +64,7 @@ This function returns a `DataFrame` with the following columns:
     (**Default** = `nothing`)
 - `time_unit::Symbol`: Unit for all the time values in the output `DataFrame`.  It can be
     `:s` for seconds, `:m` for minutes, or `:h` for hours.
-    (**Default** = `:h`)
+    (**Default** = `:m`)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
     (**Default** = `GM_EARTH`)
 - `J2::Number`: J₂ perturbation term.
@@ -231,14 +231,14 @@ The algorithm here considers only the perturbation terms up to J₂.
 # Keywords
 
 - `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
-    (**Default** = 3)
+    (**Default** = 30)
 - `no_warnings::Bool`: If `true`, no warnings will be printed.
     (**Default** = `false`)
 - `tolerance::Union{Nothing, NTuple{2, Number}}`: Residue tolerances to verify if the
     numerical method has converged. If it is `nothing`, `(√eps(T), √eps(T))` will be used,
     where `T` is the internal type for the computations. Notice that the residue function
     `f₁` unit is [deg / day], whereas the `f₂` unit is [deg / min].
-    (**Default** = 1e-18)
+    (**Default** = `nothing`)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
     (**Default** = `GM_EARTH`)
 - `J2::Number`: J₂ perturbation term.
