@@ -93,7 +93,26 @@ end
 
     # Regression test for the estimated lifetime.
     lifetime = datetime2julian(df[end, :date]) - jd₀
-    @test lifetime ≈ 31.328780 rtol = 1e-4
+    @test lifetime ≈ 31.300620 rtol = 1e-3
+
+    # The previous, tighter integrator configuration must remain reachable through the
+    # keywords and reproduce its reference lifetime.
+    df_tight = decay_analysis(
+        orb;
+        satellite_mass                = 100.0,
+        satellite_mean_area           = 1.0,
+        gravity_model                 = gm,
+        F107                          = 140.0,
+        Ap                            = 15.0,
+        solver                        = Tsit5(),
+        reltol                        = 1e-8,
+        abstol                        = 1e-8,
+        num_sampling_points_per_orbit = 33
+    )
+
+    lifetime_tight = datetime2julian(df_tight[end, :date]) - jd₀
+    @test lifetime_tight ≈ 31.328780 rtol = 1e-4
+    @test lifetime ≈ lifetime_tight rtol = 2e-3
 
     # == Keyword terminate_altitude ========================================================
 
@@ -263,16 +282,23 @@ end
 
     # == Averaged Model ====================================================================
 
+    # Use the tight integrator configuration: this test set validates the averaging model
+    # itself, so the numerical integration error must be negligible compared to the model
+    # differences being quantified.
     df = decay_analysis(
         orb;
-        satellite_mass      = mass,
-        satellite_mean_area = area,
-        gravity_model       = gm,
-        C_d                 = C_d,
-        C_r                 = C_r,
-        F107                = F107,
-        Ap                  = Ap,
-        tf                  = duration
+        satellite_mass                = mass,
+        satellite_mean_area           = area,
+        gravity_model                 = gm,
+        C_d                           = C_d,
+        C_r                           = C_r,
+        F107                          = F107,
+        Ap                            = Ap,
+        tf                            = duration,
+        solver                        = Tsit5(),
+        reltol                        = 1e-8,
+        abstol                        = 1e-8,
+        num_sampling_points_per_orbit = 33
     )
 
     # == Comparison ========================================================================

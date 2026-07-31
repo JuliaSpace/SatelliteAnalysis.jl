@@ -28,6 +28,16 @@ by the Earth shadow.
     If `F107` or `Ap` are `nothing`, the space indices are obtained using the function
     `space_index`, which requires calling `SpaceIndices.init()` beforehand.
 
+!!! note
+
+    The default integrator configuration (`solver`, `reltol`, `abstol`, and
+    `num_sampling_points_per_orbit`) is tuned for fast and accurate **decay lifetime**
+    estimation: the lifetime and the altitude evolution change well below the atmospheric
+    model uncertainty. However, the angular elements (RAAN, argument of perigee, and mean
+    anomaly) accumulate a larger numerical error over long arcs. If accurate angles are
+    required, use a tighter configuration, e.g. `solver = Tsit5()`, `reltol = 1e-8`,
+    `abstol = 1e-8`, and `num_sampling_points_per_orbit = 33`.
+
 # Keywords
 
 - `satellite_mass::Number`: Satellite mass [kg]. This keyword is required.
@@ -39,7 +49,9 @@ by the Earth shadow.
     (**Default**: `nothing`)
 - `num_sampling_points_per_orbit::Int`: Number of sampling points used to average the
     perturbations over one orbit.
-    (**Default**: 33)
+    (**Default**: 17)
+- `abstol::Number`: Absolute tolerance of the numerical integration.
+    (**Default**: 1e-6)
 - `Ap::Union{Nothing, Number}`: Geomagnetic index. If it is `nothing`, the value is
     obtained from the initialized space indices at each instant.
     (**Default**: `nothing`)
@@ -53,10 +65,14 @@ by the Earth shadow.
 - `F107::Union{Nothing, Number}`: 10.7 cm solar flux index. If it is `nothing`, the value
     is obtained from the initialized space indices at each instant.
     (**Default**: `nothing`)
+- `reltol::Number`: Relative tolerance of the numerical integration.
+    (**Default**: 1e-6)
 - `return_solution::Bool`: If `true`, the function also returns the raw solution of the
     numerical integration (see `OrdinaryDiffEq.ODESolution`), whose state vector is the
     equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`.
     (**Default**: `false`)
+- `solver`: Solver from **OrdinaryDiffEq.jl** used for the numerical integration.
+    (**Default**: `VCABM()`)
 - `terminate_altitude::Number`: Mean perigee altitude [m] that terminates the analysis.
     (**Default**: 120e3)
 - `tf::Number`: Maximum propagation time [s] after the orbit epoch.
@@ -114,7 +130,7 @@ julia> df = decay_analysis(
        );
 
 julia> df[end, :date]  # ................................... Estimation of the decay epoch
-2024-02-01T07:53:26.628
+2024-02-01T07:12:53.537
 ```
 """
 function decay_analysis(::Any; kwargs...)

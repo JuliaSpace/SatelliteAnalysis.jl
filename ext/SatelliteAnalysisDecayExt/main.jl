@@ -11,13 +11,16 @@ function SatelliteAnalysis.decay_analysis(
     satellite_mean_area::Number,
     # Optional keywords.
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
-    num_sampling_points_per_orbit::Int = 33,
+    num_sampling_points_per_orbit::Int = 17,
+    abstol::Number = 1e-6,
     Ap::Union{Nothing, Number} = nothing,
     C_d::Number = 2.2,
     C_r::Number = 1.25,
     distance_unit::Symbol = :km,
     F107::Union{Nothing, Number} = nothing,
+    reltol::Number = 1e-6,
     return_solution::Bool = false,
+    solver = VCABM(),
     terminate_altitude::Number = 120e3,
     tf::Number = 30 * 365.25 * 86400.0,
     time_unit::Symbol = :y,
@@ -35,12 +38,15 @@ function SatelliteAnalysis.decay_analysis(
         satellite_mass                = satellite_mass,
         satellite_mean_area           = satellite_mean_area,
         num_sampling_points_per_orbit = num_sampling_points_per_orbit,
+        abstol                        = abstol,
         Ap                            = Ap,
         C_d                           = C_d,
         C_r                           = C_r,
         distance_unit                 = distance_unit,
         F107                          = F107,
+        reltol                        = reltol,
         return_solution               = return_solution,
+        solver                        = solver,
         terminate_altitude            = terminate_altitude,
         tf                            = tf,
         time_unit                     = time_unit
@@ -57,12 +63,15 @@ function _decay_analysis(
     satellite_mass::Number,
     satellite_mean_area::Number,
     num_sampling_points_per_orbit::Int,
+    abstol::Number,
     Ap::Union{Nothing, Number},
     C_d::Number,
     C_r::Number,
     distance_unit::Symbol,
     F107::Union{Nothing, Number},
+    reltol::Number,
     return_solution::Bool,
+    solver,
     terminate_altitude::Number,
     tf::Number,
     time_unit::Symbol,
@@ -100,10 +109,10 @@ function _decay_analysis(
     prob = ODEProblem(_dynamics!, u, tspan, params)
     sol = solve(
         prob,
-        Tsit5();
+        solver;
         dt       = 24.0 * 60 * 60,
-        reltol   = 1e-8,
-        abstol   = 1e-8,
+        reltol   = reltol,
+        abstol   = abstol,
         callback = cbset,
         maxiters = 1e8
     )
