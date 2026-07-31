@@ -68,7 +68,7 @@ function ground_repeating_orbit_adjacent_track_angle(
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
     T   = float(promote_type(T1, T2, T3))
     R₀  = T(R0)
-    ω_e = T(EARTH_ANGULAR_SPEED)
+    ω_e = T(we)
 
     # Compute the orbital period [s].
     ΔT = orbital_period(
@@ -161,7 +161,7 @@ function ground_repeating_orbit_adjacent_track_distance(
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
     T   = float(promote_type(T1, T2, T3))
     R₀  = T(R0)
-    ω_e = T(EARTH_ANGULAR_SPEED)
+    ω_e = T(we)
 
     # Compute the orbital period [s].
     ΔT = orbital_period(
