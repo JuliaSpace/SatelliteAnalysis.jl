@@ -89,7 +89,13 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
     n̄  = √(μ / ā^3)
     η̄  = √η̄²
 
+    # The rotation between TOD and PEF is constant within one evaluation. Hoisting it out
+    # of the quadrature loop avoids one frame reduction per sampling point. The PEF frame
+    # rotates with the Earth, so the frame angular velocity must be accounted for when
+    # converting velocity vectors.
     D_tod_pef = r_ecef_to_eci(PEF(), TOD(), jd_utc)
+    D_pef_tod = D_tod_pef'
+    ω_pef     = @SVector T[0, 0, EARTH_ANGULAR_SPEED]
 
     # Initialization.
     ∂u_drag = @SVector zeros(T, 6)
@@ -113,10 +119,8 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
         D_hill_tod = _r_eci_to_hill(rk_tod, vk_tod)
 
         # Position and velocity in PEF to compute the atmospheric drag acceleration.
-        svk_tod = OrbitStateVector(jd_utc, rk_tod, vk_tod)
-        svk_pef = sv_eci_to_ecef(svk_tod, TOD(), PEF(), jd_utc)
-        rk_pef  = svk_pef.r
-        vk_pef  = svk_pef.v
+        rk_pef = D_pef_tod * rk_tod
+        vk_pef = D_pef_tod * vk_tod - ω_pef × rk_pef
 
         # Drag acceleration in PEF.
         adrag_pef = _atmospheric_drag_acceleration(

@@ -79,9 +79,10 @@ function _dynamics!(
     rsun_tod  = D_tod_mod * rsun_mod
     rmoon_tod = D_tod_mod * rmoon_mod
 
-    # Convert the vectors to PEF.
+    # Convert the vectors to PEF. Both rotations are orthonormal DCMs, so the inverse
+    # conversion is obtained by transposition instead of a second frame reduction.
     D_pef_tod = r_eci_to_ecef(TOD(), PEF(), jd_utc)
-    D_tod_pef = r_ecef_to_eci(PEF(), TOD(), jd_utc)
+    D_tod_pef = D_pef_tod'
 
     # Initialization of averaged variation rates.
     ∂C_avg = @SVector zeros(T, 6)
@@ -139,7 +140,7 @@ function _dynamics!(
 
     Jec = _coe_to_rv_jacobian(ē, ī, Ω̄, ω̄)
 
-    du[1:6] .= Jec * ∂C_total
+    du .= Jec * ∂C_total
 
     return nothing
 end

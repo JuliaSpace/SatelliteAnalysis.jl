@@ -22,7 +22,6 @@ function SatelliteAnalysis.decay_analysis(
     M = true_to_mean_anomaly(orb.e, orb.f)
     ā, ē, ī, Ω̄, ω̄, M̄ = _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M)
     u = Vector(_classical_to_equinoctial(ā, ē, ī, Ω̄, ω̄, M̄))
-    # u = Vector(_classical_to_equinoctial(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M))
 
     tspan = (0.0, tf)
 
