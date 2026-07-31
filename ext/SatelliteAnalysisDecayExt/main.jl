@@ -16,6 +16,7 @@ function SatelliteAnalysis.decay_analysis(
     C_d::Number = 2.2,
     C_r::Number = 1.25,
     F107::Union{Nothing, Number} = nothing,
+    return_solution::Bool = false,
     terminate_altitude::Number = 120e3,
     tf::Number = 30 * 365.25 * 86400.0,
 )
@@ -36,6 +37,7 @@ function SatelliteAnalysis.decay_analysis(
         C_d                           = C_d,
         C_r                           = C_r,
         F107                          = F107,
+        return_solution               = return_solution,
         terminate_altitude            = terminate_altitude,
         tf                            = tf
     )
@@ -55,6 +57,7 @@ function _decay_analysis(
     C_d::Number,
     C_r::Number,
     F107::Union{Nothing, Number},
+    return_solution::Bool,
     terminate_altitude::Number,
     tf::Number,
 )
@@ -99,7 +102,55 @@ function _decay_analysis(
         maxiters = 1e8
     )
 
-    return sol
+    # == Assemble the Output ===============================================================
+
+    num_points = length(sol.t)
+
+    date                = Vector{DateTime}(undef, num_points)
+    semi_major_axis     = Vector{Float64}(undef, num_points)
+    eccentricity        = Vector{Float64}(undef, num_points)
+    inclination         = Vector{Float64}(undef, num_points)
+    raan                = Vector{Float64}(undef, num_points)
+    argument_of_perigee = Vector{Float64}(undef, num_points)
+    mean_anomaly        = Vector{Float64}(undef, num_points)
+    perigee_altitude    = Vector{Float64}(undef, num_points)
+
+    @inbounds for k in 1:num_points
+        aₖ, eₖ, iₖ, Ωₖ, ωₖ, Mₖ = _equinoctial_to_classical(sol.u[k])
+
+        date[k]                = julian2datetime(orb.t + sol.t[k] / 86400)
+        semi_major_axis[k]     = aₖ
+        eccentricity[k]        = eₖ
+        inclination[k]         = iₖ
+        raan[k]                = Ωₖ
+        argument_of_perigee[k] = ωₖ
+        mean_anomaly[k]        = Mₖ
+        perigee_altitude[k]    = aₖ * (1 - eₖ) - EARTH_EQUATORIAL_RADIUS
+    end
+
+    df = DataFrame(;
+        date                = date,
+        semi_major_axis     = semi_major_axis,
+        eccentricity        = eccentricity,
+        inclination         = inclination,
+        raan                = raan,
+        argument_of_perigee = argument_of_perigee,
+        mean_anomaly        = mean_anomaly,
+        perigee_altitude    = perigee_altitude,
+    )
+
+    metadata!(df, "Description", "Mean orbital element evolution during the orbital decay.")
+    colmetadata!(df, :semi_major_axis,     "Unit", :m)
+    colmetadata!(df, :eccentricity,        "Unit", :dimensionless)
+    colmetadata!(df, :inclination,         "Unit", :rad)
+    colmetadata!(df, :raan,                "Unit", :rad)
+    colmetadata!(df, :argument_of_perigee, "Unit", :rad)
+    colmetadata!(df, :mean_anomaly,        "Unit", :rad)
+    colmetadata!(df, :perigee_altitude,    "Unit", :m)
+
+    return_solution && return df, sol
+
+    return df
 end
 
 function _cb_altitude_condition(u, t, integrator)
