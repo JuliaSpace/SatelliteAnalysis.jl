@@ -64,6 +64,14 @@ function _decay_analysis(
 
     tspan = (0.0, tf)
 
+    # Pre-allocate the J2 osculating propagator used for the mean-to-osculating
+    # conversion inside the drag quadrature, avoiding one propagator allocation per
+    # sampling point.
+    j2osc_prop = Propagators.init(
+        Val(:J2osc),
+        KeplerianElements(0.0, ā, ē, ī, Ω̄, ω̄, mean_to_true_anomaly(ē, M̄))
+    )
+
     params = (
         satellite_mean_area           = satellite_mean_area,
         satellite_mass                = satellite_mass,
@@ -74,6 +82,7 @@ function _decay_analysis(
         F107                          = F107,
         gm                            = gm,
         jd₀_utc                       = orb.t,
+        j2osc_prop                    = j2osc_prop,
         terminate_altitude            = terminate_altitude,
     )
 

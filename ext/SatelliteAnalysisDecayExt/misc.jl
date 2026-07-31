@@ -223,11 +223,13 @@ end
         i::T,
         Ω::T,
         ω::T,
-        M::T
+        M::T,
+        orbp::OrbitPropagatorJ2Osculating
     ) where T <: Number -> NTuple{6, T}
 
 Convert the mean classical elements `[a, e, i, Ω, ω, M]` to osculating elements under the J2
-perturbation model **[1]**.
+perturbation model **[1]** using the pre-allocated J2 osculating propagator `orbp`, which is
+re-initialized in place.
 
 # Arguments
 
@@ -237,6 +239,8 @@ perturbation model **[1]**.
 - `Ω::T`: Right ascension of ascending node [rad].
 - `ω::T`: Argument of perigee [rad].
 - `M::T`: Mean anomaly [rad].
+- `orbp::OrbitPropagatorJ2Osculating`: Pre-allocated J2 osculating propagator. It is
+    re-initialized in place, avoiding one propagator allocation per call.
 
 # Returns
 
@@ -254,15 +258,23 @@ perturbation model **[1]**.
 - **[1]** Vallado, D. A. (2013). *Fundamentals of Astrodynamics and Applications*. 4th ed.
     Microcosm Press, Hawthorne, CA.
 """
-function _mean_to_osculating_elements(a::T, e::T, i::T, Ω::T, ω::T, M::T) where T <: Number
+function _mean_to_osculating_elements(
+    a::T,
+    e::T,
+    i::T,
+    Ω::T,
+    ω::T,
+    M::T,
+    orbp::OrbitPropagatorJ2Osculating
+) where T <: Number
     # Normalize.
     a, e, i, Ω, ω, M = _normalize_classical_elements(a, e, i, Ω, ω, M)
     e = max(e, 1e-6)
     i = max(i, 1e-6)
 
     # Convert to osculating.
-    orb_tod      = KeplerianElements(0.0, a, e, i, Ω, ω, mean_to_true_anomaly(e, M))
-    orbp         = Propagators.init(Val(:J2osc), orb_tod)
+    orb_tod = KeplerianElements(0.0, a, e, i, Ω, ω, mean_to_true_anomaly(e, M))
+    Propagators.init!(orbp, orb_tod)
     r_tod, v_tod = Propagators.propagate!(orbp, 0.0)
     ke           = rv_to_kepler(r_tod, v_tod)
 

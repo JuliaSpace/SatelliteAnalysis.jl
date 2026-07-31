@@ -35,6 +35,8 @@ atmospheric drag using quadrature equally spaced in true anomaly and temporal we
     - `num_sampling_points_per_orbit::Int`: Number of quadrature points for averaging.
     - `satellite_mass::Number`: Spacecraft mass [kg].
     - `satellite_mean_area::Number`: Effective cross-sectional area [m²].
+    - `j2osc_prop::OrbitPropagatorJ2Osculating`: Pre-allocated J2 osculating propagator
+        used for the mean-to-osculating conversion.
     - `Ap::Union{Nothing, Number}`: Geomagnetic index, or `nothing` to retrieve it from
         the space indices.
     - `C_d::Number`: Drag coefficient [-].
@@ -68,6 +70,7 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
     gm        = params.gm
     mass      = params.satellite_mass
     mean_area = params.satellite_mean_area
+    orbp      = params.j2osc_prop
 
     # Resolve the space indices once per evaluation since `jd_utc` is constant here,
     # avoiding one interpolation per sampling point.
@@ -108,7 +111,7 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
         M̄k = mod(true_to_mean_anomaly(ē, f̄k), 2π)
 
         # Obtain osculating elements.
-        a, e, i, Ω, ω, M = _mean_to_osculating_elements(ā, ē, ī, Ω̄, ω̄, M̄k)
+        a, e, i, Ω, ω, M = _mean_to_osculating_elements(ā, ē, ī, Ω̄, ω̄, M̄k, orbp)
 
         # Position and velocity in TOD.
         rk_tod, vk_tod = _coe_to_rv(a, e, i, Ω, ω, M)
