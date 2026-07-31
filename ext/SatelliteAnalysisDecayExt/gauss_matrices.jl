@@ -6,10 +6,11 @@
 ############################################################################################
 
 """
-    _gauss_variational_matrices(
+    _equinoctial_gauss_variational_matrices(
         a::T,
         e::T,
         i::T,
+        Ω::T,
         ω::T,
         f::T,
         r::T,
@@ -17,45 +18,52 @@
         h::T,
         η::T,
         n::T
-    ) where T <: Number -> Tuple{SMatrix{6, 3, T}, SVector{6, T}}
+    ) where T <: Number -> SMatrix{6, 3, T}, SVector{6, T}
 
-Compute Gauss variational matrices A(y) and B **[1]**.
+Compute the Gauss variational equations in matrix form for the equinoctial orbital elements
+**[1]**:
 
-This routine builds the matrix form of Gauss' variational equations:
+    u̇ = A(u) * ap + B
 
-    ẏ = A(y) * p + B
+where `u = [a, ψ, e_x, e_y, i_x, i_y]` are the equinoctial elements and
+`ap = [u_r, u_θ, u_h]` is the perturbation acceleration represented in the Hill frame
+(radial, along-track, cross-track).
 
-where `y = [a, e, i, Ω, ω, M]`, `p = [u_r, u_θ, u_h]`.
+This formulation is obtained by analytically combining the classical Gauss variational
+equations with the Jacobian of the classical-to-equinoctial transformation. All `1 / e`
+terms cancel symbolically, so the matrix is well-conditioned for circular orbits. The
+remaining singularity at `i = π` (retrograde equatorial orbits) is inherent to this
+equinoctial element set.
 
-# Keywords
+# Arguments
 
-- `a::Number`: Semi-major axis [m].
-- `e::Number`: Stabilized eccentricity (≥ 1e-6) [-].
-- `i::Number`: Inclination [rad].
-- `ω::Number`: Argument of perigee [rad].
-- `f::Number`: True anomaly [rad].
-- `r::Number`: Radius [m].
-- `p::Number`: Semi-latus rectum [m].
-- `h::Number`: Specific angular momentum [m²/s].
-- `η::Number`: √(1 - e²) [-].
-- `n::Number`: Mean motion [rad/s].
+- `a::T`: Semi-major axis [m].
+- `e::T`: Eccentricity [-].
+- `i::T`: Inclination [rad].
+- `Ω::T`: Right ascension of the ascending node [rad].
+- `ω::T`: Argument of perigee [rad].
+- `f::T`: True anomaly [rad].
+- `r::T`: Orbit radius at the true anomaly `f` [m].
+- `p::T`: Semi-latus rectum [m].
+- `h::T`: Specific angular momentum [m²/s].
+- `η::T`: `√(1 - e²)` [-].
+- `n::T`: Mean motion [rad/s].
 
 # Returns
 
 - `SMatrix{6, 3, T}`: Matrix `A` multiplying the perturbation vector `[u_r, u_θ, u_h]`.
-- `SVector{6, T}`: Constant vector `B = [0, 0, 0, 0, 0, n]`.
-
-# Extended help
+- `SVector{6, T}`: Constant vector `B = [0, n, 0, 0, 0, 0]`.
 
 # References
 
 - **[1]** Battin, R. H. (1999). An Introduction to the Mathematics and Methods of
     Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
 """
-function _gauss_variational_matrices(
+function _equinoctial_gauss_variational_matrices(
     a::T,
     e::T,
     i::T,
+    Ω::T,
     ω::T,
     f::T,
     r::T,
@@ -64,31 +72,37 @@ function _gauss_variational_matrices(
     η::T,
     n::T
 ) where T <: Number
-    sin_f, cos_f = sincos(f)
-    sin_i, cos_i = sincos(i)
+    ξ = Ω + ω
+    L = f + ξ
+    θ = f + ω
 
-    θ  = f + ω
-    sin_θ, cos_θ = sincos(θ)
+    sin_f, cos_f     = sincos(f)
+    sin_L, cos_L     = sincos(L)
+    sin_θ, cos_θ     = sincos(θ)
+    sin_Ω, cos_Ω     = sincos(Ω)
+    sin_ξ, cos_ξ     = sincos(ξ)
+    sin_io2, cos_io2 = sincos(i / 2)
+    tan_io2          = sin_io2 / cos_io2
 
-    a²      = a^2
-    h_sin_i = h * sin_i
-    r_sin_θ = r * sin_θ
-    k₁      = 2a² / h
-    he      = h * e
-    re      = r * e
-    η_o_he  = η / he
-    psr     = p + r
+    e_x = e * cos_ξ
+    e_y = e * sin_ξ
+
+    a²  = a^2
+    psr = p + r
+    k₁  = 2a² / h
+    k₂  = r * sin_θ / h
+    k₃  = 1 / (1 + η)
 
     A = @SMatrix T[
-        (k₁ * e * sin_f)              (k₁ * p / r)              0
-        (p / h * sin_f)               ((psr * cos_f + re) / h)  0
-        0                             0                         (r * cos_θ / h)
-        0                             0                         (r_sin_θ / h_sin_i)
-        (-p / he * cos_f)             (psr / he * sin_f)      (-r_sin_θ * cos_i / h_sin_i)
-        (η_o_he * (p * cos_f - 2re))  (-η_o_he * psr * sin_f)   0
+        (k₁ * e * sin_f)                      (k₁ * p / r)                   0
+        (-(p * e * cos_f * k₃ + 2r * η) / h)  (psr * e * sin_f * k₃ / h)     (k₂ * tan_io2)
+        (p * sin_L / h)                       ((psr * cos_L + r * e_x) / h)  (-k₂ * tan_io2 * e_y)
+        (-p * cos_L / h)                      ((psr * sin_L + r * e_y) / h)  (+k₂ * tan_io2 * e_x)
+        0  0  (r / h * (cos_io2 * cos_Ω * cos_θ - sin_Ω * sin_θ / cos_io2) / 2)
+        0  0  (r / h * (cos_io2 * sin_Ω * cos_θ + cos_Ω * sin_θ / cos_io2) / 2)
     ]
 
-    B = @SVector T[0, 0, 0, 0, 0, n]
+    B = @SVector T[0, n, 0, 0, 0, 0]
 
     return A, B
 end

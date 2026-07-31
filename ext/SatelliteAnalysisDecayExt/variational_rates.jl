@@ -155,7 +155,9 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
         # Gauss equations with mean parameters. The Kepler term `B` is not added here
         # because it is already accounted for in the conservative average, avoiding
         # counting the mean motion multiple times in the mean anomaly rate.
-        Ak, _ = _gauss_variational_matrices(ā, ē, ī, ω̄, f̄k, rk, p̄, h̄, η̄, n̄)
+        Ak, _ = _equinoctial_gauss_variational_matrices(
+            ā, ē, ī, Ω̄, ω̄, f̄k, rk, p̄, h̄, η̄, n̄
+        )
 
         # Temporal weighting.
         w_t = rk² / h̄

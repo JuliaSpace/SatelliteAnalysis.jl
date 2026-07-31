@@ -112,8 +112,11 @@ function _dynamics!(
         Dk_hill_tod = _r_eci_to_hill(rk_tod, vk_tod)
         δak_hill    = Dk_hill_tod * δak_tod
 
-        # Instantaneous Gauss equations (with mean parameters)
-        Ak, Bk = _gauss_variational_matrices(ā, ē, ī, ω̄, f̄k, rk, p̄, h̄, η̄, n̄)
+        # Instantaneous Gauss equations for the equinoctial elements (with mean
+        # parameters).
+        Ak, Bk = _equinoctial_gauss_variational_matrices(
+            ā, ē, ī, Ω̄, ω̄, f̄k, rk, p̄, h̄, η̄, n̄
+        )
 
         # Accumulation
         ∂C_avg = ∂C_avg + (Ak * δak_hill + Bk)
@@ -122,7 +125,10 @@ function _dynamics!(
     # Average of conservative perturbations.
     ∂C_total = ∂C_avg / N
 
-    ∂u_J₂² = J₂²_variational_rates(ā, ē, ī, ω̄, gm)
+    # The J₂² rates are expressed in classical elements. Convert them to equinoctial
+    # rates using the Jacobian of the transformation.
+    Jec    = _coe_to_rv_jacobian(ē, ī, Ω̄, ω̄)
+    ∂u_J₂² = Jec * J₂²_variational_rates(ā, ē, ī, ω̄, gm)
 
     # Non-conservative perturbations (averaged)
     ∂u_drag, ∂u_srp = _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
@@ -138,9 +144,7 @@ function _dynamics!(
 
     ∂C_total = ∂C_total + ∂u_drag + ∂u_srp + ∂u_J₂²
 
-    Jec = _coe_to_rv_jacobian(ē, ī, Ω̄, ω̄)
-
-    du .= Jec * ∂C_total
+    du .= ∂C_total
 
     return nothing
 end
