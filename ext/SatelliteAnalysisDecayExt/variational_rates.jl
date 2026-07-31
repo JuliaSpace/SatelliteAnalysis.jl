@@ -140,8 +140,13 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
         # Drag acceleration in TOD.
         adrag_tod = D_tod_pef * adrag_pef
 
-        # Solar radiation pressure acceleration in TOD.
-        asrp_tod = _solar_radiation_acceleration(rk_tod, rsun_tod, mean_area, mass, C_r)
+        # Solar radiation pressure acceleration in TOD, gated by the Earth shadow at
+        # the sampling point: full acceleration under direct sunlight, half in the
+        # penumbra, and none in the umbra.
+        lc = lighting_condition(rk_tod, rsun_tod)
+        ν  = lc == :sunlight ? T(1) : (lc == :penumbra ? T(1 // 2) : T(0))
+        asrp_tod =
+            ν * _solar_radiation_acceleration(rk_tod, rsun_tod, mean_area, mass, C_r)
 
         # Compute accelerations in Hill frame.
         adrag_hill = D_hill_tod * adrag_tod
