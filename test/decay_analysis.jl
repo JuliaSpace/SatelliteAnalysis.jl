@@ -43,34 +43,31 @@ end
     @test df isa DataFrame
     @test names(df) == [
         "date",
-        "semi_major_axis",
-        "eccentricity",
-        "inclination",
-        "raan",
-        "argument_of_perigee",
-        "mean_anomaly",
+        "time",
+        "f107",
+        "ap",
+        "mean_elements",
+        "apogee_altitude",
         "perigee_altitude",
     ]
 
-    @test eltype(df.date)                == DateTime
-    @test eltype(df.semi_major_axis)     == Float64
-    @test eltype(df.eccentricity)        == Float64
-    @test eltype(df.inclination)         == Float64
-    @test eltype(df.raan)                == Float64
-    @test eltype(df.argument_of_perigee) == Float64
-    @test eltype(df.mean_anomaly)        == Float64
-    @test eltype(df.perigee_altitude)    == Float64
+    @test eltype(df.date)             == DateTime
+    @test eltype(df.time)             == Float64
+    @test eltype(df.f107)             == Float64
+    @test eltype(df.ap)               == Float64
+    @test eltype(df.mean_elements)    == KeplerianElements{Float64, Float64}
+    @test eltype(df.apogee_altitude)  == Float64
+    @test eltype(df.perigee_altitude) == Float64
 
     @test metadata(df, "Description") ==
         "Mean orbital element evolution during the orbital decay."
 
-    @test colmetadata(df, :semi_major_axis,     "Unit") == :m
-    @test colmetadata(df, :eccentricity,        "Unit") == :dimensionless
-    @test colmetadata(df, :inclination,         "Unit") == :rad
-    @test colmetadata(df, :raan,                "Unit") == :rad
-    @test colmetadata(df, :argument_of_perigee, "Unit") == :rad
-    @test colmetadata(df, :mean_anomaly,        "Unit") == :rad
-    @test colmetadata(df, :perigee_altitude,    "Unit") == :m
+    @test colmetadata(df, :time,             "Unit") == :s
+    @test colmetadata(df, :f107,             "Unit") == :sfu
+    @test colmetadata(df, :ap,               "Unit") == :dimensionless
+    @test colmetadata(df, :mean_elements,    "Unit") == :SI
+    @test colmetadata(df, :apogee_altitude,  "Unit") == :m
+    @test colmetadata(df, :perigee_altitude, "Unit") == :m
 
     # == Values ============================================================================
 
@@ -78,6 +75,17 @@ end
 
     # The analysis must start at the orbit epoch.
     @test df[begin, :date] == julian2datetime(jd₀)
+    @test df[begin, :time] == 0.0
+    @test df[end,   :time] ≈ (datetime2julian(df[end, :date]) - jd₀) * 86400 atol = 1e-3
+
+    # The space indices provided by the user must be recorded in the output.
+    @test all(df.f107 .== 140.0)
+    @test all(df.ap   .== 15.0)
+
+    # The mean element epochs must match the point dates, and the apogee must be above the
+    # perigee.
+    @test julian2datetime(df[end, :mean_elements].t) == df[end, :date]
+    @test all(df.apogee_altitude .>= df.perigee_altitude)
 
     # The termination must happen when the mean perigee altitude reaches 120 km.
     @test df[end, :perigee_altitude] ≈ 120e3 atol = 1e-3
@@ -218,15 +226,19 @@ end
 
     wrap(x) = mod(x + π, 2π) - π
 
+    ke_beg = df[begin, :mean_elements]
+    ke_end = df[end,   :mean_elements]
+    M_end  = true_to_mean_anomaly(ke_end.e, ke_end.f)
+
     # The averaged model must show significant motion, otherwise the comparison is
     # meaningless.
-    @test df[end, :semi_major_axis] - df[begin, :semi_major_axis] < -200
-    @test abs(wrap(df[end, :raan] - df[begin, :raan])) > 0.1
+    @test ke_end.a - ke_beg.a < -200
+    @test abs(wrap(ke_end.Ω - ke_beg.Ω)) > 0.1
 
-    @test abs(df[end, :semi_major_axis] - ke_mean.a)          < 150
-    @test abs(df[end, :eccentricity] - ke_mean.e)             < 2e-5
-    @test abs(wrap(df[end, :inclination] - ke_mean.i))        < 2e-6
-    @test abs(wrap(df[end, :raan] - ke_mean.Ω))               < 4e-4
-    @test abs(wrap(df[end, :argument_of_perigee] - ke_mean.ω)) < 2e-4
-    @test abs(wrap(df[end, :mean_anomaly] - M_mean))          < 2e-2
+    @test abs(ke_end.a - ke_mean.a)          < 150
+    @test abs(ke_end.e - ke_mean.e)          < 2e-5
+    @test abs(wrap(ke_end.i - ke_mean.i))    < 2e-6
+    @test abs(wrap(ke_end.Ω - ke_mean.Ω))    < 4e-4
+    @test abs(wrap(ke_end.ω - ke_mean.ω))    < 2e-4
+    @test abs(wrap(M_end - M_mean))          < 2e-2
 end

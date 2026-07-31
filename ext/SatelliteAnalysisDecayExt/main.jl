@@ -106,47 +106,53 @@ function _decay_analysis(
 
     num_points = length(sol.t)
 
-    date                = Vector{DateTime}(undef, num_points)
-    semi_major_axis     = Vector{Float64}(undef, num_points)
-    eccentricity        = Vector{Float64}(undef, num_points)
-    inclination         = Vector{Float64}(undef, num_points)
-    raan                = Vector{Float64}(undef, num_points)
-    argument_of_perigee = Vector{Float64}(undef, num_points)
-    mean_anomaly        = Vector{Float64}(undef, num_points)
-    perigee_altitude    = Vector{Float64}(undef, num_points)
+    date             = Vector{DateTime}(undef, num_points)
+    time             = Vector{Float64}(undef, num_points)
+    f107             = Vector{Float64}(undef, num_points)
+    ap               = Vector{Float64}(undef, num_points)
+    mean_elements    = Vector{KeplerianElements{Float64, Float64}}(undef, num_points)
+    apogee_altitude  = Vector{Float64}(undef, num_points)
+    perigee_altitude = Vector{Float64}(undef, num_points)
 
     @inbounds for k in 1:num_points
         aₖ, eₖ, iₖ, Ωₖ, ωₖ, Mₖ = _equinoctial_to_classical(sol.u[k])
 
-        date[k]                = julian2datetime(orb.t + sol.t[k] / 86400)
-        semi_major_axis[k]     = aₖ
-        eccentricity[k]        = eₖ
-        inclination[k]         = iₖ
-        raan[k]                = Ωₖ
-        argument_of_perigee[k] = ωₖ
-        mean_anomaly[k]        = Mₖ
-        perigee_altitude[k]    = aₖ * (1 - eₖ) - EARTH_EQUATORIAL_RADIUS
+        jdₖ = orb.t + sol.t[k] / 86400
+
+        date[k] = julian2datetime(jdₖ)
+        time[k] = sol.t[k]
+
+        # Record the space indices used by the dynamics at each instant.
+        f107[k] = isnothing(F107) ?
+            Float64(space_index(Val(:F10obs_avg_center81), jdₖ)) :
+            Float64(F107)
+        ap[k] = isnothing(Ap) ? Float64(space_index(Val(:Ap_daily), jdₖ)) : Float64(Ap)
+
+        mean_elements[k] = KeplerianElements(
+            jdₖ, aₖ, eₖ, iₖ, Ωₖ, ωₖ, mean_to_true_anomaly(eₖ, Mₖ)
+        )
+
+        apogee_altitude[k]  = aₖ * (1 + eₖ) - EARTH_EQUATORIAL_RADIUS
+        perigee_altitude[k] = aₖ * (1 - eₖ) - EARTH_EQUATORIAL_RADIUS
     end
 
     df = DataFrame(;
-        date                = date,
-        semi_major_axis     = semi_major_axis,
-        eccentricity        = eccentricity,
-        inclination         = inclination,
-        raan                = raan,
-        argument_of_perigee = argument_of_perigee,
-        mean_anomaly        = mean_anomaly,
-        perigee_altitude    = perigee_altitude,
+        date             = date,
+        time             = time,
+        f107             = f107,
+        ap               = ap,
+        mean_elements    = mean_elements,
+        apogee_altitude  = apogee_altitude,
+        perigee_altitude = perigee_altitude,
     )
 
     metadata!(df, "Description", "Mean orbital element evolution during the orbital decay.")
-    colmetadata!(df, :semi_major_axis,     "Unit", :m)
-    colmetadata!(df, :eccentricity,        "Unit", :dimensionless)
-    colmetadata!(df, :inclination,         "Unit", :rad)
-    colmetadata!(df, :raan,                "Unit", :rad)
-    colmetadata!(df, :argument_of_perigee, "Unit", :rad)
-    colmetadata!(df, :mean_anomaly,        "Unit", :rad)
-    colmetadata!(df, :perigee_altitude,    "Unit", :m)
+    colmetadata!(df, :time,             "Unit", :s)
+    colmetadata!(df, :f107,             "Unit", :sfu)
+    colmetadata!(df, :ap,               "Unit", :dimensionless)
+    colmetadata!(df, :mean_elements,    "Unit", :SI)
+    colmetadata!(df, :apogee_altitude,  "Unit", :m)
+    colmetadata!(df, :perigee_altitude, "Unit", :m)
 
     return_solution && return df, sol
 

@@ -63,12 +63,12 @@ by the Earth shadow.
 
 - `DataFrame`: The mean orbital element evolution during the decay with the columns:
     - `date`: Date and time of each point [UTC] encoded using `DateTime`.
-    - `semi_major_axis`: Mean semi-major axis [m].
-    - `eccentricity`: Mean eccentricity [-].
-    - `inclination`: Mean inclination [rad].
-    - `raan`: Mean right ascension of the ascending node [rad].
-    - `argument_of_perigee`: Mean argument of perigee [rad].
-    - `mean_anomaly`: Mean mean anomaly [rad].
+    - `time`: Elapsed time of each point since the beginning of the analysis [s].
+    - `f107`: 10.7 cm solar flux index used by the dynamics at each point [sfu].
+    - `ap`: Geomagnetic index used by the dynamics at each point [-].
+    - `mean_elements`: Mean Keplerian elements encoded using `KeplerianElements` [SI],
+        where the epoch is the point date [UTC].
+    - `apogee_altitude`: Mean apogee altitude [m].
     - `perigee_altitude`: Mean perigee altitude [m].
     The unit of each column is stored in the `DataFrame` using metadata. If the keyword
     `return_solution` is `true`, the function returns a tuple with the `DataFrame` and the
