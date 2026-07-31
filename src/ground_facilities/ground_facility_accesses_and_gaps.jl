@@ -273,9 +273,9 @@ lasts for `duration` [s].
 # Returns
 
 - `DataFrame`: The function returns a `DataFrame` with three columns:
-    - `gap_beginning`: Time of the access beginning [UTC] encoded using `DateTime`.
-    - `gap_end`: Time of the access end [UTC] encoded using `DateTime`.
-    - `duration`: Duration of the access [s].
+    - `gap_beginning`: Time of the gap beginning [UTC] encoded using `DateTime`.
+    - `gap_end`: Time of the gap end [UTC] encoded using `DateTime`.
+    - `duration`: Duration of the gap [s].
     The unit of the column `duration` is stored in the `DataFrame` using metadata.
 
 # Extended Help
