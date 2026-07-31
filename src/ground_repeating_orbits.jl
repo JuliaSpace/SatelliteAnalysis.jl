@@ -110,16 +110,20 @@ function ground_repeating_orbit_adjacent_track_angle(
 end
 
 """
-    ground_repeating_orbit_adjacent_track_distance(orbit_period::T1, i::T2, orbit_cycle::Integer; kwargs...) where {T1 <: Number, T2 <: Number} -> T
+    ground_repeating_orbit_adjacent_track_distance(a::T1, e::T2, i::T3, orbit_cycle::Integer; kwargs...) where {T1 <: Number, T2 <: Number, T3 <: Number} -> T
 
-Compute the adjacent track distance [m] at Equator in a ground repeating orbit.  The orbit
-is described by its orbital period `orbit_period` [s], inclination `i` [rad], and orbit
-cycle `orbit_cycle` [day].
+Compute the adjacent track distance [m] at Equator in a ground repeating orbit. The orbit
+is described by its semi-major axis `a` [m], eccentricity `e` [ ], inclination `i` [rad],
+and orbit cycle `orbit_cycle` [day].
+
+!!! warning
+
+    The code does not check if the orbit is ground-repeating with `orbit_cycle` [day].
 
 !!! note
 
-    Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
-    float-pointing number `T`.
+    Internally, this function uses the precision obtained by promoting `T1`, `T2`, and `T3`
+    to a float-pointing number `T`.
 
 # Keywords
 
@@ -142,10 +146,10 @@ cycle `orbit_cycle` [day].
 A ground repeating orbit is any orbit that the number of revolutions per day is a rational
 number. Hence, this type of orbit repeats its ground trace after a finite number of days.
 
-The information `orbit_period` and `orbit_cyle` is redundant. However, they are necessary to
-improve the algorithm precision. Otherwise, the `orbit_cycle` must be obtained by converting
-the floating-point number `orbit_period` to a rational number, leading to numerical
-problems.
+The information `orbit_cycle` is redundant given that we have `a`, `e`, and `i`. However,
+it is necessary to improve the algorithm precision. Otherwise, the `orbit_cycle` must be
+obtained by computing the orbit period using `a`, `e`, and `i` and then converting it to a
+rational number, leading to numerical problems.
 """
 function ground_repeating_orbit_adjacent_track_distance(
     a::T1,
