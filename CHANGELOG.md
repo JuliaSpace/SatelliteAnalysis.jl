@@ -17,6 +17,8 @@ Version 0.4.0
   duration in `ground_track`.
 - ![Info][badge-info] We fixed several typos and documentation errors, including wrong
   documented keyword defaults and signatures.
+- ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
+  full osculating (Cowell) reference propagation, bounding the neglected couplings.
 
 Version 0.3.10
 --------------
