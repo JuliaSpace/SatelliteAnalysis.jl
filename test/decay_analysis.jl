@@ -102,3 +102,131 @@ end
     @test df_200[end, :perigee_altitude] ≈ 200e3 atol = 1e-3
     @test df_200[end, :date] < df[end, :date]
 end
+
+@testset "Validation Against a Cowell Reference" begin
+    # Propagate the full osculating dynamics (Cowell formulation) using the same force
+    # model implementations of the extension, and compare the mean elements after seven
+    # days with the averaged model. The tolerances below quantify the couplings neglected
+    # by the averaged formulation (e.g. short-period drag-density coupling and J₂ × J₃
+    # terms). They were obtained from a reference run with a 2x margin.
+    ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
+
+    duration = 7 * 86400.0
+    F107     = 140.0
+    Ap       = 15.0
+    mass     = 100.0
+    area     = 1.0
+    C_d      = 2.2
+    C_r      = 1.25
+
+    jd₀ = date_to_jd(2024, 1, 1)
+
+    orb = KeplerianElements(
+        jd₀,
+        EARTH_EQUATORIAL_RADIUS + 500e3,
+        0.001,
+        98.0 |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90.0 |> deg2rad,
+        0.0
+    )
+
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+
+    # == Cowell Reference ==================================================================
+
+    function cowell_dynamics!(du, u, params, t)
+        jd_utc = params.jd₀_utc + t / 86400
+
+        r_tod = u[1:3]
+        v_tod = u[4:6]
+
+        # Frames and third-body positions, following the same procedure of the averaged
+        # dynamics.
+        rsun_mod  = sun_position_mod(jd_utc)
+        rmoon_mod = moon_position_mod(jd_utc, Val(:Vallado))
+        D_tod_mod = r_eci_to_eci(MOD(), jd_utc, TOD(), jd_utc)
+        rsun_tod  = D_tod_mod * rsun_mod
+        rmoon_tod = D_tod_mod * rmoon_mod
+
+        D_pef_tod = r_eci_to_ecef(TOD(), PEF(), jd_utc)
+        D_tod_pef = D_pef_tod'
+        ω_pef     = @SVector [0.0, 0.0, EARTH_ANGULAR_SPEED]
+
+        r_pef = D_pef_tod * r_tod
+        v_pef = D_pef_tod * v_tod - ω_pef × r_pef
+
+        # Total gravity: central term plus zonal harmonics up to degree 7, as in the
+        # averaged model.
+        a_grav_pef = GravityModels.gravitational_acceleration(
+            params.gm, r_pef, jd_utc; max_degree = 7, max_order = 0
+        )
+
+        # Atmospheric drag using the same routine and space indices.
+        a_drag_pef = ext._atmospheric_drag_acceleration(
+            jd_utc, r_pef, v_pef, area, mass, C_d; F107 = F107, Ap = Ap
+        )
+
+        # Third-body point masses using the same routine.
+        a_3b_tod = ext._point_mass_acceleration(r_tod, rsun_tod, ext._μ_SUN) +
+            ext._point_mass_acceleration(r_tod, rmoon_tod, ext._μ_MOON)
+
+        # Solar radiation pressure with the same shadow rule.
+        lc = lighting_condition(r_tod, rsun_tod)
+        ν  = lc == :sunlight ? 1.0 : (lc == :penumbra ? 0.5 : 0.0)
+        a_srp_tod = ν * ext._solar_radiation_acceleration(r_tod, rsun_tod, area, mass, C_r)
+
+        a_tod = D_tod_pef * (a_grav_pef + a_drag_pef) + a_3b_tod + a_srp_tod
+
+        du[1:3] .= v_tod
+        du[4:6] .= a_tod
+
+        return nothing
+    end
+
+    r₀, v₀ = kepler_to_rv(orb)
+    u₀     = vcat(Vector(r₀), Vector(v₀))
+    prob   = ODEProblem(cowell_dynamics!, u₀, (0.0, duration), (gm = gm, jd₀_utc = jd₀))
+    sol    = solve(prob, Vern7(); reltol = 1e-11, abstol = 1e-6)
+
+    @test sol.retcode == ReturnCode.Success
+
+    # Convert the final osculating state to mean elements using the same convention of the
+    # extension.
+    rf = sol.u[end][1:3]
+    vf = sol.u[end][4:6]
+    ke_mean, ~ = fit_j2osc_mean_elements(
+        [0.0], [rf], [vf]; max_iterations = 50, verbose = false
+    )
+    M_mean = true_to_mean_anomaly(ke_mean.e, ke_mean.f)
+
+    # == Averaged Model ====================================================================
+
+    df = decay_analysis(
+        orb;
+        satellite_mass      = mass,
+        satellite_mean_area = area,
+        gravity_model       = gm,
+        C_d                 = C_d,
+        C_r                 = C_r,
+        F107                = F107,
+        Ap                  = Ap,
+        tf                  = duration
+    )
+
+    # == Comparison ========================================================================
+
+    wrap(x) = mod(x + π, 2π) - π
+
+    # The averaged model must show significant motion, otherwise the comparison is
+    # meaningless.
+    @test df[end, :semi_major_axis] - df[begin, :semi_major_axis] < -200
+    @test abs(wrap(df[end, :raan] - df[begin, :raan])) > 0.1
+
+    @test abs(df[end, :semi_major_axis] - ke_mean.a)          < 150
+    @test abs(df[end, :eccentricity] - ke_mean.e)             < 2e-5
+    @test abs(wrap(df[end, :inclination] - ke_mean.i))        < 2e-6
+    @test abs(wrap(df[end, :raan] - ke_mean.Ω))               < 4e-4
+    @test abs(wrap(df[end, :argument_of_perigee] - ke_mean.ω)) < 2e-4
+    @test abs(wrap(df[end, :mean_anomaly] - M_mean))          < 2e-2
+end
