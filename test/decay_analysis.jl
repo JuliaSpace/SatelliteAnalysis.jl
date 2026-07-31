@@ -62,6 +62,7 @@ end
     @test metadata(df, "Description") ==
         "Mean orbital element evolution during the orbital decay."
 
+    @test colmetadata(df, :date,             "Unit") == :UTC
     @test colmetadata(df, :time,             "Unit") == :s
     @test colmetadata(df, :f107,             "Unit") == :sfu
     @test colmetadata(df, :ap,               "Unit") == :dimensionless

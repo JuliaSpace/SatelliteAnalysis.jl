@@ -173,6 +173,7 @@ function _decay_analysis(
     )
 
     metadata!(df, "Description", "Mean orbital element evolution during the orbital decay.")
+    colmetadata!(df, :date,             "Unit", :UTC)
     colmetadata!(df, :time,             "Unit", time_unit)
     colmetadata!(df, :f107,             "Unit", :sfu)
     colmetadata!(df, :ap,               "Unit", :dimensionless)
