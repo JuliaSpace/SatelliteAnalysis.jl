@@ -2,11 +2,16 @@ using Test
 
 using LinearAlgebra
 using Logging
+using OrdinaryDiffEq
 using StaticArrays
 using SatelliteAnalysis
 
 @testset "Beta Angle" verbose = true begin
     include("./beta_angle.jl")
+end
+
+@testset "Decay Analysis" verbose = true begin
+    include("./decay_analysis.jl")
 end
 
 @testset "Eclipse Time" verbose = true begin

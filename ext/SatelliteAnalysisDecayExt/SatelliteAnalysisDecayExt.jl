@@ -1,7 +1,7 @@
 module SatelliteAnalysisDecayExt
 
-using DifferentialEquations
 using LinearAlgebra
+using OrdinaryDiffEq
 using SatelliteAnalysis
 using StaticArrays
 
