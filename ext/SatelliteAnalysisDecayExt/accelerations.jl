@@ -114,14 +114,11 @@ function _perturbational_gravity_acceleration(
         max_order = max_order
     )
 
-    # Central term (degree 0, order 0).
-    a_ecef_central = GravityModels.gravitational_acceleration(
-        gm,
-        r_ecef,
-        jd_utc;
-        max_degree = 0,
-        max_order = 0
-    )
+    # Central term (degree 0, order 0), computed analytically as -μ r / r³ to avoid a
+    # second gravity model evaluation.
+    μ  = GravityModels.gravity_constant(gm)
+    r² = dot(r_ecef, r_ecef)
+    a_ecef_central = -μ / (r² * √r²) * r_ecef
 
     # Perturbational acceleration.
     a_ecef_pert = a_ecef_total - a_ecef_central
