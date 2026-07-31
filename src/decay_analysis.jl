@@ -47,6 +47,9 @@ by the Earth shadow.
     (**Default**: 2.2)
 - `C_r::Number`: Solar radiation pressure coefficient [-].
     (**Default**: 1.25)
+- `distance_unit::Symbol`: Unit of the altitude columns in the output `DataFrame`. It can
+    be `:m` for meters or `:km` for kilometers.
+    (**Default**: `:m`)
 - `F107::Union{Nothing, Number}`: 10.7 cm solar flux index. If it is `nothing`, the value
     is obtained from the initialized space indices at each instant.
     (**Default**: `nothing`)
@@ -58,18 +61,22 @@ by the Earth shadow.
     (**Default**: 120e3)
 - `tf::Number`: Maximum propagation time [s] after the orbit epoch.
     (**Default**: `30 * 365.25 * 86400`, or 30 years)
+- `time_unit::Symbol`: Unit of the column `time` in the output `DataFrame`. It can be `:s`
+    for seconds, `:m` for minutes, `:h` for hours, or `:d` for days.
+    (**Default**: `:s`)
 
 # Returns
 
 - `DataFrame`: The mean orbital element evolution during the decay with the columns:
     - `date`: Date and time of each point [UTC] encoded using `DateTime`.
-    - `time`: Elapsed time of each point since the beginning of the analysis [s].
+    - `time`: Elapsed time of each point since the beginning of the analysis
+        [`time_unit`].
     - `f107`: 10.7 cm solar flux index used by the dynamics at each point [sfu].
     - `ap`: Geomagnetic index used by the dynamics at each point [-].
     - `mean_elements`: Mean Keplerian elements encoded using `KeplerianElements` [SI],
         where the epoch is the point date [UTC].
-    - `apogee_altitude`: Mean apogee altitude [m].
-    - `perigee_altitude`: Mean perigee altitude [m].
+    - `apogee_altitude`: Mean apogee altitude [`distance_unit`].
+    - `perigee_altitude`: Mean perigee altitude [`distance_unit`].
     The unit of each column is stored in the `DataFrame` using metadata. If the keyword
     `return_solution` is `true`, the function returns a tuple with the `DataFrame` and the
     raw `ODESolution`.
@@ -109,6 +116,6 @@ julia> df[end, :date]  # ................................... Estimation of the d
 2024-02-01T07:53:26.628
 ```
 """
-function decay_analysis(::Any)
-    error("Load OrdinaryDiffEq.jl to use `decay_analysis`.")
+function decay_analysis(::Any; kwargs...)
+    return error("Load OrdinaryDiffEq.jl to use `decay_analysis`.")
 end

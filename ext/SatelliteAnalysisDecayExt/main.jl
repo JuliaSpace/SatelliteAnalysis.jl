@@ -15,10 +15,12 @@ function SatelliteAnalysis.decay_analysis(
     Ap::Union{Nothing, Number} = nothing,
     C_d::Number = 2.2,
     C_r::Number = 1.25,
+    distance_unit::Symbol = :m,
     F107::Union{Nothing, Number} = nothing,
     return_solution::Bool = false,
     terminate_altitude::Number = 120e3,
     tf::Number = 30 * 365.25 * 86400.0,
+    time_unit::Symbol = :s,
 )
     gm = isnothing(gravity_model) ?
         GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008)) :
@@ -36,10 +38,12 @@ function SatelliteAnalysis.decay_analysis(
         Ap                            = Ap,
         C_d                           = C_d,
         C_r                           = C_r,
+        distance_unit                 = distance_unit,
         F107                          = F107,
         return_solution               = return_solution,
         terminate_altitude            = terminate_altitude,
-        tf                            = tf
+        tf                            = tf,
+        time_unit                     = time_unit
     )
 end
 
@@ -56,10 +60,12 @@ function _decay_analysis(
     Ap::Union{Nothing, Number},
     C_d::Number,
     C_r::Number,
+    distance_unit::Symbol,
     F107::Union{Nothing, Number},
     return_solution::Bool,
     terminate_altitude::Number,
     tf::Number,
+    time_unit::Symbol,
 )
     M = true_to_mean_anomaly(orb.e, orb.f)
     ā, ē, ī, Ω̄, ω̄, M̄ = _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M)
@@ -136,6 +142,26 @@ function _decay_analysis(
         perigee_altitude[k] = aₖ * (1 - eₖ) - EARTH_EQUATORIAL_RADIUS
     end
 
+    # Convert the time and altitude columns to the selected units.
+    if time_unit == :m
+        time ./= 60
+    elseif time_unit == :h
+        time ./= 3600
+    elseif time_unit == :d
+        time ./= 86400
+    else
+        # If the symbol is not known, we must use seconds.
+        time_unit = :s
+    end
+
+    if distance_unit == :km
+        apogee_altitude  ./= 1000
+        perigee_altitude ./= 1000
+    else
+        # If the symbol is not known, we must use meters.
+        distance_unit = :m
+    end
+
     df = DataFrame(;
         date             = date,
         time             = time,
@@ -147,12 +173,12 @@ function _decay_analysis(
     )
 
     metadata!(df, "Description", "Mean orbital element evolution during the orbital decay.")
-    colmetadata!(df, :time,             "Unit", :s)
+    colmetadata!(df, :time,             "Unit", time_unit)
     colmetadata!(df, :f107,             "Unit", :sfu)
     colmetadata!(df, :ap,               "Unit", :dimensionless)
     colmetadata!(df, :mean_elements,    "Unit", :SI)
-    colmetadata!(df, :apogee_altitude,  "Unit", :m)
-    colmetadata!(df, :perigee_altitude, "Unit", :m)
+    colmetadata!(df, :apogee_altitude,  "Unit", distance_unit)
+    colmetadata!(df, :perigee_altitude, "Unit", distance_unit)
 
     return_solution && return df, sol
 

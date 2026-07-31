@@ -109,6 +109,45 @@ end
     @test df_200 isa DataFrame
     @test df_200[end, :perigee_altitude] ≈ 200e3 atol = 1e-3
     @test df_200[end, :date] < df[end, :date]
+
+    # == Keywords time_unit and distance_unit =============================================
+
+    df_u = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        F107                = 140.0,
+        Ap                  = 15.0,
+        distance_unit       = :km,
+        time_unit           = :d
+    )
+
+    @test df_u.time             ≈ df.time ./ 86400
+    @test df_u.apogee_altitude  ≈ df.apogee_altitude ./ 1000
+    @test df_u.perigee_altitude ≈ df.perigee_altitude ./ 1000
+
+    @test colmetadata(df_u, :time,             "Unit") == :d
+    @test colmetadata(df_u, :apogee_altitude,  "Unit") == :km
+    @test colmetadata(df_u, :perigee_altitude, "Unit") == :km
+
+    # Unknown unit symbols must fall back to the defaults.
+    df_f = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        F107                = 140.0,
+        Ap                  = 15.0,
+        distance_unit       = :unknown,
+        time_unit           = :unknown
+    )
+
+    @test df_f.time             ≈ df.time
+    @test df_f.perigee_altitude ≈ df.perigee_altitude
+    @test colmetadata(df_f, :time,             "Unit") == :s
+    @test colmetadata(df_f, :apogee_altitude,  "Unit") == :m
+    @test colmetadata(df_f, :perigee_altitude, "Unit") == :m
 end
 
 @testset "Validation Against a Cowell Reference" begin
