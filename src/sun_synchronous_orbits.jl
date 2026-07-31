@@ -95,7 +95,7 @@ function design_sun_sync_ground_repeating_orbit(
     pretty_rev_per_days = _resolve_pretty_rev_per_days(
         pretty_rev_per_days, pretify_rev_per_days
     )
-    R₀ = EARTH_EQUATORIAL_RADIUS
+    R₀ = float(R0)
     e = eccentricity
 
     # Check if the inputs are valid.
@@ -904,7 +904,7 @@ function sun_sync_orbit_inclination(
     R0::Number = EARTH_EQUATORIAL_RADIUS,
 ) where {T1 <: Number, T2 <: Number}
     T = float(promote_type(T1, T2))
-    R₀ = T(EARTH_EQUATORIAL_RADIUS)
+    R₀ = T(R0)
     rs_to_dd = T(86400 * 180 / π)
 
     # Check if the arguments are valid.
