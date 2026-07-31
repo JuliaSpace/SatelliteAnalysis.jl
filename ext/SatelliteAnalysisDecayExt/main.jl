@@ -19,15 +19,50 @@ function SatelliteAnalysis.decay_analysis(
     terminate_altitude::Number = 120e3,
     tf::Number = 30 * 365.25 * 86400.0,
 )
+    gm = isnothing(gravity_model) ?
+        GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008)) :
+        gravity_model
+
+    # The keyword `gravity_model` is abstractly typed. This function barrier ensures the
+    # gravity model is concretely typed inside the numerical integration, avoiding dynamic
+    # dispatch at every right-hand-side evaluation.
+    return _decay_analysis(
+        orb,
+        gm;
+        satellite_mass                = satellite_mass,
+        satellite_mean_area           = satellite_mean_area,
+        num_sampling_points_per_orbit = num_sampling_points_per_orbit,
+        Ap                            = Ap,
+        C_d                           = C_d,
+        C_r                           = C_r,
+        F107                          = F107,
+        terminate_altitude            = terminate_altitude,
+        tf                            = tf
+    )
+end
+
+############################################################################################
+#                                    Private Functions                                     #
+############################################################################################
+
+function _decay_analysis(
+    orb::KeplerianElements,
+    gm::AbstractGravityModel;
+    satellite_mass::Number,
+    satellite_mean_area::Number,
+    num_sampling_points_per_orbit::Int,
+    Ap::Union{Nothing, Number},
+    C_d::Number,
+    C_r::Number,
+    F107::Union{Nothing, Number},
+    terminate_altitude::Number,
+    tf::Number,
+)
     M = true_to_mean_anomaly(orb.e, orb.f)
     ā, ē, ī, Ω̄, ω̄, M̄ = _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M)
     u = Vector(_classical_to_equinoctial(ā, ē, ī, Ω̄, ω̄, M̄))
 
     tspan = (0.0, tf)
-
-    gm = isnothing(gravity_model) ?
-        GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008)) :
-        gravity_model
 
     params = (
         satellite_mean_area           = satellite_mean_area,
@@ -57,10 +92,6 @@ function SatelliteAnalysis.decay_analysis(
 
     return sol
 end
-
-############################################################################################
-#                                    Private Functions                                     #
-############################################################################################
 
 function _cb_altitude_condition(u, t, integrator)
     a_mean, e_mean, i_mean, Ω_mean, ω_mean, M_mean = _equinoctial_to_classical(u)
