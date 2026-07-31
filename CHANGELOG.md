@@ -1,6 +1,23 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.4.0
+-------------
+
+- ![Feature][badge-feature] We added the function `decay_analysis` to estimate the orbital
+  decay lifetime of a satellite considering averaged perturbations (zonal harmonics with a
+  J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the
+  Earth shadow). The analysis is available when OrdinaryDiffEq.jl is loaded and returns a
+  `DataFrame` with the mean orbital element evolution. (PR [#16][gh-pr-16])
+- ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
+  `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
+  functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were
+  ignoring the keyword `R0` in part of the algorithm.
+- ![Enhancement][badge-enhancement] We removed an allocation proportional to the analysis
+  duration in `ground_track`.
+- ![Info][badge-info] We fixed several typos and documentation errors, including wrong
+  documented keyword defaults and signatures.
+
 Version 0.3.10
 --------------
 
@@ -115,3 +132,4 @@ Version 0.1.0
 [gh-pr-5]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/pull/5
 [gh-pr-9]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/pull/9
 [gh-pr-10]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/pull/10
+[gh-pr-16]: https://github.com/JuliaSpace/SatelliteAnalysis.jl/pull/16
