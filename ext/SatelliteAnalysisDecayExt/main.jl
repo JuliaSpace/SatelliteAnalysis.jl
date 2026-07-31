@@ -15,12 +15,12 @@ function SatelliteAnalysis.decay_analysis(
     Ap::Union{Nothing, Number} = nothing,
     C_d::Number = 2.2,
     C_r::Number = 1.25,
-    distance_unit::Symbol = :m,
+    distance_unit::Symbol = :km,
     F107::Union{Nothing, Number} = nothing,
     return_solution::Bool = false,
     terminate_altitude::Number = 120e3,
     tf::Number = 30 * 365.25 * 86400.0,
-    time_unit::Symbol = :s,
+    time_unit::Symbol = :y,
 )
     gm = isnothing(gravity_model) ?
         GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008)) :
@@ -149,20 +149,18 @@ function _decay_analysis(
         time ./= 3600
     elseif time_unit == :d
         time ./= 86400
-    elseif time_unit == :y
-        # Julian year, consistent with the default `tf` of 30 years.
+    elseif time_unit != :s
+        # Julian year, consistent with the default `tf` of 30 years. If the symbol is not
+        # known, we must use the default unit (years).
         time ./= 365.25 * 86400
-    else
-        # If the symbol is not known, we must use seconds.
-        time_unit = :s
+        time_unit = :y
     end
 
-    if distance_unit == :km
+    if distance_unit != :m
+        # If the symbol is not known, we must use the default unit (kilometers).
         apogee_altitude  ./= 1000
         perigee_altitude ./= 1000
-    else
-        # If the symbol is not known, we must use meters.
-        distance_unit = :m
+        distance_unit = :km
     end
 
     df = DataFrame(;

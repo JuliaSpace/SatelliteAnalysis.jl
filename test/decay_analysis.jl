@@ -63,12 +63,12 @@ end
         "Mean orbital element evolution during the orbital decay."
 
     @test colmetadata(df, :date,             "Unit") == :UTC
-    @test colmetadata(df, :time,             "Unit") == :s
+    @test colmetadata(df, :time,             "Unit") == :y
     @test colmetadata(df, :f107,             "Unit") == :sfu
     @test colmetadata(df, :ap,               "Unit") == :dimensionless
     @test colmetadata(df, :mean_elements,    "Unit") == :SI
-    @test colmetadata(df, :apogee_altitude,  "Unit") == :m
-    @test colmetadata(df, :perigee_altitude, "Unit") == :m
+    @test colmetadata(df, :apogee_altitude,  "Unit") == :km
+    @test colmetadata(df, :perigee_altitude, "Unit") == :km
 
     # == Values ============================================================================
 
@@ -77,7 +77,7 @@ end
     # The analysis must start at the orbit epoch.
     @test df[begin, :date] == julian2datetime(jd₀)
     @test df[begin, :time] == 0.0
-    @test df[end,   :time] ≈ (datetime2julian(df[end, :date]) - jd₀) * 86400 atol = 1e-3
+    @test df[end,   :time] ≈ (datetime2julian(df[end, :date]) - jd₀) / 365.25 atol = 1e-8
 
     # The space indices provided by the user must be recorded in the output.
     @test all(df.f107 .== 140.0)
@@ -89,7 +89,7 @@ end
     @test all(df.apogee_altitude .>= df.perigee_altitude)
 
     # The termination must happen when the mean perigee altitude reaches 120 km.
-    @test df[end, :perigee_altitude] ≈ 120e3 atol = 1e-3
+    @test df[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
 
     # Regression test for the estimated lifetime.
     lifetime = datetime2julian(df[end, :date]) - jd₀
@@ -108,7 +108,7 @@ end
     )
 
     @test df_200 isa DataFrame
-    @test df_200[end, :perigee_altitude] ≈ 200e3 atol = 1e-3
+    @test df_200[end, :perigee_altitude] ≈ 200.0 atol = 1e-6
     @test df_200[end, :date] < df[end, :date]
 
     # == Keywords time_unit and distance_unit =============================================
@@ -120,32 +120,32 @@ end
         gravity_model       = gm,
         F107                = 140.0,
         Ap                  = 15.0,
-        distance_unit       = :km,
-        time_unit           = :d
+        distance_unit       = :m,
+        time_unit           = :s
     )
 
-    @test df_u.time             ≈ df.time ./ 86400
-    @test df_u.apogee_altitude  ≈ df.apogee_altitude ./ 1000
-    @test df_u.perigee_altitude ≈ df.perigee_altitude ./ 1000
+    @test df_u.time             ≈ df.time .* (365.25 * 86400)
+    @test df_u.apogee_altitude  ≈ df.apogee_altitude .* 1000
+    @test df_u.perigee_altitude ≈ df.perigee_altitude .* 1000
 
-    @test colmetadata(df_u, :time,             "Unit") == :d
-    @test colmetadata(df_u, :apogee_altitude,  "Unit") == :km
-    @test colmetadata(df_u, :perigee_altitude, "Unit") == :km
+    @test colmetadata(df_u, :time,             "Unit") == :s
+    @test colmetadata(df_u, :apogee_altitude,  "Unit") == :m
+    @test colmetadata(df_u, :perigee_altitude, "Unit") == :m
 
-    df_y = decay_analysis(
+    df_d = decay_analysis(
         orb;
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         F107                = 140.0,
         Ap                  = 15.0,
-        time_unit           = :y
+        time_unit           = :d
     )
 
-    @test df_y.time ≈ df.time ./ (365.25 * 86400)
-    @test colmetadata(df_y, :time, "Unit") == :y
+    @test df_d.time ≈ df.time .* 365.25
+    @test colmetadata(df_d, :time, "Unit") == :d
 
-    # Unknown unit symbols must fall back to the defaults.
+    # Unknown unit symbols must fall back to the defaults (years and kilometers).
     df_f = decay_analysis(
         orb;
         satellite_mass      = 100.0,
@@ -159,9 +159,9 @@ end
 
     @test df_f.time             ≈ df.time
     @test df_f.perigee_altitude ≈ df.perigee_altitude
-    @test colmetadata(df_f, :time,             "Unit") == :s
-    @test colmetadata(df_f, :apogee_altitude,  "Unit") == :m
-    @test colmetadata(df_f, :perigee_altitude, "Unit") == :m
+    @test colmetadata(df_f, :time,             "Unit") == :y
+    @test colmetadata(df_f, :apogee_altitude,  "Unit") == :km
+    @test colmetadata(df_f, :perigee_altitude, "Unit") == :km
 end
 
 @testset "Validation Against a Cowell Reference" begin

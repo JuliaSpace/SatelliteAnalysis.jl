@@ -49,7 +49,7 @@ by the Earth shadow.
     (**Default**: 1.25)
 - `distance_unit::Symbol`: Unit of the altitude columns in the output `DataFrame`. It can
     be `:m` for meters or `:km` for kilometers.
-    (**Default**: `:m`)
+    (**Default**: `:km`)
 - `F107::Union{Nothing, Number}`: 10.7 cm solar flux index. If it is `nothing`, the value
     is obtained from the initialized space indices at each instant.
     (**Default**: `nothing`)
@@ -64,7 +64,7 @@ by the Earth shadow.
 - `time_unit::Symbol`: Unit of the column `time` in the output `DataFrame`. It can be `:s`
     for seconds, `:m` for minutes, `:h` for hours, `:d` for days, or `:y` for Julian years
     (365.25 days).
-    (**Default**: `:s`)
+    (**Default**: `:y`)
 
 # Returns
 
