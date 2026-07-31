@@ -17,6 +17,10 @@ Version 0.4.0
   duration in `ground_track`.
 - ![Info][badge-info] We fixed several typos and documentation errors, including wrong
   documented keyword defaults and signatures.
+- ![Enhancement][badge-enhancement] We highly improved the `decay_analysis` performance
+  (about 20x) by tuning the default integrator configuration for lifetime estimation and
+  reducing the cost of the right-hand side. The integrator can now be configured through
+  the keywords `solver`, `reltol`, and `abstol`.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 
