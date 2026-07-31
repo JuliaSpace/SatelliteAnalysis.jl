@@ -42,8 +42,8 @@ where `y = [a, e, i, Ω, ω, M]`, `p = [u_r, u_θ, u_h]`.
 
 # Returns
 
-- `A::Matrix{Float64}`: 6x3 matrix multiplying perturbation vector `[u_r, u_θ, u_h]`.
-- `B::Vector{Float64}`: Constant vector `[0, 0, 0, 0, 0, n]`.
+- `SMatrix{6, 3, T}`: Matrix `A` multiplying the perturbation vector `[u_r, u_θ, u_h]`.
+- `SVector{6, T}`: Constant vector `B = [0, 0, 0, 0, 0, n]`.
 
 # Extended help
 
@@ -88,7 +88,7 @@ function _gauss_variational_matrices(
         (η_o_he * (p * cos_f - 2re))  (-η_o_he * psr * sin_f)   0
     ]
 
-    B = T[0, 0, 0, 0, 0, n]
+    B = @SVector T[0, 0, 0, 0, 0, n]
 
     return A, B
 end
