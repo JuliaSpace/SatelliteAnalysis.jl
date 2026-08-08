@@ -129,7 +129,7 @@ julia> df = decay_analysis(
            Ap = 15
        );
 
-julia> df[end, :date]  # ................................... Estimation of the decay epoch
+julia> df[end, :date]  # ..................................... Estimation of the decay epoch
 2024-02-01T07:12:53.537
 ```
 """
