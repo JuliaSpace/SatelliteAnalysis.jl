@@ -9,6 +9,10 @@ Version 0.4.0
   J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the
   Earth shadow). The analysis is available when OrdinaryDiffEq.jl is loaded and returns a
   `DataFrame` with the mean orbital element evolution. (PR [#16][gh-pr-16])
+- ![Feature][badge-feature] We added a Makie theme extension, moved from
+  **SatelliteToolbox.jl**, where it was never released. Loading a Makie backend together
+  with **SatelliteAnalysis.jl** provides the functions `makie_theme` and `makie_palette`,
+  which style plots with coordinated dark and light variants using bundled IBM Plex fonts.
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were

@@ -2,6 +2,7 @@ using Test
 
 using LinearAlgebra
 using Logging
+using Makie
 using OrdinaryDiffEq
 using StaticArrays
 using SatelliteAnalysis
@@ -33,6 +34,10 @@ end
 
 @testset "Lighting Condition" verbose = true begin
     include("./lighting_condition.jl")
+end
+
+@testset "Makie Theme" verbose = true begin
+    include("./makie_theme.jl")
 end
 
 @testset "Miscellaneous" verbose = true begin
