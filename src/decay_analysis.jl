@@ -21,7 +21,11 @@ by the Earth shadow.
 
 !!! warning
 
-    This function **only works** after loading the package **OrdinaryDiffEq.jl**.
+    This function **only works** after loading the package
+    **OrdinaryDiffEqAdamsBashforthMoulton.jl**, which provides the default solver `VCABM`.
+    Loading **OrdinaryDiffEq.jl** v6 also works because it depends on that package, but
+    **OrdinaryDiffEq.jl** v7 or newer does not. In this case, the package
+    **OrdinaryDiffEqAdamsBashforthMoulton.jl** must be loaded explicitly.
 
 !!! note
 
@@ -69,10 +73,13 @@ by the Earth shadow.
 - `reltol::Number`: Relative tolerance of the numerical integration.
     (**Default**: 1e-6)
 - `return_solution::Bool`: If `true`, the function also returns the raw solution of the
-    numerical integration (see `OrdinaryDiffEq.ODESolution`), whose state vector is the
+    numerical integration (see `SciMLBase.ODESolution`), whose state vector is the
     equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`.
     (**Default**: `false`)
-- `solver`: Solver from **OrdinaryDiffEq.jl** used for the numerical integration.
+- `solver`: Solver from the **OrdinaryDiffEq.jl** ecosystem used for the numerical
+    integration. Notice that the user must load the package that provides the selected
+    solver (for example, `Tsit5` requires **OrdinaryDiffEqTsit5.jl** or
+    **OrdinaryDiffEq.jl**).
     (**Default**: `VCABM()`)
 - `terminate_altitude::Number`: Mean perigee altitude [m] that terminates the analysis.
     (**Default**: 120e3)
@@ -113,7 +120,7 @@ epoch estimation.
 ## Examples
 
 ```julia-repl
-julia> using SatelliteAnalysis, OrdinaryDiffEq
+julia> using SatelliteAnalysis, OrdinaryDiffEqAdamsBashforthMoulton
 
 julia> jd₀ = date_to_jd(2024, 1, 1);
 
@@ -140,5 +147,5 @@ julia> df[end, :date]  # ..................................... Estimation of the
 ```
 """
 function decay_analysis(::Any; kwargs...)
-    return error("Load OrdinaryDiffEq.jl to use `decay_analysis`.")
+    return error("Load OrdinaryDiffEqAdamsBashforthMoulton.jl to use `decay_analysis`.")
 end

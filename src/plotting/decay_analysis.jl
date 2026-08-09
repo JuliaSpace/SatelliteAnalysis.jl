@@ -62,7 +62,7 @@ All other `kwargs...` are passed to the function `Figure`.
 ## Examples
 
 ```julia-repl
-julia> using SatelliteAnalysis, OrdinaryDiffEq, CairoMakie
+julia> using SatelliteAnalysis, OrdinaryDiffEqAdamsBashforthMoulton, CairoMakie
 
 julia> jd₀ = date_to_jd(2024, 1, 1);
 

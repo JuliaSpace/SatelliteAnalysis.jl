@@ -46,6 +46,12 @@ Version 0.4.0
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to
   `SatelliteAnalysisGeoMakieExt` since it only requires **GeoMakie.jl**. Extension names
   are not public API, so this change is internal.
+- ![Info][badge-info] The decay analysis extension is now triggered by the package
+  **OrdinaryDiffEqAdamsBashforthMoulton.jl**, which provides the default solver `VCABM`,
+  adding support for **OrdinaryDiffEq.jl** v7, where this solver is no longer bundled.
+  Loading **OrdinaryDiffEq.jl** v6 still activates the extension because it depends on
+  that package, but users of **OrdinaryDiffEq.jl** v7 or newer must load
+  **OrdinaryDiffEqAdamsBashforthMoulton.jl** explicitly.
 
 Version 0.3.10
 --------------
