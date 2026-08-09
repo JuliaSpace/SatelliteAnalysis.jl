@@ -4,10 +4,8 @@
 #
 ############################################################################################
 
-export makie_palette, makie_theme
-
 """
-    makie_palette(n::Int; kwargs...) -> Vector{Colorant}
+    SatelliteAnalysis.makie_palette(n::Int; kwargs...) -> Vector{Colorant}
 
 Return the first `n` colors of the 6-color categorical palette used by the
 SatelliteAnalysis.jl Makie theme.
@@ -16,6 +14,8 @@ SatelliteAnalysis.jl Makie theme.
 
     This function is defined in a package extension. Hence, Makie.jl must be loaded (e.g.,
     `using CairoMakie`) before calling it, otherwise it throws an `ErrorException`.
+
+    This function is not exported. Access it as `SatelliteAnalysis.makie_palette`.
 
 See also: [`makie_theme`](@ref)
 
@@ -37,14 +37,14 @@ function makie_palette(::Any; kwargs...)
     return error(
         "The function `makie_palette` is provided by a package extension. Load Makie.jl " *
         "(e.g., `using CairoMakie`) to use it. If Makie.jl is already loaded, check the " *
-        "arguments: the valid call is `makie_palette(n::Int; kwargs...)`."
+        "arguments: the valid call is `SatelliteAnalysis.makie_palette(n::Int; kwargs...)`."
     )
 end
 
 """
-    makie_theme(; kwargs...) -> Makie.Theme
-    makie_theme(variant::Symbol; kwargs...) -> Makie.Theme
-    makie_theme(variant::Val; kwargs...) -> Makie.Theme
+    SatelliteAnalysis.makie_theme(; kwargs...) -> Makie.Theme
+    SatelliteAnalysis.makie_theme(variant::Symbol; kwargs...) -> Makie.Theme
+    SatelliteAnalysis.makie_theme(variant::Val; kwargs...) -> Makie.Theme
 
 Return the SatelliteAnalysis.jl Makie theme, ready to be applied with `set_theme!` or
 `with_theme`.
@@ -57,6 +57,8 @@ is returned.
 
     This function is defined in a package extension. Hence, Makie.jl must be loaded (e.g.,
     `using CairoMakie`) before calling it, otherwise it throws an `ErrorException`.
+
+    This function is not exported. Access it as `SatelliteAnalysis.makie_theme`.
 
 See also: [`makie_palette`](@ref)
 
@@ -98,7 +100,7 @@ function makie_theme(::Any; kwargs...)
     return error(
         "The function `makie_theme` is provided by a package extension. Load Makie.jl " *
         "(e.g., `using CairoMakie`) to use it. If Makie.jl is already loaded, check the " *
-        "arguments: the valid calls are `makie_theme()`, `makie_theme(:dark)`, and " *
-        "`makie_theme(:light)`."
+        "arguments: the valid calls are `SatelliteAnalysis.makie_theme()`, " *
+        "`SatelliteAnalysis.makie_theme(:dark)`, and `SatelliteAnalysis.makie_theme(:light)`."
     )
 end

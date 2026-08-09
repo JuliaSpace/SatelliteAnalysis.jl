@@ -15,20 +15,22 @@ using SatelliteAnalysis
 ```
 
 Two functions compose the API (see the [Library](@ref) page for the complete
-documentation):
+documentation). They are not exported and must be accessed through the package name:
 
-- [`makie_theme`](@ref): return the theme, ready for `set_theme!` or `with_theme`.
-- [`makie_palette`](@ref): return the first `n` colors of the categorical palette.
+- [`SatelliteAnalysis.makie_theme`](@ref): return the theme, ready for `set_theme!` or
+    `with_theme`.
+- [`SatelliteAnalysis.makie_palette`](@ref): return the first `n` colors of the categorical
+    palette.
 
 ## Quick Start
 
 Apply the theme globally with `set_theme!` or locally with `with_theme`:
 
 ```julia
-set_theme!(makie_theme())        # Light variant (default).
-set_theme!(makie_theme(:dark))   # Dark variant.
+set_theme!(SatelliteAnalysis.makie_theme())        # Light variant (default).
+set_theme!(SatelliteAnalysis.makie_theme(:dark))   # Dark variant.
 
-with_theme(makie_theme(:dark)) do
+with_theme(SatelliteAnalysis.makie_theme(:dark)) do
     scatter(rand(100))
 end
 ```
@@ -74,7 +76,7 @@ function overview_figure(; dark::Bool)
     x, ys  = line_data()
     sx, sy = scatter_data()
     bx, by = bar_data()
-    pal    = makie_palette(6; dark = dark)
+    pal    = SatelliteAnalysis.makie_palette(6; dark = dark)
 
     fig = Figure(size = (1280, 760))
 
@@ -111,7 +113,7 @@ nothing # hide
 ### Light Variant
 
 ```@example makie_theme
-with_theme(makie_theme()) do
+with_theme(SatelliteAnalysis.makie_theme()) do
     overview_figure(dark = false)
 end
 ```
@@ -119,7 +121,7 @@ end
 ### Dark Variant
 
 ```@example makie_theme
-with_theme(makie_theme(:dark)) do
+with_theme(SatelliteAnalysis.makie_theme(:dark)) do
     overview_figure(dark = true)
 end
 ```
@@ -127,7 +129,7 @@ end
 ### Heatmap and Colorbar
 
 ```@example makie_theme
-with_theme(makie_theme(:dark)) do
+with_theme(SatelliteAnalysis.makie_theme(:dark)) do
     x, y, z = heatmap_data()
 
     fig = Figure(size = (760, 600))
@@ -147,7 +149,7 @@ The keyword `fontscale` uniformly scales every font size (tick labels, axis labe
 legends, etc.). It is useful when a figure is shrunk into a small slide area:
 
 ```@example makie_theme
-with_theme(makie_theme(:dark; fontscale = 1.4)) do
+with_theme(SatelliteAnalysis.makie_theme(:dark; fontscale = 1.4)) do
     x, ys = line_data(; nseries = 2)
 
     fig = Figure(size = (900, 520))
@@ -173,7 +175,7 @@ Mono. The fixed-width digits keep numeric ticks vertically aligned, which is use
 plots dominated by numbers:
 
 ```@example makie_theme
-with_theme(makie_theme(:dark; mono_ticklabels = true)) do
+with_theme(SatelliteAnalysis.makie_theme(:dark; mono_ticklabels = true)) do
     years  = 2000:2:2026
     values = 1.0e6 .* (1.03) .^ (0:(length(years) - 1))
 
@@ -193,13 +195,13 @@ end
 
 ## Palette
 
-The function [`makie_palette`](@ref) returns the first `n` colors of the 6-color
-categorical palette, matching the theme variant selected by the keyword `dark`:
+The function [`SatelliteAnalysis.makie_palette`](@ref) returns the first `n` colors of the
+6-color categorical palette, matching the theme variant selected by the keyword `dark`:
 
 ```@example makie_theme
-with_theme(makie_theme(:dark)) do
-    dark  = makie_palette(6; dark = true)
-    light = makie_palette(6)
+with_theme(SatelliteAnalysis.makie_theme(:dark)) do
+    dark  = SatelliteAnalysis.makie_palette(6; dark = true)
+    light = SatelliteAnalysis.makie_palette(6)
 
     fig = Figure(size = (900, 300))
     ax  = Axis(fig[1, 1]; title = "Categorical palette")
