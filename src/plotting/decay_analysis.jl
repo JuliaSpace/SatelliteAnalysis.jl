@@ -15,6 +15,8 @@ refer to **Makie.jl** documentation.
 
 The figure shows the evolution of the mean apogee and perigee altitudes and an information
 panel with the satellite mass, the satellite mean area, and the estimated time to reenter.
+The legend is placed outside the plot, at the bottom of the column that contains the
+information panel.
 The latter is only shown if the analysis detected a reentry, _i.e._, if the mean perigee
 altitude reached the terminate altitude. The satellite mass [kg], the satellite mean area
 [m²], and the terminate altitude [m] are obtained from the `DataFrame` metadata written by
@@ -43,8 +45,9 @@ is omitted from the panel.
     `Satellite Mean Area` of `df`.
     (**Default**: `nothing`)
 - `show_f107::Bool`: If `true`, the 10.7 cm solar flux index in the column `f107` of `df`
-    is plotted [sfu] using a twin y-axis placed at the right side of the figure. The twin
-    y-axis ticks are aligned with the grid of the main axis.
+    is plotted [sfu] using a twin y-axis placed at the right side of the figure. The line
+    is rendered with transparency below the other plot elements, and the twin y-axis ticks
+    use canonical values aligned with the grid of the main axis.
     (**Default**: `false`)
 - `show_reentry_date::Bool`: If `true`, the estimated reentry date [UTC] is shown in the
     information panel below the time to reenter. Otherwise, only the timespan is shown.

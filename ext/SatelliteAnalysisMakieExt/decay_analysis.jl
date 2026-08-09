@@ -112,15 +112,48 @@ function SatelliteAnalysis.plot_decay_analysis(
     return with_theme(sa_theme) do
         fig = Figure(; size = size, kwargs...)
 
+        legend_plots  = Any[]
+        legend_labels = String[]
+
+        # == F10.7 Twin Y Axis =============================================================
+
+        # The twin axis must be created before the main axis so that the F10.7 line is
+        # rendered below all the main axis elements. Hence, it keeps the default axis
+        # background, whereas the main axis background is made transparent.
+        ax_f107   = nothing
+        f107_line = nothing
+
+        if show_f107
+            ax_f107 = Axis(
+                fig[1, 1];
+                yaxisposition     = :right,
+                ygridvisible      = false,
+                ylabel            = "F10.7 [sfu]",
+                yminorgridvisible = false,
+            )
+
+            hidexdecorations!(ax_f107)
+
+            f107_line = lines!(
+                ax_f107,
+                df.time,
+                df.f107;
+                color     = (f107_color, 0.5),
+                linewidth = 1.5,
+            )
+        end
+
+        # == Main Axis =====================================================================
+
+        main_axis_background = show_f107 ? (; backgroundcolor = :transparent) : (;)
+
         ax = Axis(
             fig[1, 1];
             title  = "Orbital Decay Analysis",
             xlabel = "Time [$time_unit]",
             ylabel = "Altitude [$distance_unit]",
+            main_axis_background...
         )
-
-        legend_plots  = Any[]
-        legend_labels = String[]
 
         push!(legend_plots, lines!(ax, df.time, df.apogee_altitude))
         push!(legend_labels, "Apogee Altitude")
@@ -142,62 +175,44 @@ function SatelliteAnalysis.plot_decay_analysis(
             push!(legend_labels, "Reentry")
         end
 
-        # == F10.7 Twin Y Axis =============================================================
-
         if show_f107
-            # The background must be transparent, otherwise the twin axis hides the plots
-            # of the main axis.
-            ax_f107 = Axis(
-                fig[1, 1];
-                backgroundcolor   = :transparent,
-                yaxisposition     = :right,
-                ygridvisible      = false,
-                ylabel            = "F10.7 [sfu]",
-                yminorgridvisible = false,
-            )
-
-            hidexdecorations!(ax_f107)
-            linkxaxes!(ax, ax_f107)
-
-            f107_line = lines!(
-                ax_f107,
-                df.time,
-                df.f107;
-                color     = (f107_color, 0.85),
-                linewidth = 1.5,
-            )
-
             push!(legend_plots, f107_line)
             push!(legend_labels, "F10.7")
 
-            # Fix the twin axis limits using the same margin applied by the Makie
-            # automatic limits.
+            linkxaxes!(ax, ax_f107)
+
+            # Align the twin axis ticks with the main axis grid using canonical values,
+            # keeping them aligned if the main axis limits or ticks change.
             f107_min, f107_max = extrema(df.f107)
-            f107_pad = f107_max > f107_min ?
-                0.05 * (f107_max - f107_min) :
-                max(0.05 * abs(f107_max), 1.0)
 
-            f107_lo = f107_min - f107_pad
-            f107_hi = f107_max + f107_pad
-
-            ylims!(ax_f107, f107_lo, f107_hi)
-
-            # Align the twin axis ticks with the main axis grid, keeping them aligned if
-            # the main axis limits or ticks change.
             onany(ax.finallimits, ax.yaxis.tickvalues) do main_limits, main_tickvalues
-                _align_twin_yticks!(ax_f107, main_limits, main_tickvalues, f107_lo, f107_hi)
+                _align_twin_yticks!(ax_f107, main_limits, main_tickvalues, f107_min, f107_max)
             end
 
             _align_twin_yticks!(
                 ax_f107,
                 ax.finallimits[],
                 ax.yaxis.tickvalues[],
-                f107_lo,
-                f107_hi
+                f107_min,
+                f107_max
             )
         end
 
-        axislegend(ax, legend_plots, legend_labels; position = :rt)
+        # == Legend ========================================================================
+
+        # The legend is placed outside the plot, at the bottom of the right column, below
+        # the information panel.
+        Legend(
+            fig[1, 2],
+            legend_plots,
+            legend_labels;
+            tellheight = false,
+            tellwidth  = false,
+            valign     = :bottom,
+            width      = Relative(1),
+        )
+
+        colsize!(fig.layout, 2, Fixed(280))
 
         # == Mission Name ==================================================================
 
@@ -219,7 +234,6 @@ function SatelliteAnalysis.plot_decay_analysis(
 
         if !isempty(cards)
             panel = GridLayout(fig[1, 2]; tellheight = false, valign = :top)
-            colsize!(fig.layout, 2, Fixed(280))
 
             for (k, (title, value_lines)) in enumerate(cards)
                 _add_stat_card!(
@@ -315,31 +329,82 @@ function _add_stat_card!(
 end
 
 """
-    _align_twin_yticks!(ax_twin::Axis, main_limits, main_tickvalues::Vector, lo::Number, hi::Number) -> Nothing
+    _align_twin_yticks!(ax_twin::Axis, main_limits, main_tickvalues::Vector, data_min::Number, data_max::Number) -> Nothing
 
-Align the y-axis ticks of the twin axis `ax_twin`, whose fixed y-axis limits are `lo` and
-`hi`, with the y-axis grid of the main axis, modifying the attribute `yticks` of `ax_twin`.
-The main axis state is provided by its final limits `main_limits` and its current tick
-values `main_tickvalues`: the fractional position of each main axis tick is mapped into the
-twin axis limits so both tick sets share the same screen position.
+Align the y-axis ticks of the twin axis `ax_twin` with the y-axis grid of the main axis
+using canonical tick values, modifying the y-axis limits and the attribute `yticks` of
+`ax_twin`. The main axis state is provided by its final limits `main_limits` and its
+current tick values `main_tickvalues`, whereas `data_min` and `data_max` are the extrema of
+the data plotted in the twin axis.
+
+The algorithm selects the smallest canonical tick step (1, 2, 2.5, or 5 times a power of
+ten) and the twin axis limits such that the data fits within the limits and each twin axis
+tick, a multiple of the tick step, shares the screen position of a main axis tick.
 """
 function _align_twin_yticks!(
     ax_twin::Axis,
     main_limits,
     main_tickvalues::Vector,
-    lo::Number,
-    hi::Number,
+    data_min::Number,
+    data_max::Number,
 )
     ylo = minimum(main_limits)[2]
     yhi = maximum(main_limits)[2]
     Δ   = yhi - ylo
 
-    ((Δ > 0) && !isempty(main_tickvalues)) || return nothing
+    ((Δ > 0) && (length(main_tickvalues) >= 2)) || return nothing
 
-    tickvalues = @. lo + (main_tickvalues - ylo) / Δ * (hi - lo)
+    t₁     = first(main_tickvalues)
+    s_main = main_tickvalues[2] - t₁
+
+    (s_main > 0) || return nothing
+
+    # Data span, falling back to a small value if the data is constant.
+    D = data_max - data_min
+    (D <= 0) && (D = max(0.1 * abs(data_max), 1.0))
+
+    # Number of main axis tick steps that span the full main axis limits.
+    m = Δ / s_main
+
+    # Find the smallest canonical tick step such that the data fits within the resulting
+    # twin axis limits.
+    s_twin = _canonical_step(D / m)
+    u₁ = lo = hi = 0.0
+
+    while true
+        # `u₁` is the twin axis tick at the first main axis tick: the largest multiple of
+        # the tick step that keeps the lower limit below the data minimum.
+        u₁ = s_twin * floor((data_min + (t₁ - ylo) * s_twin / s_main) / s_twin)
+        lo = u₁ - (t₁ - ylo) * s_twin / s_main
+        hi = lo + m * s_twin
+
+        (hi >= data_max) && break
+
+        s_twin = _canonical_step(1.01 * s_twin)
+    end
+
+    ylims!(ax_twin, lo, hi)
+
+    tickvalues = [u₁ + k * s_twin for k in 0:(length(main_tickvalues) - 1)]
     ax_twin.yticks = (tickvalues, _format_number.(tickvalues))
 
     return nothing
+end
+
+"""
+    _canonical_step(x::Number) -> Float64
+
+Return the smallest canonical step, defined as 1, 2, 2.5, or 5 times a power of ten, that
+is equal to or greater than `x`. The input must be positive.
+"""
+function _canonical_step(x::Number)
+    base = exp10(floor(log10(x)))
+
+    for mult in (1.0, 2.0, 2.5, 5.0, 10.0)
+        (mult * base >= x) && return mult * base
+    end
+
+    return 10.0 * base
 end
 
 """
