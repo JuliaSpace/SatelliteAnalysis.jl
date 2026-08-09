@@ -41,7 +41,6 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles!(
                 ax,
                 ground_facility_names[k];
                 color    = vc.color,
-                fontsize = _TICK_LABEL_SIZE,
                 position = (gf_lon |> rad2deg, gf_lat |> rad2deg),
             )
             translate!(label, 0, 0, 10)
@@ -54,15 +53,20 @@ end
 function SatelliteAnalysis.plot_ground_facility_visibility_circles(
     vgf_vc::Vector{Vector{NTuple{2, T}}};
     ground_facility_names::Union{Nothing, Vector{String}} = nothing,
+    theme::Symbol = :light,
     kwargs...,
 ) where {T <: Number}
-    fig, ax = plot_world_map(; kwargs...)
+    # Wrap the entire body in `with_theme` so that the plot calls also resolve their
+    # attributes, such as the color cycle, using the SatelliteAnalysis.jl theme.
+    return with_theme(SatelliteAnalysis.makie_theme(theme)) do
+        fig, ax = plot_world_map(; theme = theme, kwargs...)
 
-    ax.title = "Ground Facility Visibility Circles"
+        ax.title = "Ground Facility Visibility Circles"
 
-    plot_ground_facility_visibility_circles!(
-        ax, vgf_vc; ground_facility_names = ground_facility_names
-    )
+        plot_ground_facility_visibility_circles!(
+            ax, vgf_vc; ground_facility_names = ground_facility_names
+        )
 
-    return fig, ax
+        return fig, ax
+    end
 end

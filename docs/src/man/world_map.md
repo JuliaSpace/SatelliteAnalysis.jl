@@ -16,8 +16,10 @@ used to add analysis on top of it. We can create it using the function:
 plot_world_map(; kwargs...) -> Figure, Axis
 ```
 
-It returns a **Makie.jl** `Figure` and `Axis` with the World map. All `kwargs...` are passed
-to the function `Figure`.
+It returns a **Makie.jl** `Figure` and `Axis` with the World map. The figure is styled with
+the theme obtained from the function `SatelliteAnalysis.makie_theme`, selected by the
+keyword `theme`, which can be `:light` (default) or `:dark`. All other `kwargs...` are
+passed to the function `Figure`.
 
 !!! note
 
@@ -40,3 +42,16 @@ save("world_map.png", fig)
 ```
 
 ![World Map](./world_map.png)
+
+We can also create the World map using the dark theme variant:
+
+```@setup world_map
+fig_dark, ax_dark = plot_world_map(; theme = :dark)
+save("world_map_dark.png", fig_dark)
+```
+
+```julia
+fig, ax = plot_world_map(; theme = :dark)
+```
+
+![World Map (Dark)](./world_map_dark.png)

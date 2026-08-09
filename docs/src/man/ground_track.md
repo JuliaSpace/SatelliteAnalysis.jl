@@ -190,7 +190,10 @@ refer to [Makie.jl](https://docs.makie.org/stable/) documentation.
     country polygons fetched with the function [`fetch_country_polygons`](@ref). Hence, if
     this file does not exist, the algorithm tries to download it.
 
-All `kwargs...` are passed to the function [`plot_world_map`](@ref).
+The figure is styled with the theme obtained from the function
+`SatelliteAnalysis.makie_theme`, selected by the keyword `theme`, which can be `:light`
+(default) or `:dark`. All other `kwargs...` are passed to the function
+[`plot_world_map`](@ref).
 
 ```julia
 plot_ground_track!(ax:Axis, gt::Vector{NTuple{2, Number}}) -> Nothing
@@ -199,7 +202,9 @@ plot_ground_track!(ax:Axis, gt::Vector{NTuple{2, Number}}) -> Nothing
 It plots in the **Makie.jl** axis `ax` the ground track `gt` computed using the function
 [`ground_track`](@ref).
 
-The user can use this function to plot the ground track on top of an existing figure.
+The user can use this function to plot the ground track on top of an existing figure. Since
+it draws into an existing axis, it does not apply the theme provided by the function
+`SatelliteAnalysis.makie_theme`.
 
 ### Example
 

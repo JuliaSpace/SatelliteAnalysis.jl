@@ -1,4 +1,4 @@
-module SatelliteAnalysisPlottingExt
+module SatelliteAnalysisGeoMakieExt
 
 using SatelliteAnalysis
 using GeoMakie
@@ -17,4 +17,4 @@ include("./ground_facilities.jl")
 include("./ground_track.jl")
 include("./world_map.jl")
 
-end
+end # module SatelliteAnalysisGeoMakieExt

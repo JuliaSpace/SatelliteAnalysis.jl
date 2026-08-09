@@ -14,6 +14,10 @@ Version 0.4.0
   with **SatelliteAnalysis.jl** provides the non-exported functions
   `SatelliteAnalysis.makie_theme` and `SatelliteAnalysis.makie_palette`, which style plots
   with coordinated dark and light variants using bundled IBM Plex fonts.
+- ![Feature][badge-feature] The plotting functions `plot_world_map`, `plot_ground_track`,
+  and `plot_ground_facility_visibility_circles` now apply the SatelliteAnalysis.jl Makie
+  theme automatically and gained the keyword `theme` to select the variant (`:light` or
+  `:dark`).
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were
@@ -33,6 +37,9 @@ Version 0.4.0
   `SpaceIndices.init()`.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
+- ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to
+  `SatelliteAnalysisGeoMakieExt` since it only requires **GeoMakie.jl**. Extension names
+  are not public API, so this change is internal.
 
 Version 0.3.10
 --------------

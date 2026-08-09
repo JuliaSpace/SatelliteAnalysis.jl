@@ -32,10 +32,17 @@ to **Makie.jl** documentation.
     `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
     parameter is `nothing`, no ground facility name is added to the figure.
     (**Default** = `nothing`)
+- `theme::Symbol`: Theme variant used to style the figure, applied locally through the
+    function `SatelliteAnalysis.makie_theme`. It can be `:light` or `:dark`.
+    (**Default**: `:light`)
 
 All other `kwargs...` are passed to the function [`plot_world_map`](@ref).
 
-# Extended Help
+# Extended help
+
+## Throws
+
+- `ArgumentError`: If the theme variant in `theme` is not `:dark` or `:light`.
 
 ## Examples
 
@@ -68,6 +75,12 @@ end
 Plot in the **Makie.jl** axis `ax` the ground facility visibility circles in the vector
 `vgf_vc`, where each element is computed using the function
 [`ground_facility_visibility_circle`](@ref).
+
+!!! note
+
+    Since this function draws into an existing axis, it does not apply the theme provided by
+    the function `SatelliteAnalysis.makie_theme`. The plot inherits the styling of the
+    figure that owns `ax`.
 
 !!! warning
 

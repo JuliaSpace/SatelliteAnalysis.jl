@@ -25,9 +25,19 @@ to **Makie.jl** documentation.
     user must also load one Makie.jl backend (CairoMakie.jl or GLMakie.jl, for example) to
     see the result.
 
-All `kwargs...` are passed to the function [`plot_world_map`](@ref).
+# Keywords
 
-# Extended Help
+- `theme::Symbol`: Theme variant used to style the figure, applied locally through the
+    function `SatelliteAnalysis.makie_theme`. It can be `:light` or `:dark`.
+    (**Default**: `:light`)
+
+All other `kwargs...` are passed to the function [`plot_world_map`](@ref).
+
+# Extended help
+
+## Throws
+
+- `ArgumentError`: If the theme variant in `theme` is not `:dark` or `:light`.
 
 ## Examples
 
@@ -81,6 +91,12 @@ end
 
 Plot in the **Makie.jl** axis `ax` the ground track `gt` computed using the function
 [`ground_track`](@ref).
+
+!!! note
+
+    Since this function draws into an existing axis, it does not apply the theme provided by
+    the function `SatelliteAnalysis.makie_theme`. The plot inherits the styling of the
+    figure that owns `ax`.
 
 !!! warning
 

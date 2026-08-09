@@ -56,6 +56,11 @@ end
 
     @test fig isa Figure
     @test ax isa Axis
+
+    fig, ax = plot_ground_track(gt; theme = :dark)
+
+    @test fig isa Figure
+    @test ax isa Axis
 end
 
 # == File: ./src/plotting/ground_facilities.jl =============================================
@@ -109,4 +114,13 @@ end
 
     @test fig isa Figure
     @test ax isa Axis
+
+    fig, ax = plot_world_map(; theme = :dark)
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # == Errors ============================================================================
+
+    @test_throws ArgumentError plot_world_map(; theme = :blue)
 end

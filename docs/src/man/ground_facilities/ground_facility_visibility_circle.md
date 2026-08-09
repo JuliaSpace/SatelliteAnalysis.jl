@@ -136,6 +136,9 @@ The following keywords are available:
     `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
     parameter is `nothing`, no ground facility name is added to the figure.
     (**Default** = `nothing`)
+- `theme::Symbol`: Theme variant used to style the figure, applied locally through the
+    function `SatelliteAnalysis.makie_theme`. It can be `:light` or `:dark`.
+    (**Default**: `:light`)
 
 All other `kwargs...` are passed to the function [`plot_world_map`](@ref).
 
@@ -161,7 +164,8 @@ The following keywords are available:
     (**Default** = `nothing`)
 
 The user can use this function to plot the ground facility visibility circle on top of an
-existing figure.
+existing figure. Since it draws into an existing axis, it does not apply the theme provided
+by the function `SatelliteAnalysis.makie_theme`.
 
 ### Example
 
