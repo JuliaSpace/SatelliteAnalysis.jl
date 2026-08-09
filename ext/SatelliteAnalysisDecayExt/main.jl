@@ -13,11 +13,11 @@ function SatelliteAnalysis.decay_analysis(
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
     num_sampling_points_per_orbit::Int = 17,
     abstol::Number = 1e-6,
-    Ap::Union{Nothing, Number} = nothing,
+    Ap::Union{Function, Number} = _ap_from_space_indices,
     C_d::Number = 2.2,
     C_r::Number = 1.25,
     distance_unit::Symbol = :km,
-    F107::Union{Nothing, Number} = nothing,
+    F107::Union{Function, Number} = _f107_from_space_indices,
     reltol::Number = 1e-6,
     return_solution::Bool = false,
     solver = VCABM(),
@@ -29,6 +29,9 @@ function SatelliteAnalysis.decay_analysis(
         GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008)) :
         gravity_model
 
+    Ap′   = Ap isa Number ? (_ -> Float64(Ap)) : Ap
+    F107′ = F107 isa Number ? (_ -> Float64(F107)) : F107
+
     # The keyword `gravity_model` is abstractly typed. This function barrier ensures the
     # gravity model is concretely typed inside the numerical integration, avoiding dynamic
     # dispatch at every right-hand-side evaluation.
@@ -39,11 +42,11 @@ function SatelliteAnalysis.decay_analysis(
         satellite_mean_area           = satellite_mean_area,
         num_sampling_points_per_orbit = num_sampling_points_per_orbit,
         abstol                        = abstol,
-        Ap                            = Ap,
+        Ap                            = Ap′,
         C_d                           = C_d,
         C_r                           = C_r,
         distance_unit                 = distance_unit,
-        F107                          = F107,
+        F107                          = F107′,
         reltol                        = reltol,
         return_solution               = return_solution,
         solver                        = solver,
@@ -64,11 +67,11 @@ function _decay_analysis(
     satellite_mean_area::Number,
     num_sampling_points_per_orbit::Int,
     abstol::Number,
-    Ap::Union{Nothing, Number},
+    Ap::Function,
     C_d::Number,
     C_r::Number,
     distance_unit::Symbol,
-    F107::Union{Nothing, Number},
+    F107::Function,
     reltol::Number,
     return_solution::Bool,
     solver,
@@ -138,10 +141,8 @@ function _decay_analysis(
         time[k] = sol.t[k]
 
         # Record the space indices used by the dynamics at each instant.
-        f107[k] = isnothing(F107) ?
-            Float64(space_index(Val(:F10obs_avg_center81), jdₖ)) :
-            Float64(F107)
-        ap[k] = isnothing(Ap) ? Float64(space_index(Val(:Ap_daily), jdₖ)) : Float64(Ap)
+        f107[k] = F107(jdₖ)
+        ap[k]   = Ap(jdₖ)
 
         mean_elements[k] = KeplerianElements(
             jdₖ, aₖ, eₖ, iₖ, Ωₖ, ωₖ, mean_to_true_anomaly(eₖ, Mₖ)
@@ -211,4 +212,36 @@ end
 function _cb_altitude_affect!(integrator)
     terminate!(integrator)
     return nothing
+end
+
+# == Default Input Functions ===============================================================
+
+"""
+    _ap_from_space_indices(jd_utc::Number) -> Float64
+
+Return the Ap geomagnetic index from the space indices at a given Julian date [UTC]
+`jd_utc`.
+
+!!! note
+
+    The space indices must be initialized with `SpaceIndices.init()` before calling this
+    function.
+"""
+function _ap_from_space_indices(jd_utc::Number)
+    return Float64(space_index(Val(:Ap_daily), jd_utc))
+end
+
+"""
+    _f107_from_space_indices(jd_utc::Number) -> Float64
+
+Return the F10.7 solar flux index [sfu] from the space indices at a given Julian date [UTC]
+`jd_utc`.
+
+!!! note
+
+    The space indices must be initialized with `SpaceIndices.init()` before calling this
+    function.
+"""
+function _f107_from_space_indices(jd_utc::Number)
+    return Float64(space_index(Val(:F10obs_avg_center81), jd_utc))
 end

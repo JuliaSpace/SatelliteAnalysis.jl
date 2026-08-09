@@ -25,11 +25,6 @@ by the Earth shadow.
 
 !!! note
 
-    If `F107` or `Ap` are `nothing`, the space indices are obtained using the function
-    `space_index`, which requires calling `SpaceIndices.init()` beforehand.
-
-!!! note
-
     The default integrator configuration (`solver`, `reltol`, `abstol`, and
     `num_sampling_points_per_orbit`) is tuned for fast and accurate **decay lifetime**
     estimation: the lifetime and the altitude evolution change well below the atmospheric
@@ -52,9 +47,12 @@ by the Earth shadow.
     (**Default**: 17)
 - `abstol::Number`: Absolute tolerance of the numerical integration.
     (**Default**: 1e-6)
-- `Ap::Union{Nothing, Number}`: Geomagnetic index. If it is `nothing`, the value is
-    obtained from the initialized space indices at each instant.
-    (**Default**: `nothing`)
+- `Ap::Union{Function, Number}`: Geomagnetic index. It can be a constant value or a
+    function of time (in Julian days) that returns the geomagnetic index at that instant:
+    `(jd_utc::Number) -> Number`. By default, it will use a pre-defined function that
+    obtains the index from the `SpaceIndices.jl` package, which must be already initialized
+    with `SpaceIndices.init()`.
+    (**Default**: a function that obtains the index from **SpaceIndices.jl**)
 - `C_d::Number`: Drag coefficient [-].
     (**Default**: 2.2)
 - `C_r::Number`: Solar radiation pressure coefficient [-].
@@ -62,9 +60,12 @@ by the Earth shadow.
 - `distance_unit::Symbol`: Unit of the altitude columns in the output `DataFrame`. It can
     be `:m` for meters or `:km` for kilometers.
     (**Default**: `:km`)
-- `F107::Union{Nothing, Number}`: 10.7 cm solar flux index. If it is `nothing`, the value
-    is obtained from the initialized space indices at each instant.
-    (**Default**: `nothing`)
+- `F107::Union{Function, Number}`: 10.7 cm solar flux index [sfu]. It can be a constant
+    value or a function of time (in Julian days) that returns the solar flux index at that
+    instant: `(jd_utc::Number) -> Number`. By default, it will use a pre-defined function
+    that obtains the index from the `SpaceIndices.jl` package, which must be already
+    initialized with `SpaceIndices.init()`.
+    (**Default**: a function that obtains the index from **SpaceIndices.jl**)
 - `reltol::Number`: Relative tolerance of the numerical integration.
     (**Default**: 1e-6)
 - `return_solution::Bool`: If `true`, the function also returns the raw solution of the

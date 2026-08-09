@@ -244,7 +244,7 @@ end
 
         # Atmospheric drag using the same routine and space indices.
         a_drag_pef = ext._atmospheric_drag_acceleration(
-            jd_utc, r_pef, v_pef, area, mass, C_d; F107 = F107, Ap = Ap
+            jd_utc, r_pef, v_pef, area, mass, Ap, C_d, F107
         )
 
         # Third-body point masses using the same routine.

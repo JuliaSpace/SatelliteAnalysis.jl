@@ -11,8 +11,9 @@
         v_ecef::AbstractVector{T},
         area::Number,
         mass::Number,
-        Cd::Number;
-        kwargs...
+        Ap::Number,
+        Cd::Number,
+        F107::Number
     ) where T <: Number -> SVector{3, T}
 
 Compute the acceleration [m/s²] due to atmospheric drag in the ECEF frame using the
@@ -25,18 +26,9 @@ NRLMSISE-00 model.
 - `v_ecef::AbstractVector{T}`: Satellite velocity vector [m/s] in ECEF frame.
 - `area::Number`: Effective cross-sectional area [m²] exposed to atmosphere.
 - `mass::Number`: Spacecraft mass [kg].
+- `Ap::Number`: Geomagnetic index [-].
 - `Cd::Number`: Drag coefficient [-].
-
-# Keywords
-
-- `F107::Union{Nothing, Number}`: Solar flux index. If it is `nothing`, the value is
-    retrieved from the `space_index` function using `jd_utc`, which requires the space
-    indices to be initialized with `SpaceIndices.init()`.
-    (**Default** = `nothing`)
-- `Ap::Union{Nothing, Number}`: Geomagnetic index. If it is `nothing`, the value is
-    retrieved from the `space_index` function using `jd_utc`, which requires the space
-    indices to be initialized with `SpaceIndices.init()`.
-    (**Default** = `nothing`)
+- `F107::Number`: Solar flux index [sfu].
 
 # Returns
 
@@ -48,9 +40,9 @@ function _atmospheric_drag_acceleration(
     v_ecef::AbstractVector{T},
     area::Number,
     mass::Number,
-    Cd::Number;
-    F107::Union{Nothing, Number} = nothing,
-    Ap::Union{Nothing, Number} = nothing,
+    Ap::Number,
+    Cd::Number,
+    F107::Number
 ) where T <: Number
 
     lat, lon, h = ecef_to_geodetic(r_ecef)
@@ -60,10 +52,7 @@ function _atmospheric_drag_acceleration(
     # that the error control can reject the step.
     h = max(h, 0.0)
 
-    F107′ = isnothing(F107) ? space_index(Val(:F10obs_avg_center81), jd_utc) : F107
-    Ap′   = isnothing(Ap) ? space_index(Val(:Ap_daily), jd_utc) : Ap
-
-    atmos = AtmosphericModels.nrlmsise00(jd_utc, h, lat, lon, F107′, F107′, Ap′)
+    atmos = AtmosphericModels.nrlmsise00(jd_utc, h, lat, lon, F107, F107, Ap)
     ρ     = atmos.total_density
 
     a_drag_ecef = -(1 // 2) * T(Cd) * (T(area) / T(mass)) * T(ρ) * norm(v_ecef) .* v_ecef

@@ -37,12 +37,12 @@ atmospheric drag using quadrature equally spaced in true anomaly and temporal we
     - `satellite_mean_area::Number`: Effective cross-sectional area [m²].
     - `j2osc_prop::OrbitPropagatorJ2Osculating`: Pre-allocated J2 osculating propagator
         used for the mean-to-osculating conversion.
-    - `Ap::Union{Nothing, Number}`: Geomagnetic index, or `nothing` to retrieve it from
-        the space indices.
+    - `Ap::Function`: A function to retrieve the geomagnetic index [-]. It must have the
+        signature `Ap(jd_utc::Number) -> Number`.
     - `C_d::Number`: Drag coefficient [-].
     - `C_r::Number`: Reflectivity coefficient [-].
-    - `F107::Union{Nothing, Number}`: Solar flux index, or `nothing` to retrieve it from
-        the space indices.
+    - `F107::Function`: A function to retrieve the solar flux index [sfu]. It must have the
+        signature `F107(jd_utc::Number) -> Number`.
 
 # Returns
 
@@ -74,10 +74,8 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
 
     # Resolve the space indices once per evaluation since `jd_utc` is constant here,
     # avoiding one interpolation per sampling point.
-    F107 = isnothing(params.F107) ?
-        space_index(Val(:F10obs_avg_center81), jd_utc) :
-        params.F107
-    Ap = isnothing(params.Ap) ? space_index(Val(:Ap_daily), jd_utc) : params.Ap
+    F107 = Float64(params.F107(jd_utc))
+    Ap   = Float64(params.Ap(jd_utc))
 
     μ = GravityModels.gravity_constant(gm)
 
@@ -132,9 +130,9 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
             vk_pef,
             mean_area,
             mass,
-            C_d;
-            F107 = F107,
-            Ap = Ap
+            Ap,
+            C_d,
+            F107
         )
 
         # Drag acceleration in TOD.
