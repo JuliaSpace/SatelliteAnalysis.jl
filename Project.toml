@@ -2,8 +2,8 @@ name = "SatelliteAnalysis"
 uuid = "101040f3-2a13-4d8c-b9b0-4a720fa906ce"
 license = "MIT"
 desc = "A package for Julia with several functions to perform satellite analysis."
-authors = ["Ronan Arraes Jardim Chagas <ronisbr@gmail.com>"]
 version = "0.3.10"
+authors = ["Ronan Arraes Jardim Chagas <ronisbr@gmail.com>"]
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -37,7 +37,7 @@ GeoMakie = "0.7"
 LinearAlgebra = "1.10"
 Logging = "1.10"
 Makie = "0.24"
-OrdinaryDiffEq = "6"
+OrdinaryDiffEq = "6, 7"
 PrettyNumbers = "0.2"
 Reexport = "1"
 ReferenceFrameRotations = "3"
