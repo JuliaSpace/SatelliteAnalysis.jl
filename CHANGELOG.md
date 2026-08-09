@@ -26,6 +26,11 @@ Version 0.4.0
   (about 20x) by tuning the default integrator configuration for lifetime estimation and
   reducing the cost of the right-hand side. The integrator can now be configured through
   the keywords `solver`, `reltol`, and `abstol`.
+- ![Enhancement][badge-enhancement] The keywords `Ap` and `F107` in `decay_analysis` now
+  accept either a constant value or a function of time with the signature
+  `(jd_utc::Number) -> Number`, allowing time-varying space index profiles. By default,
+  the indices are obtained from **SpaceIndices.jl**, which must be initialized with
+  `SpaceIndices.init()`.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 
