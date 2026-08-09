@@ -31,6 +31,9 @@ is omitted from the panel.
 
 # Keywords
 
+- `mission_name::Union{Nothing, String}`: Mission name rendered in uppercase above the plot
+    title. If it is `nothing`, no mission name is added to the figure.
+    (**Default**: `nothing`)
 - `satellite_mass::Union{Nothing, Number}`: Satellite mass [kg] shown in the information
     panel. If it is `nothing`, the value is obtained from the metadata `Satellite Mass` of
     `df`.
@@ -39,6 +42,12 @@ is omitted from the panel.
     information panel. If it is `nothing`, the value is obtained from the metadata
     `Satellite Mean Area` of `df`.
     (**Default**: `nothing`)
+- `show_f107::Bool`: If `true`, the 10.7 cm solar flux index in the column `f107` of `df`
+    is plotted [sfu] using a twin y-axis placed at the right side of the figure.
+    (**Default**: `false`)
+- `show_reentry_date::Bool`: If `true`, the estimated reentry date [UTC] is shown in the
+    information panel below the time to reenter. Otherwise, only the timespan is shown.
+    (**Default**: `false`)
 - `terminate_altitude::Union{Nothing, Number}`: Mean perigee altitude [m] that terminates
     the decay analysis, used to detect if a reentry happened. If it is `nothing`, the value
     is obtained from the metadata `Terminate Altitude` of `df`.
@@ -56,7 +65,8 @@ All other `kwargs...` are passed to the function `Figure`.
 ## Throws
 
 - `ArgumentError`: If `df` does not have the columns `time`, `date`, `apogee_altitude`, and
-    `perigee_altitude`.
+    `perigee_altitude`, or if the keyword `show_f107` is `true` and `df` does not have the
+    column `f107`.
 - `ArgumentError`: If the theme variant in `theme` is not `:dark` or `:light`.
 
 ## Examples

@@ -10,8 +10,11 @@
 
 function SatelliteAnalysis.plot_decay_analysis(
     df::DataFrame;
+    mission_name::Union{Nothing, String}        = nothing,
     satellite_mass::Union{Nothing, Number}      = nothing,
     satellite_mean_area::Union{Nothing, Number} = nothing,
+    show_f107::Bool = false,
+    show_reentry_date::Bool = false,
     terminate_altitude::Union{Nothing, Number}  = nothing,
     theme::Symbol = :light,
     size = (1280, 720),
@@ -19,7 +22,9 @@ function SatelliteAnalysis.plot_decay_analysis(
 )
     # == Input Validation ==================================================================
 
-    for c in (:time, :date, :apogee_altitude, :perigee_altitude)
+    required_columns = (:time, :date, :apogee_altitude, :perigee_altitude)
+
+    for c in (show_f107 ? (required_columns..., :f107) : required_columns)
         hasproperty(df, c) || throw(
             ArgumentError(
                 "The input `DataFrame` must have the column `$c`. It should be obtained " *
@@ -71,10 +76,12 @@ function SatelliteAnalysis.plot_decay_analysis(
 
     dark = theme == :dark
 
-    accent_color    = dark ? MAGENTA_DARK        : MAGENTA_LIGHT
-    border_color    = dark ? BORDER_DARK         : BORDER_LIGHT
-    card_color      = dark ? NAVY_CARD           : SURFACE_CARD
-    secondary_color = dark ? TEXT_SECONDARY_DARK : TEXT_SECONDARY_LIGHT
+    accent_color   = dark ? MAGENTA_DARK       : MAGENTA_LIGHT
+    border_color   = dark ? BORDER_DARK        : BORDER_LIGHT
+    card_color     = dark ? NAVY_CARD          : SURFACE_CARD
+    f107_color     = dark ? CATEGORICAL_DARK[3] : CATEGORICAL_LIGHT[3]
+    subline_color  = dark ? TEXT_TERTIARY_DARK : TEXT_TERTIARY_LIGHT
+    title_color    = dark ? CYAN_DARK          : CYAN_LIGHT
 
     # == Assemble the Information Panel Cards =============================================
 
@@ -85,17 +92,14 @@ function SatelliteAnalysis.plot_decay_analysis(
 
     if !isnothing(term)
         if reentered
-            reentry_epoch = Dates.format(last(df.date), dateformat"yyyy-mm-dd HH:MM")
-            push!(
-                cards,
-                (
-                    "TIME TO REENTER",
-                    [
-                        _format_duration(last(df.date) - first(df.date)),
-                        reentry_epoch * " UTC"
-                    ]
-                )
-            )
+            value_lines = [_format_duration(last(df.date) - first(df.date))]
+
+            if show_reentry_date
+                reentry_epoch = Dates.format(last(df.date), dateformat"yyyy-mm-dd HH:MM")
+                push!(value_lines, reentry_epoch * " UTC")
+            end
+
+            push!(cards, ("TIME TO REENTER", value_lines))
         else
             push!(cards, ("TIME TO REENTER", ["No reentry"]))
         end
@@ -115,8 +119,14 @@ function SatelliteAnalysis.plot_decay_analysis(
             ylabel = "Altitude [$distance_unit]",
         )
 
-        lines!(ax, df.time, df.apogee_altitude;  label = "Apogee Altitude")
-        lines!(ax, df.time, df.perigee_altitude; label = "Perigee Altitude")
+        legend_plots  = Any[]
+        legend_labels = String[]
+
+        push!(legend_plots, lines!(ax, df.time, df.apogee_altitude))
+        push!(legend_labels, "Apogee Altitude")
+
+        push!(legend_plots, lines!(ax, df.time, df.perigee_altitude))
+        push!(legend_labels, "Perigee Altitude")
 
         if reentered
             reentry_marker = scatter!(
@@ -124,13 +134,62 @@ function SatelliteAnalysis.plot_decay_analysis(
                 [last(df.time)],
                 [last(df.perigee_altitude)];
                 color      = accent_color,
-                label      = "Reentry",
                 markersize = 14,
             )
             translate!(reentry_marker, 0, 0, 10)
+
+            push!(legend_plots, reentry_marker)
+            push!(legend_labels, "Reentry")
         end
 
-        axislegend(ax; position = :rt)
+        # == F10.7 Twin Y Axis =============================================================
+
+        if show_f107
+            # The background must be transparent, otherwise the twin axis hides the plots
+            # of the main axis.
+            ax_f107 = Axis(
+                fig[1, 1];
+                backgroundcolor   = :transparent,
+                yaxisposition     = :right,
+                ygridvisible      = false,
+                ylabel            = "F10.7 [sfu]",
+                yminorgridvisible = false,
+            )
+
+            hidexdecorations!(ax_f107)
+            linkxaxes!(ax, ax_f107)
+
+            f107_line = lines!(
+                ax_f107,
+                df.time,
+                df.f107;
+                color     = (f107_color, 0.85),
+                linewidth = 1.5,
+            )
+
+            push!(legend_plots, f107_line)
+            push!(legend_labels, "F10.7")
+        end
+
+        axislegend(ax, legend_plots, legend_labels; position = :rt)
+
+        # == Mission Name ==================================================================
+
+        if !isnothing(mission_name)
+            Label(
+                fig[0, 1],
+                uppercase(mission_name);
+                color     = title_color,
+                font      = :bold,
+                fontsize  = 16,
+                tellwidth = false,
+            )
+
+            # Tighten the gap between the mission name and the plot title.
+            rowgap!(fig.layout, 1, 4)
+        end
+
+        # == Information Panel =============================================================
 
         if !isempty(cards)
             panel = GridLayout(fig[1, 2]; tellheight = false, valign = :top)
@@ -142,9 +201,10 @@ function SatelliteAnalysis.plot_decay_analysis(
                     k,
                     title,
                     value_lines;
-                    border_color    = border_color,
-                    card_color      = card_color,
-                    secondary_color = secondary_color,
+                    border_color  = border_color,
+                    card_color    = card_color,
+                    subline_color = subline_color,
+                    title_color   = title_color,
                 )
             end
 
@@ -170,7 +230,8 @@ as the card value, whereas the other elements are rendered as smaller complement
 
 - `border_color::Colorant`: Color of the card border.
 - `card_color::Colorant`: Color of the card background.
-- `secondary_color::Colorant`: Color of the card title and complementary lines.
+- `subline_color::Colorant`: Color of the card complementary lines.
+- `title_color::Colorant`: Color of the card title.
 """
 function _add_stat_card!(
     panel::GridLayout,
@@ -179,7 +240,8 @@ function _add_stat_card!(
     value_lines::Vector{String};
     border_color::Colorant,
     card_color::Colorant,
-    secondary_color::Colorant,
+    subline_color::Colorant,
+    title_color::Colorant,
 )
     Box(
         panel[row, 1];
@@ -194,7 +256,7 @@ function _add_stat_card!(
     Label(
         card[1, 1],
         title;
-        color     = secondary_color,
+        color     = title_color,
         font      = :bold,
         fontsize  = 14,
         halign    = :left,
@@ -214,7 +276,7 @@ function _add_stat_card!(
         Label(
             card[k + 1, 1],
             value_lines[k];
-            color     = secondary_color,
+            color     = subline_color,
             fontsize  = 15,
             halign    = :left,
             tellwidth = false,

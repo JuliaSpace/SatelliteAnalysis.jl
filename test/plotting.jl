@@ -19,12 +19,14 @@ end
     # requiring the numerical integration.
     time             = collect(range(0, 0.1; length = 20))
     date             = julian2datetime.(date_to_jd(2024, 1, 1) .+ 365.25 .* time)
+    f107             = collect(range(140.0, 180.0; length = 20))
     perigee_altitude = collect(range(300.0, 120.0; length = 20))
     apogee_altitude  = perigee_altitude .+ 10
 
     df = DataFrame(;
         date             = date,
         time             = time,
+        f107             = f107,
         apogee_altitude  = apogee_altitude,
         perigee_altitude = perigee_altitude,
     )
@@ -43,6 +45,17 @@ end
     @test ax isa Axis
 
     fig, ax = plot_decay_analysis(df; theme = :dark)
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # Optional decorations: mission name, reentry date, and F10.7 twin y-axis.
+    fig, ax = plot_decay_analysis(
+        df;
+        mission_name      = "Amazonia-1",
+        show_f107         = true,
+        show_reentry_date = true
+    )
 
     @test fig isa Figure
     @test ax isa Axis
@@ -90,6 +103,9 @@ end
     @test_throws ArgumentError plot_decay_analysis(df; theme = :blue)
     @test_throws ArgumentError plot_decay_analysis(DataFrame(; a = [1]))
     @test_throws ArgumentError plot_decay_analysis(empty!(copy(df)))
+
+    # The keyword `show_f107` requires the column `f107`.
+    @test_throws ArgumentError plot_decay_analysis(df_no_metadata; show_f107 = true)
 end
 
 # == File: ./src/plotting/fetch_country_polygons.jl ========================================
