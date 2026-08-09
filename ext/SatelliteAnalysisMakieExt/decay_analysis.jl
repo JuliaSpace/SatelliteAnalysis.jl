@@ -169,6 +169,32 @@ function SatelliteAnalysis.plot_decay_analysis(
 
             push!(legend_plots, f107_line)
             push!(legend_labels, "F10.7")
+
+            # Fix the twin axis limits using the same margin applied by the Makie
+            # automatic limits.
+            f107_min, f107_max = extrema(df.f107)
+            f107_pad = f107_max > f107_min ?
+                0.05 * (f107_max - f107_min) :
+                max(0.05 * abs(f107_max), 1.0)
+
+            f107_lo = f107_min - f107_pad
+            f107_hi = f107_max + f107_pad
+
+            ylims!(ax_f107, f107_lo, f107_hi)
+
+            # Align the twin axis ticks with the main axis grid, keeping them aligned if
+            # the main axis limits or ticks change.
+            onany(ax.finallimits, ax.yaxis.tickvalues) do main_limits, main_tickvalues
+                _align_twin_yticks!(ax_f107, main_limits, main_tickvalues, f107_lo, f107_hi)
+            end
+
+            _align_twin_yticks!(
+                ax_f107,
+                ax.finallimits[],
+                ax.yaxis.tickvalues[],
+                f107_lo,
+                f107_hi
+            )
         end
 
         axislegend(ax, legend_plots, legend_labels; position = :rt)
@@ -284,6 +310,34 @@ function _add_stat_card!(
     end
 
     rowgap!(card, 6)
+
+    return nothing
+end
+
+"""
+    _align_twin_yticks!(ax_twin::Axis, main_limits, main_tickvalues::Vector, lo::Number, hi::Number) -> Nothing
+
+Align the y-axis ticks of the twin axis `ax_twin`, whose fixed y-axis limits are `lo` and
+`hi`, with the y-axis grid of the main axis, modifying the attribute `yticks` of `ax_twin`.
+The main axis state is provided by its final limits `main_limits` and its current tick
+values `main_tickvalues`: the fractional position of each main axis tick is mapped into the
+twin axis limits so both tick sets share the same screen position.
+"""
+function _align_twin_yticks!(
+    ax_twin::Axis,
+    main_limits,
+    main_tickvalues::Vector,
+    lo::Number,
+    hi::Number,
+)
+    ylo = minimum(main_limits)[2]
+    yhi = maximum(main_limits)[2]
+    Δ   = yhi - ylo
+
+    ((Δ > 0) && !isempty(main_tickvalues)) || return nothing
+
+    tickvalues = @. lo + (main_tickvalues - ylo) / Δ * (hi - lo)
+    ax_twin.yticks = (tickvalues, _format_number.(tickvalues))
 
     return nothing
 end

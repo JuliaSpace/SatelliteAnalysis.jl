@@ -43,7 +43,8 @@ is omitted from the panel.
     `Satellite Mean Area` of `df`.
     (**Default**: `nothing`)
 - `show_f107::Bool`: If `true`, the 10.7 cm solar flux index in the column `f107` of `df`
-    is plotted [sfu] using a twin y-axis placed at the right side of the figure.
+    is plotted [sfu] using a twin y-axis placed at the right side of the figure. The twin
+    y-axis ticks are aligned with the grid of the main axis.
     (**Default**: `false`)
 - `show_reentry_date::Bool`: If `true`, the estimated reentry date [UTC] is shown in the
     information panel below the time to reenter. Otherwise, only the timespan is shown.
