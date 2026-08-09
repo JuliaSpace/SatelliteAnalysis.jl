@@ -201,16 +201,42 @@ function SatelliteAnalysis.plot_decay_analysis(
         # == Legend ========================================================================
 
         # The legend is placed outside the plot, at the bottom of the right column, below
-        # the information panel.
+        # the information panel, inside a card matching the information panel style.
+        legend_card = GridLayout(fig[1, 2]; tellheight = false, valign = :bottom)
+
+        Box(
+            legend_card[1, 1];
+            color        = card_color,
+            cornerradius = 8,
+            strokecolor  = border_color,
+            strokewidth  = 1,
+        )
+
+        legend_content = GridLayout(legend_card[1, 1]; alignmode = Outside(16))
+
+        Label(
+            legend_content[1, 1],
+            "LEGEND";
+            color     = title_color,
+            font      = :bold,
+            fontsize  = 14,
+            halign    = :left,
+            tellwidth = false,
+        )
+
         Legend(
-            fig[1, 2],
+            legend_content[2, 1],
             legend_plots,
             legend_labels;
-            tellheight = false,
-            tellwidth  = false,
-            valign     = :bottom,
-            width      = Relative(1),
+            backgroundcolor = :transparent,
+            framevisible    = false,
+            halign          = :left,
+            padding         = (0.0f0, 0.0f0, 0.0f0, 0.0f0),
+            tellheight      = true,
+            tellwidth       = false,
         )
+
+        rowgap!(legend_content, 6)
 
         colsize!(fig.layout, 2, Fixed(280))
 

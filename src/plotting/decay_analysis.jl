@@ -16,7 +16,7 @@ refer to **Makie.jl** documentation.
 The figure shows the evolution of the mean apogee and perigee altitudes and an information
 panel with the satellite mass, the satellite mean area, and the estimated time to reenter.
 The legend is placed outside the plot, at the bottom of the column that contains the
-information panel.
+information panel, inside a card that matches the information panel style.
 The latter is only shown if the analysis detected a reentry, _i.e._, if the mean perigee
 altitude reached the terminate altitude. The satellite mass [kg], the satellite mean area
 [m²], and the terminate altitude [m] are obtained from the `DataFrame` metadata written by
