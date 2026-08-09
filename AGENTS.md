@@ -6,7 +6,7 @@
 - The module entrypoint is `src/SatelliteAnalysis.jl`; add includes there and preserve its dependency order when new code relies on symbols from another source file.
 - Source is organized by analysis domain, with shared helpers in `src/misc/`, ground-facility code in `src/ground_facilities/`, and plotting entrypoints in `src/plotting/`.
 - Map plotting is an optional `SatelliteAnalysisGeoMakieExt` extension under `ext/`, loaded only when `GeoMakie` is available; its plot functions apply the theme from `SatelliteAnalysisMakieExt` through the keyword `theme`. Exercise plotting changes with `GeoMakie` loaded.
-- The Makie theme (`makie_theme`, `makie_palette`) is an optional `SatelliteAnalysisMakieExt` extension under `ext/`, loaded only when `Makie` is available; it uses the fonts bundled in `assets/fonts/`.
+- The Makie theme (`makie_theme`, `makie_palette`) and the decay plot (`plot_decay_analysis`) form an optional `SatelliteAnalysisMakieExt` extension under `ext/`, loaded only when `Makie` is available; it uses the fonts bundled in `assets/fonts/`.
 - `test/runtests.jl` uses verbose domain-level testsets and includes each test file. Add or update the corresponding focused test file, then wire any new file into `test/runtests.jl`.
 - Tests use `[extras]` and the `test` target in `Project.toml`; use `Pkg.test()` rather than a plain project session when test-only dependencies are needed.
 

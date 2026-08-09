@@ -18,6 +18,12 @@ Version 0.4.0
   and `plot_ground_facility_visibility_circles` now apply the SatelliteAnalysis.jl Makie
   theme automatically and gained the keyword `theme` to select the variant (`:light` or
   `:dark`).
+- ![Feature][badge-feature] We added the function `plot_decay_analysis`, available when
+  **Makie.jl** is loaded, that plots the mean apogee and perigee altitude evolution
+  computed by `decay_analysis` together with an information panel showing the satellite
+  mass, the satellite mean area, and the estimated time to reenter. To support it,
+  `decay_analysis` now records the metadata `Satellite Mass`, `Satellite Mean Area`, and
+  `Terminate Altitude` in the output `DataFrame`.
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were

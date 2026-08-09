@@ -33,6 +33,7 @@ include("./ground_facilities/is_ground_facility_visible.jl")
 include("./ground_facilities/ground_facility_accesses_and_gaps.jl")
 include("./ground_facilities/ground_facility_visibility_circle.jl")
 
+include("./plotting/decay_analysis.jl")
 include("./plotting/fetch_country_polygons.jl")
 include("./plotting/ground_facilities.jl")
 include("./plotting/ground_track.jl")

@@ -4,6 +4,94 @@
 #
 ############################################################################################
 
+# == File: ./src/plotting/decay_analysis.jl ================================================
+
+# -- Function: plot_decay_analysis ---------------------------------------------------------
+
+@testset "Function plot_decay_analysis" begin
+    @test_throws(
+        "Wrong input or the package Makie.jl is not loaded.", plot_decay_analysis(1)
+    )
+end
+
+@testset "Function plot_decay_analysis [EXT]" begin
+    # Hand-built decay analysis result, mimicking the output of `decay_analysis` without
+    # requiring the numerical integration.
+    time             = collect(range(0, 0.1; length = 20))
+    date             = julian2datetime.(date_to_jd(2024, 1, 1) .+ 365.25 .* time)
+    perigee_altitude = collect(range(300.0, 120.0; length = 20))
+    apogee_altitude  = perigee_altitude .+ 10
+
+    df = DataFrame(;
+        date             = date,
+        time             = time,
+        apogee_altitude  = apogee_altitude,
+        perigee_altitude = perigee_altitude,
+    )
+
+    metadata!(df, "Satellite Mass",      100.0; style = :note)
+    metadata!(df, "Satellite Mean Area", 1.0;   style = :note)
+    metadata!(df, "Terminate Altitude",  120e3; style = :note)
+
+    colmetadata!(df, :time,             "Unit", :y;  style = :note)
+    colmetadata!(df, :apogee_altitude,  "Unit", :km; style = :note)
+    colmetadata!(df, :perigee_altitude, "Unit", :km; style = :note)
+
+    fig, ax = plot_decay_analysis(df)
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    fig, ax = plot_decay_analysis(df; theme = :dark)
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # A `DataFrame` without the metadata must still be plottable. In this case, the
+    # information panel is omitted.
+    df_no_metadata = DataFrame(;
+        date             = date,
+        time             = time,
+        apogee_altitude  = apogee_altitude,
+        perigee_altitude = perigee_altitude,
+    )
+
+    fig, ax = plot_decay_analysis(df_no_metadata)
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # The keywords must override the missing metadata.
+    fig, ax = plot_decay_analysis(
+        df_no_metadata;
+        satellite_mass      = 42.0,
+        satellite_mean_area = 0.5,
+        terminate_altitude  = 120e3
+    )
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # Analysis without a reentry.
+    df_no_reentry = DataFrame(;
+        date             = date,
+        time             = time,
+        apogee_altitude  = apogee_altitude,
+        perigee_altitude = collect(range(300.0, 250.0; length = 20)),
+    )
+
+    fig, ax = plot_decay_analysis(df_no_reentry; terminate_altitude = 120e3)
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # == Errors ============================================================================
+
+    @test_throws ArgumentError plot_decay_analysis(df; theme = :blue)
+    @test_throws ArgumentError plot_decay_analysis(DataFrame(; a = [1]))
+    @test_throws ArgumentError plot_decay_analysis(empty!(copy(df)))
+end
+
 # == File: ./src/plotting/fetch_country_polygons.jl ========================================
 
 # -- Function: fetch_country_polygons ------------------------------------------------------

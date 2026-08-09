@@ -62,6 +62,10 @@ end
     @test metadata(df, "Description") ==
         "Mean orbital element evolution during the orbital decay."
 
+    @test metadata(df, "Satellite Mass")      == 100.0
+    @test metadata(df, "Satellite Mean Area") == 1.0
+    @test metadata(df, "Terminate Altitude")  == 120e3
+
     @test colmetadata(df, :date,             "Unit") == :UTC
     @test colmetadata(df, :time,             "Unit") == :y
     @test colmetadata(df, :f107,             "Unit") == :sfu
@@ -129,6 +133,7 @@ end
     @test df_200 isa DataFrame
     @test df_200[end, :perigee_altitude] ≈ 200.0 atol = 1e-6
     @test df_200[end, :date] < df[end, :date]
+    @test metadata(df_200, "Terminate Altitude") == 200e3
 
     # == Keywords time_unit and distance_unit =============================================
 

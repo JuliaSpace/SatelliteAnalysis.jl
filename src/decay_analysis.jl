@@ -95,9 +95,14 @@ by the Earth shadow.
         where the epoch is the point date [UTC].
     - `apogee_altitude`: Mean apogee altitude [`distance_unit`].
     - `perigee_altitude`: Mean perigee altitude [`distance_unit`].
-    The unit of each column is stored in the `DataFrame` using metadata. If the keyword
-    `return_solution` is `true`, the function returns a tuple with the `DataFrame` and the
-    raw `ODESolution`.
+    The unit of each column is stored in the `DataFrame` using metadata. The `DataFrame`
+    also stores the following table-level metadata, which is used, for example, by the
+    function [`plot_decay_analysis`](@ref):
+    - `Satellite Mass`: Satellite mass [kg].
+    - `Satellite Mean Area`: Mean cross-sectional area [m²].
+    - `Terminate Altitude`: Mean perigee altitude that terminates the analysis [m].
+    If the keyword `return_solution` is `true`, the function returns a tuple with the
+    `DataFrame` and the raw `ODESolution`.
 
 # Extended help
 
