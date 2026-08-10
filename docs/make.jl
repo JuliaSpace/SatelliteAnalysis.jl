@@ -12,6 +12,7 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "Beta Angle" => "man/beta_angle.md",
+        "Decay Analysis" => "man/decay_analysis.md",
         "Eclipse Time" => "man/eclipse_time.md",
         "Frozen Orbits" => "man/frozen_orbits.md",
         "Ground Facilities" => [
