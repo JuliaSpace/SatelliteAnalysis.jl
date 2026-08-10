@@ -51,12 +51,12 @@ by the Earth shadow.
     (**Default**: 17)
 - `abstol::Number`: Absolute tolerance of the numerical integration.
     (**Default**: 1e-6)
-- `Ap::Union{Function, Number}`: Geomagnetic index. It can be a constant value or a
-    function of time (in Julian days) that returns the geomagnetic index at that instant:
-    `(jd_utc::Number) -> Number`. By default, it will use a pre-defined function that
-    obtains the index from the `SpaceIndices.jl` package, which must be already initialized
-    with `SpaceIndices.init()`.
-    (**Default**: a function that obtains the index from **SpaceIndices.jl**)
+- `Ap::Union{Function, Nothing, Number}`: Geomagnetic index [-]. It can be a constant value
+    or a function of time (in Julian days) that returns the geomagnetic index at that
+    instant: `(jd_utc::Number) -> Number`. If it is `nothing`, the system uses the constant
+    value 12, a typical long-term average of the geomagnetic activity that is suitable for
+    decay lifetime estimation.
+    (**Default**: `nothing`)
 - `C_d::Number`: Drag coefficient [-].
     (**Default**: 2.2)
 - `C_r::Number`: Solar radiation pressure coefficient [-].
@@ -64,12 +64,15 @@ by the Earth shadow.
 - `distance_unit::Symbol`: Unit of the altitude columns in the output `DataFrame`. It can
     be `:m` for meters or `:km` for kilometers.
     (**Default**: `:km`)
-- `F107::Union{Function, Number}`: 10.7 cm solar flux index [sfu]. It can be a constant
-    value or a function of time (in Julian days) that returns the solar flux index at that
-    instant: `(jd_utc::Number) -> Number`. By default, it will use a pre-defined function
-    that obtains the index from the `SpaceIndices.jl` package, which must be already
-    initialized with `SpaceIndices.init()`.
-    (**Default**: a function that obtains the index from **SpaceIndices.jl**)
+- `F107::Union{Function, Nothing, Number}`: 10.7 cm solar flux index [sfu]. It can be a
+    constant value or a function of time (in Julian days) that returns the solar flux index
+    at that instant: `(jd_utc::Number) -> Number`. If it is `nothing`, the system uses the
+    predicted F10.7 provided by **SpaceIndices.jl** (space index `F10predicted`), a harmonic
+    model fitted to the observed data that captures the mean solar cycle behavior. In this
+    case, the required space index set is initialized automatically, downloading the
+    coefficient file on first use. Notice that this prediction is intended for long-term
+    analyses and must not be used as a short-term forecast of the solar activity.
+    (**Default**: `nothing`)
 - `reltol::Number`: Relative tolerance of the numerical integration.
     (**Default**: 1e-6)
 - `return_solution::Bool`: If `true`, the function also returns the raw solution of the
@@ -144,6 +147,13 @@ julia> df = decay_analysis(
 
 julia> df[end, :date]  # ..................................... Estimation of the decay epoch
 2024-02-01T07:12:53.537
+```
+
+If the keywords `F107` and `Ap` are omitted, the analysis uses the predicted F10.7 and a
+constant geomagnetic index of 12, requiring only the satellite properties:
+
+```julia-repl
+julia> df = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0);
 ```
 """
 function decay_analysis(::Any; kwargs...)

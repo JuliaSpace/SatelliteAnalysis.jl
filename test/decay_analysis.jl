@@ -188,6 +188,51 @@ end
     @test colmetadata(df_f, :perigee_altitude, "Unit") == :km
 end
 
+@testset "Default Space Indices" begin
+    jd₀ = date_to_jd(2024, 1, 1)
+
+    orb = KeplerianElements(
+        jd₀,
+        EARTH_EQUATORIAL_RADIUS + 300e3,
+        0.001,
+        98.0    |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90.0    |> deg2rad,
+        0.0
+    )
+
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+
+    df = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm
+    )
+
+    # The default geomagnetic index is the constant 12.
+    @test all(df.ap .== 12.0)
+
+    # The default F10.7 is the prediction from SpaceIndices.jl. Its remote coefficient
+    # file is refitted over time, so we only check the values are physically plausible.
+    @test all(isfinite, df.f107)
+    @test all(60.0 .< df.f107 .< 400.0)
+
+    # The analysis must run until the termination altitude.
+    @test df[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
+
+    # A second call must succeed, exercising the initialization guard of the space index
+    # set used by the default F10.7.
+    df₂ = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm
+    )
+
+    @test df₂[end, :date] == df[end, :date]
+end
+
 @testset "Validation Against a Cowell Reference" begin
     # Propagate the full osculating dynamics (Cowell formulation) using the same force
     # model implementations of the extension, and compare the mean elements after seven

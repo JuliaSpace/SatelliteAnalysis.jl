@@ -4,6 +4,11 @@
 #
 ############################################################################################
 
+# Flag indicating whether the space index set required by the default `F107` keyword was
+# already initialized in this session, avoiding re-fetching and re-parsing the remote file
+# at every call. A benign race that initializes the set twice is acceptable.
+const _PREDICTED_F107_INITIALIZED = Ref(false)
+
 function SatelliteAnalysis.decay_analysis(
     orb::KeplerianElements;
     # Required keywords.
@@ -13,11 +18,11 @@ function SatelliteAnalysis.decay_analysis(
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
     num_sampling_points_per_orbit::Int = 17,
     abstol::Number = 1e-6,
-    Ap::Union{Function, Number} = _ap_from_space_indices,
+    Ap::Union{Function, Nothing, Number} = nothing,
     C_d::Number = 2.2,
     C_r::Number = 1.25,
     distance_unit::Symbol = :km,
-    F107::Union{Function, Number} = _f107_from_space_indices,
+    F107::Union{Function, Nothing, Number} = nothing,
     reltol::Number = 1e-6,
     return_solution::Bool = false,
     solver = VCABM(),
@@ -29,8 +34,28 @@ function SatelliteAnalysis.decay_analysis(
         GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008)) :
         gravity_model
 
-    Ap′   = Ap isa Number ? (_ -> Float64(Ap)) : Ap
-    F107′ = F107 isa Number ? (_ -> Float64(F107)) : F107
+    Ap′ = if isnothing(Ap)
+        _ -> Float64(12)
+    elseif Ap isa Number
+        _ -> Float64(Ap)
+    else
+        Ap
+    end
+
+    F107′ = if isnothing(F107)
+        # Notice that if the user calls `SpaceIndices.destroy()` after this initialization,
+        # `space_index` raises a clear error asking to initialize the space indices again.
+        if !_PREDICTED_F107_INITIALIZED[]
+            SpaceIndices.init(SpaceIndices.SatelliteToolboxSpaceIndexSets)
+            _PREDICTED_F107_INITIALIZED[] = true
+        end
+
+        jd -> space_index(Val(:F10predicted), jd)
+    elseif F107 isa Number
+        _ -> Float64(F107)
+    else
+        F107
+    end
 
     # The keyword `gravity_model` is abstractly typed. This function barrier ensures the
     # gravity model is concretely typed inside the numerical integration, avoiding dynamic
@@ -218,36 +243,4 @@ end
 function _cb_altitude_affect!(integrator)
     terminate!(integrator)
     return nothing
-end
-
-# == Default Input Functions ===============================================================
-
-"""
-    _ap_from_space_indices(jd_utc::Number) -> Float64
-
-Return the Ap geomagnetic index from the space indices at a given Julian date [UTC]
-`jd_utc`.
-
-!!! note
-
-    The space indices must be initialized with `SpaceIndices.init()` before calling this
-    function.
-"""
-function _ap_from_space_indices(jd_utc::Number)
-    return Float64(space_index(Val(:Ap_daily), jd_utc))
-end
-
-"""
-    _f107_from_space_indices(jd_utc::Number) -> Float64
-
-Return the F10.7 solar flux index [sfu] from the space indices at a given Julian date [UTC]
-`jd_utc`.
-
-!!! note
-
-    The space indices must be initialized with `SpaceIndices.init()` before calling this
-    function.
-"""
-function _f107_from_space_indices(jd_utc::Number)
-    return Float64(space_index(Val(:F10obs_avg_center81), jd_utc))
 end

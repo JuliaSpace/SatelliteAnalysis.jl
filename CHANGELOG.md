@@ -41,8 +41,9 @@ Version 0.4.0
 - ![Enhancement][badge-enhancement] The keywords `Ap` and `F107` in `decay_analysis` now
   accept either a constant value or a function of time with the signature
   `(jd_utc::Number) -> Number`, allowing time-varying space index profiles. By default,
-  the indices are obtained from **SpaceIndices.jl**, which must be initialized with
-  `SpaceIndices.init()`.
+  `Ap` uses the constant value 12, a typical long-term average of the geomagnetic
+  activity, and `F107` uses the predicted F10.7 provided by **SpaceIndices.jl** (space
+  index `F10predicted`), whose space index set is initialized automatically on first use.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to

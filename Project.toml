@@ -2,8 +2,8 @@ name = "SatelliteAnalysis"
 uuid = "101040f3-2a13-4d8c-b9b0-4a720fa906ce"
 license = "MIT"
 desc = "A package for Julia with several functions to perform satellite analysis."
-authors = ["Ronan Arraes Jardim Chagas <ronisbr@gmail.com>"]
 version = "0.3.10"
+authors = ["Ronan Arraes Jardim Chagas <ronisbr@gmail.com>"]
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -16,6 +16,7 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 ReferenceFrameRotations = "74f56ac7-18b3-5285-802d-d4bd4f104033"
 SatelliteToolbox = "6ac157d9-b43d-51bb-8fab-48bf53814f4a"
 Scratch = "6c6a2e73-6563-6170-7368-637461726353"
+SpaceIndices = "5a540a4e-639f-452a-b107-23ea09ed4d36"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
@@ -43,6 +44,7 @@ Reexport = "1"
 ReferenceFrameRotations = "3"
 SatelliteToolbox = "0.12.2, 1"
 Scratch = "1.2"
+SpaceIndices = "2.3.0"
 StaticArrays = "1"
 Statistics = "1.10"
 Test = "1.10"
