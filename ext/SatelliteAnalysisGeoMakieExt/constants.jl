@@ -4,8 +4,8 @@
 #
 ############################################################################################
 
-# Colors used to draw the country polygons in the world map, keyed by the theme variant.
-# The dark values mirror `SEPARATOR_DARK` and `BORDER_DARK` from the extension
+# Colors used to draw the country polygons in the world map, keyed by the theme variant. The
+# dark values mirror `SEPARATOR_DARK` and `BORDER_DARK` from the extension
 # SatelliteAnalysisMakieExt (see its `constants.jl`). They are duplicated here as plain hex
 # strings because one extension cannot access another extension's constants at precompile
 # time.

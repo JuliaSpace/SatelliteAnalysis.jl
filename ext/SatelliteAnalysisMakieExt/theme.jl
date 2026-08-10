@@ -130,10 +130,10 @@ function _build_theme(;
         backgroundcolor = bg,
         textcolor       = text_primary,
 
-        # Fonts are referenced by absolute path to the `.ttf` files bundled with this package
-        # (see `assets/fonts/`), so text renders identically regardless of which fonts are
-        # installed on the host system. IBM Plex Sans ships all four styles, so each maps to
-        # its dedicated weight.
+        # Fonts are referenced by absolute path to the `.ttf` files bundled with this
+        # package (see `assets/fonts/`), so text renders identically regardless of which
+        # fonts are installed on the host system. IBM Plex Sans ships all four styles, so
+        # each maps to its dedicated weight.
         fonts = Attributes(;
             regular     = _font("IBMPlexSans-Regular.ttf"),     # ................ body text
             bold        = _font("IBMPlexSans-Bold.ttf"),        # ......... titles / display

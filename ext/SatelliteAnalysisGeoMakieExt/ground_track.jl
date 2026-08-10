@@ -5,7 +5,8 @@
 ############################################################################################
 
 function SatelliteAnalysis.plot_ground_track!(
-    ax::Axis, gt::Vector{NTuple{2, T}}
+    ax::Axis,
+    gt::Vector{NTuple{2, T}}
 ) where {T <: Number}
     gt_lat = first.(gt) .|> rad2deg
     gt_lon = last.(gt) .|> rad2deg

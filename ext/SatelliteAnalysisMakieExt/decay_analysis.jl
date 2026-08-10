@@ -76,12 +76,12 @@ function SatelliteAnalysis.plot_decay_analysis(
 
     dark = theme == :dark
 
-    accent_color   = dark ? MAGENTA_DARK       : MAGENTA_LIGHT
-    border_color   = dark ? BORDER_DARK        : BORDER_LIGHT
-    card_color     = dark ? NAVY_CARD          : SURFACE_CARD
+    accent_color   = dark ? MAGENTA_DARK        : MAGENTA_LIGHT
+    border_color   = dark ? BORDER_DARK         : BORDER_LIGHT
+    card_color     = dark ? NAVY_CARD           : SURFACE_CARD
     f107_color     = dark ? CATEGORICAL_DARK[3] : CATEGORICAL_LIGHT[3]
-    subline_color  = dark ? TEXT_TERTIARY_DARK : TEXT_TERTIARY_LIGHT
-    title_color    = dark ? CYAN_DARK          : CYAN_LIGHT
+    subline_color  = dark ? TEXT_TERTIARY_DARK  : TEXT_TERTIARY_LIGHT
+    title_color    = dark ? CYAN_DARK           : CYAN_LIGHT
 
     # == Assemble the Information Panel Cards =============================================
 
@@ -286,7 +286,13 @@ end
 ############################################################################################
 
 """
-    _add_stat_card!(panel::GridLayout, row::Int, title::String, value_lines::Vector{String}; kwargs...) -> Nothing
+    _add_stat_card!(
+        panel::GridLayout,
+        row::Int,
+        title::String,
+        value_lines::Vector{String};
+        kwargs...
+    ) -> Nothing
 
 Add to `panel` at `row` a card with the statistic `title` and its `value_lines`, modifying
 the layout of the figure that owns `panel`. The first element of `value_lines` is rendered
@@ -355,13 +361,19 @@ function _add_stat_card!(
 end
 
 """
-    _align_twin_yticks!(ax_twin::Axis, main_limits, main_tickvalues::Vector, data_min::Number, data_max::Number) -> Nothing
+    _align_twin_yticks!(
+        ax_twin::Axis,
+        main_limits,
+        main_tickvalues::Vector,
+        data_min::Number,
+        data_max::Number
+    ) -> Nothing
 
 Align the y-axis ticks of the twin axis `ax_twin` with the y-axis grid of the main axis
 using canonical tick values, modifying the y-axis limits and the attribute `yticks` of
-`ax_twin`. The main axis state is provided by its final limits `main_limits` and its
-current tick values `main_tickvalues`, whereas `data_min` and `data_max` are the extrema of
-the data plotted in the twin axis.
+`ax_twin`. The main axis state is provided by its final limits `main_limits` and its current
+tick values `main_tickvalues`, whereas `data_min` and `data_max` are the extrema of the data
+plotted in the twin axis.
 
 The algorithm selects the smallest canonical tick step (1, 2, 2.5, or 5 times a power of
 ten) and the twin axis limits such that the data fits within the limits and each twin axis
