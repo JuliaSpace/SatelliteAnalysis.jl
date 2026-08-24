@@ -124,12 +124,6 @@ function SatelliteAnalysis.plot_decay_analysis(
     !isnothing(area) &&
         push!(cards, ("MEAN AREA", ["$(_format_number(area)) m²"], false))
 
-    if show_assumptions && !isnothing(mass) && !isnothing(area) && !isnothing(C_d)
-        # Drag-facing ballistic coefficient convention, as used by STELA.
-        bc = C_d * area / mass
-        push!(cards, ("BALLISTIC COEFF.", ["$(_format_number(bc)) m²/kg"], false))
-    end
-
     if !isnothing(term)
         if reentered
             value_lines = [_format_duration(last(df.date) - first(df.date))]

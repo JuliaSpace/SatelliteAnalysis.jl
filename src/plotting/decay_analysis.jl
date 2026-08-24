@@ -14,9 +14,9 @@ returns the objects `Figure` and `Axis` used to plot the data. For more informat
 refer to **Makie.jl** documentation.
 
 The figure shows the evolution of the mean apogee and perigee altitudes and an information
-panel with the satellite mass, the satellite mean area, the ballistic coefficient
-(`C_d · A / m`) [m²/kg], the estimated time to reenter, and a card with the analysis
-assumptions (atmospheric model, F10.7 source, and drag and SRP coefficients).
+panel with the satellite mass, the satellite mean area, the estimated time to reenter, and
+a card with the analysis assumptions (atmospheric model, F10.7 source, and drag and SRP
+coefficients).
 A dashed line marks the terminate altitude used to declare the reentry, and the estimated
 reentry date is annotated next to the reentry marker.
 The legend is placed outside the plot, at the bottom of the column that contains the
@@ -58,9 +58,9 @@ and the related keyword was not passed, is omitted from the panel.
     information panel. If it is `nothing`, the value is obtained from the metadata
     `Satellite Mean Area` of `df`.
     (**Default**: `nothing`)
-- `show_assumptions::Bool`: If `true`, the information panel shows the ballistic
-    coefficient [m²/kg] and a card with the analysis assumptions resolved from the
-    `DataFrame` metadata written by [`decay_analysis`](@ref).
+- `show_assumptions::Bool`: If `true`, the information panel shows a card with the
+    analysis assumptions resolved from the `DataFrame` metadata written by
+    [`decay_analysis`](@ref).
     (**Default**: `true`)
 - `show_f107::Bool`: If `true`, the 10.7 cm solar flux index in the column `f107` of `df`
     is plotted [sfu] using a twin y-axis placed at the right side of the figure. The line
