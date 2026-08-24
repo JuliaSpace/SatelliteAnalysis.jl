@@ -40,9 +40,9 @@ with closed-form J₂² rates.
     Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
 """
 function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
-    # Gravity model.
+    # Gravity model and its constants, hoisted into `params` by `_decay_analysis`.
     gm = params.gm
-    μ  = GravityModels.gravity_constant(gm)
+    μ  = params.μ
 
     # Time and ephemerides.
     jd₀_utc = params.jd₀_utc
@@ -102,7 +102,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
         # Conservative perturbations in TOD.
         δak_tod =
             (D_tod_pef * _perturbational_gravity_acceleration(
-                gm, jd_utc, rk_pef; P = params.gravity_P, dP = params.gravity_dP
+                gm, jd_utc, rk_pef; μ = μ, P = params.gravity_P, dP = params.gravity_dP
             )) +
             _point_mass_acceleration(rk_tod, rsun_tod, _μ_SUN) +
             _point_mass_acceleration(rk_tod, rmoon_tod, _μ_MOON)
@@ -127,7 +127,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
     # The J₂² rates are expressed in classical elements. Convert them to equinoctial
     # rates using the Jacobian of the transformation.
     Jec    = _classical_to_equinoctial_jacobian(ē, ī, Ω̄, ω̄)
-    ∂u_J₂² = Jec * J₂²_variational_rates(ā, ē, ī, ω̄, gm)
+    ∂u_J₂² = Jec * J₂²_variational_rates(ā, ē, ī, ω̄, μ, params.Re, params.J₂)
 
     # Non-conservative perturbations (averaged)
     ∂u_drag, ∂u_srp = _atmospheric_drag_and_solar_radiation_pressure_variational_rates(

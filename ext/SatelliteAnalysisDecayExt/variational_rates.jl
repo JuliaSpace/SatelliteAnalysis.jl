@@ -184,13 +184,16 @@ end
         ē::T,
         ī::T,
         ω̄::T,
-        gm::AbstractGravityModel
+        μ::Number,
+        Re::Number,
+        J₂::Number
     ) where T <: Number -> SVector{6, T}
 
 Compute the averaged variation rates of the mean classical orbital elements due to the
 second-order zonal harmonic effects (J₂²) for an orbit with mean semi-major axis `ā` [m],
 mean eccentricity `ē` [-], mean inclination `ī` [rad], and mean argument of perigee `ω̄`
-[rad]. The J₂ coefficient is obtained from the gravity model `gm`.
+[rad]. The gravitational constant `μ` [m³/s²], the reference radius `Re` [m], and the J₂
+coefficient `J₂` [-] must be consistent with the gravity model used by the caller.
 
 The returned rates contain **only** the terms proportional to J₂². The first-order secular
 rates are already captured by numerically averaging the zonal gravitational acceleration
@@ -217,13 +220,10 @@ function J₂²_variational_rates(
     ē::T,
     ī::T,
     ω̄::T,
-    gm::AbstractGravityModel
+    μ::Number,
+    Re::Number,
+    J₂::Number
 ) where T <: Number
-    μ    = GravityModels.gravity_constant(gm)
-    Re   = GravityModels.radius(gm)
-    C₂_₀ = GravityModels.coefficients(gm, 2, 0) |> first
-    J₂   = -C₂_₀ * √5
-
     # Regularization.
     ē = max(ē, T(1e-6))
     ī = max(ī, T(1e-6))

@@ -141,6 +141,11 @@ function _decay_analysis(
     gravity_P  = Matrix{Float64}(undef, 8, 8)
     gravity_dP = Matrix{Float64}(undef, 8, 8)
 
+    # Hoist the gravity model constants used by the hot loop out of the right-hand side.
+    μ  = GravityModels.gravity_constant(gm)
+    Re = GravityModels.radius(gm)
+    J₂ = -first(GravityModels.coefficients(gm, 2, 0)) * √5
+
     # NOTE: `params` carries per-call mutable workspaces: the propagator `j2osc_prop` and
     # the gravity model buffers `gravity_P` and `gravity_dP`. Hence, the assembled ODE
     # problem must not be shared across concurrent solves. Every call to `decay_analysis`
@@ -154,6 +159,9 @@ function _decay_analysis(
         C_r                           = C_r,
         F107                          = F107,
         gm                            = gm,
+        μ                             = μ,
+        Re                            = Re,
+        J₂                            = J₂,
         gravity_P                     = gravity_P,
         gravity_dP                    = gravity_dP,
         jd₀_utc                       = orb.t,

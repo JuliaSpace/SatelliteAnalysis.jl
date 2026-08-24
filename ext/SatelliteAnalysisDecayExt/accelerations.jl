@@ -86,6 +86,10 @@ perturbational part.
     (**Default**: 7).
 - `max_order::Int`: Maximum order of the gravity model to consider.
     (**Default**: 0).
+- `μ::Union{Nothing, Number}`: Gravitational constant [m³/s²] of `gm`, used by the
+    analytic central term. If it is `nothing`, the value is queried from the gravity
+    model.
+    (**Default**: `nothing`)
 - `P::Union{Nothing, AbstractMatrix}`: Optional matrix with at least
     `(max_degree + 1) × (max_degree + 1)` elements to store the Legendre coefficients,
     reducing the allocations. If it is `nothing`, the matrix is allocated at every call.
@@ -107,6 +111,7 @@ function _perturbational_gravity_acceleration(
     r_ecef::AbstractVector;
     max_degree::Int = 7,
     max_order::Int = 0,
+    μ::Union{Nothing, Number} = nothing,
     P::Union{Nothing, AbstractMatrix} = nothing,
     dP::Union{Nothing, AbstractMatrix} = nothing,
 )
@@ -127,9 +132,9 @@ function _perturbational_gravity_acceleration(
 
     # Central term (degree 0, order 0), computed analytically as -μ r / r³ to avoid a
     # second gravity model evaluation.
-    μ  = GravityModels.gravity_constant(gm)
+    μ′ = isnothing(μ) ? GravityModels.gravity_constant(gm) : μ
     r² = dot(r_ecef, r_ecef)
-    a_ecef_central = -μ / (r² * √r²) * r_ecef
+    a_ecef_central = -μ′ / (r² * √r²) * r_ecef
 
     # Perturbational acceleration.
     a_ecef_pert = a_ecef_total - a_ecef_central
