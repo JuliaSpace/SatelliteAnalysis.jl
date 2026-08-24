@@ -2,6 +2,7 @@ module SatelliteAnalysisDecayExt
 
 using LinearAlgebra
 using OrdinaryDiffEqAdamsBashforthMoulton
+using PrecompileTools
 using SatelliteAnalysis
 using StaticArrays
 
@@ -29,6 +30,7 @@ include("misc.jl")
 include("progress.jl")
 include("variational_rates.jl")
 include("main.jl")
+include("precompile.jl")
 
 end
 
