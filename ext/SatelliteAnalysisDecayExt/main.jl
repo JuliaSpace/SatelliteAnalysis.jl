@@ -296,9 +296,10 @@ function _decay_analysis(
         aₑ, eₑ, _, _, _, _ = _equinoctial_to_classical(sol.u[end])
 
         perigee_end = aₑ * (1 - eₑ) - EARTH_EQUATORIAL_RADIUS
+        apogee_end  = aₑ * (1 + eₑ) - EARTH_EQUATORIAL_RADIUS
         reentered   = perigee_end <= terminate_altitude * (1 + 1e-6)
 
-        _finish_decay_progress!(progress, sol.t[end], reentered)
+        _finish_decay_progress!(progress, sol.t[end], perigee_end, apogee_end, reentered)
     end
 
     # == Assemble the Output ===============================================================

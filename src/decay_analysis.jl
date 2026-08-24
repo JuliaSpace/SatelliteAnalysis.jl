@@ -106,12 +106,14 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     (365.25 days).
     (**Default**: `:y`)
 - `verbose::Bool`: If `true`, a progress interface is shown in `stderr` during the
-    numerical integration, together with a summary line at the end. In interactive
-    terminals, a live panel shows a progress bar, the current mean perigee and apogee
-    altitudes, the elapsed model time, and the elapsed wall time. Otherwise, plain
-    progress lines are printed at every 10%. The progress fraction is the maximum between
-    the time fraction and the perigee descent fraction, so it reaches 100% at either
-    termination condition. Enabling the interface does not change the analysis result.
+    numerical integration. In interactive terminals, a live panel shows a progress bar,
+    the current mean perigee and apogee altitudes, the elapsed model time, and the
+    elapsed wall time; at the end, the panel is left on the screen with the final state
+    and a summary line is printed below it. Otherwise, plain progress lines are printed
+    at every 5%, followed by the summary line. The progress fraction is the maximum
+    between the time fraction and the perigee descent fraction, so it reaches 100% at
+    either termination condition. Enabling the interface does not change the analysis
+    result.
     (**Default**: `false`)
 
 # Returns

@@ -242,13 +242,21 @@ function _update_decay_progress!(
 end
 
 """
-    _finish_decay_progress!(progress::DecayProgress, t_end::Number, reentered::Bool) -> Nothing
+    _finish_decay_progress!(progress::DecayProgress, t_end::Number, perigee_end::Number, apogee_end::Number, reentered::Bool) -> Nothing
 
-Finish the progress interface `progress`, erasing the panel in ANSI mode and printing a
-summary line with the outcome: a reentry after the model time `t_end` [s] if `reentered`
-is `true`, or no reentry within the maximum propagation time otherwise.
+Finish the progress interface `progress` at the final model time `t_end` [s] with the
+final mean perigee and apogee altitudes [m]. In ANSI mode, the panel is redrawn with the
+final state and left on the screen. A summary line is then printed with the outcome: a
+reentry after `t_end` if `reentered` is `true`, or no reentry within the maximum
+propagation time otherwise.
 """
-function _finish_decay_progress!(progress::DecayProgress, t_end::Number, reentered::Bool)
+function _finish_decay_progress!(
+    progress::DecayProgress,
+    t_end::Number,
+    perigee_end::Number,
+    apogee_end::Number,
+    reentered::Bool
+)
     wall = time() - progress.start_wall
 
     msg = reentered ?
@@ -258,8 +266,14 @@ function _finish_decay_progress!(progress::DecayProgress, t_end::Number, reenter
     msg *= " (wall time: " * _format_progress_span(wall) * ")"
 
     if progress.ansi
-        # Erase the panel and print the summary in its place.
-        progress.drawn && print(progress.io, "\e[$(_PROGRESS_PANEL_LINES)A\e[0J")
+        # Redraw the panel with the final state, leaving it on the screen, and print the
+        # summary below it. Notice that the progress fraction is 1 at either termination
+        # condition by construction.
+        fraction = _decay_progress_fraction(progress, t_end, perigee_end)
+
+        _draw_decay_progress_panel(progress, fraction, t_end, perigee_end, apogee_end, wall)
+        progress.drawn = true
+
         println(progress.io, "\e[32m✓\e[0m ", msg)
     else
         println(progress.io, msg)

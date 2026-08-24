@@ -375,7 +375,7 @@ end
 
     ext._start_decay_progress!(p, 310e3)
     ext._update_decay_progress!(p, 86400.0, 120e3, 130e3)
-    ext._finish_decay_progress!(p, 86400.0, true)
+    ext._finish_decay_progress!(p, 86400.0, 120e3, 130e3, true)
     ext._cleanup_decay_progress!(p)
 
     out = String(take!(buf))
@@ -388,7 +388,7 @@ end
     # The no-reentry summary must report the maximum propagation time.
     p₂ = ext.DecayProgress(buf, 86400.0, 300e3, 120e3; ansi = true)
 
-    ext._finish_decay_progress!(p₂, 86400.0, false)
+    ext._finish_decay_progress!(p₂, 86400.0, 250e3, 260e3, false)
 
     out = String(take!(buf))
 
