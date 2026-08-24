@@ -113,16 +113,15 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
 
         # Instantaneous Gauss equations for the equinoctial elements (with mean
         # parameters).
-        Ak, Bk = _equinoctial_gauss_variational_matrices(
-            ā, ē, ī, Ω̄, ω̄, f̄k, rk, p̄, h̄, η̄, n̄
-        )
+        Ak = _equinoctial_gauss_variational_matrices(ā, ē, ī, Ω̄, ω̄, f̄k, rk, p̄, h̄, η̄)
 
-        # Accumulation
-        ∂C_avg = ∂C_avg + (Ak * δak_hill + Bk)
+        # Accumulation.
+        ∂C_avg = ∂C_avg + Ak * δak_hill
     end
 
-    # Average of conservative perturbations.
-    ∂C_total = ∂C_avg / N
+    # Average of the conservative perturbations plus the constant Kepler term of the
+    # mean longitude rate.
+    ∂C_total = ∂C_avg / N + @SVector T[0, n̄, 0, 0, 0, 0]
 
     # The J₂² rates are expressed in classical elements. Convert them to equinoctial
     # rates using the Jacobian of the transformation.
@@ -139,7 +138,6 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
         ω̄,
         p̄,
         h̄,
-        n̄,
         η̄,
         rsun_tod,
         D_pef_tod,

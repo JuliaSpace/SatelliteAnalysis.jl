@@ -1,7 +1,7 @@
 ## Description #############################################################################
 #
-# Functions to compute the Gauss variational matrices A(y) and B for orbital element
-# propagation under perturbations.
+# Functions to compute the Gauss variational matrix A(y) for orbital element propagation
+# under perturbations.
 #
 ############################################################################################
 
@@ -16,9 +16,8 @@
         r::T,
         p::T,
         h::T,
-        η::T,
-        n::T
-    ) where T <: Number -> SMatrix{6, 3, T}, SVector{6, T}
+        η::T
+    ) where T <: Number -> SMatrix{6, 3, T}
 
 Compute the Gauss variational equations in matrix form for the equinoctial orbital elements
 **[1]**:
@@ -27,7 +26,8 @@ Compute the Gauss variational equations in matrix form for the equinoctial orbit
 
 where `u = [a, ψ, e_x, e_y, i_x, i_y]` are the equinoctial elements and
 `ap = [u_r, u_θ, u_h]` is the perturbation acceleration represented in the Hill frame
-(radial, along-track, cross-track).
+(radial, along-track, cross-track). The constant Kepler term `B = [0, n, 0, 0, 0, 0]`,
+where `n` is the mean motion, is not returned and must be added once by the caller.
 
 This formulation is obtained by analytically combining the classical Gauss variational
 equations with the Jacobian of the classical-to-equinoctial transformation. All `1 / e`
@@ -47,12 +47,10 @@ equinoctial element set.
 - `p::T`: Semi-latus rectum [m].
 - `h::T`: Specific angular momentum [m²/s].
 - `η::T`: `√(1 - e²)` [-].
-- `n::T`: Mean motion [rad/s].
 
 # Returns
 
 - `SMatrix{6, 3, T}`: Matrix `A` multiplying the perturbation vector `[u_r, u_θ, u_h]`.
-- `SVector{6, T}`: Constant vector `B = [0, n, 0, 0, 0, 0]`.
 
 # References
 
@@ -69,8 +67,7 @@ function _equinoctial_gauss_variational_matrices(
     r::T,
     p::T,
     h::T,
-    η::T,
-    n::T
+    η::T
 ) where T <: Number
     ξ = Ω + ω
     L = f + ξ
@@ -102,7 +99,5 @@ function _equinoctial_gauss_variational_matrices(
         0  0  (r / h * (cos_io2 * sin_Ω * cos_θ + cos_Ω * sin_θ / cos_io2) / 2)
     ]
 
-    B = @SVector T[0, n, 0, 0, 0, 0]
-
-    return A, B
+    return A
 end

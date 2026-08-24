@@ -14,7 +14,6 @@
         ω̄::T,
         p̄::T,
         h̄::T,
-        n̄::T,
         η̄::T,
         rsun_tod::SVector{3, T},
         D_pef_tod::StaticMatrix{3, 3, T},
@@ -39,7 +38,6 @@ the physically meaningful region and derived consistently, as done by `_dynamics
 - `ω̄::T`: Mean argument of perigee [rad].
 - `p̄::T`: Mean semi-latus rectum [m].
 - `h̄::T`: Mean specific angular momentum [m²/s].
-- `n̄::T`: Mean motion [rad/s].
 - `η̄::T`: Mean eccentricity factor `√(1 - ē²)` [-].
 - `rsun_tod::SVector{3, T}`: Sun position vector [m] in TOD frame.
 - `D_pef_tod::StaticMatrix{3, 3, T}`: DCM that rotates vectors from the TOD frame to the
@@ -78,7 +76,6 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
     ω̄::T,
     p̄::T,
     h̄::T,
-    n̄::T,
     η̄::T,
     rsun_tod::SVector{3, T},
     D_pef_tod::StaticMatrix{3, 3, T},
@@ -150,12 +147,10 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
         adrag_hill = D_hill_tod * adrag_tod
         asrp_hill  = D_hill_tod * asrp_tod
 
-        # Gauss equations with mean parameters. The Kepler term `B` is not added here
-        # because it is already accounted for in the conservative average, avoiding
-        # counting the mean motion multiple times in the mean anomaly rate.
-        Ak, _ = _equinoctial_gauss_variational_matrices(
-            ā, ē, ī, Ω̄, ω̄, f̄k, rk, p̄, h̄, η̄, n̄
-        )
+        # Gauss equations with mean parameters. The Kepler term is not added here
+        # because it is already accounted for in `_dynamics`, avoiding counting the
+        # mean motion multiple times in the mean anomaly rate.
+        Ak = _equinoctial_gauss_variational_matrices(ā, ē, ī, Ω̄, ω̄, f̄k, rk, p̄, h̄, η̄)
 
         # Temporal weighting.
         w_t = rk² / h̄
@@ -166,14 +161,9 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
         Wsum += w_t
     end
 
-    # Normalize.
-    if Wsum > 0
-        ∂u_drag = ∂u_drag / Wsum
-        ∂u_srp  = ∂u_srp  / Wsum
-    else
-        ∂u_drag = @SVector zeros(T, 6)
-        ∂u_srp  = @SVector zeros(T, 6)
-    end
+    # Normalize. The sum of weights is strictly positive since `w_t = rk² / h̄ > 0`.
+    ∂u_drag = ∂u_drag / Wsum
+    ∂u_srp  = ∂u_srp  / Wsum
 
     return ∂u_drag, ∂u_srp
 end
