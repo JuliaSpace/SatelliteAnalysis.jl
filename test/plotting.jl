@@ -65,6 +65,23 @@ end
     @test fig isa Figure
     @test ax isa Axis
 
+    # Custom title and subtitle, and disabled subtitle.
+    fig, ax = plot_decay_analysis(df; title = "My Decay", subtitle = "Worst case")
+
+    @test fig isa Figure
+    @test ax.title[] == "My Decay"
+    @test ax.subtitle[] == "Worst case"
+
+    fig, ax = plot_decay_analysis(df; subtitle = nothing)
+
+    @test fig isa Figure
+    @test ax.subtitle[] == ""
+
+    # The automatic subtitle must show the analysis timespan.
+    fig, ax = plot_decay_analysis(df)
+
+    @test ax.subtitle[] == "2024-01-01 → 2024-02-06 UTC"
+
     # Optional decorations: mission name, reentry date, and F10.7 twin y-axis.
     fig, ax = plot_decay_analysis(
         df;
@@ -131,6 +148,9 @@ end
 
     # The keyword `show_f107` requires the column `f107`.
     @test_throws ArgumentError plot_decay_analysis(df_no_metadata; show_f107 = true)
+
+    # The keyword `subtitle` only accepts the symbol `:auto`.
+    @test_throws ArgumentError plot_decay_analysis(df; subtitle = :date)
 end
 
 # == File: ./src/plotting/fetch_country_polygons.jl ========================================

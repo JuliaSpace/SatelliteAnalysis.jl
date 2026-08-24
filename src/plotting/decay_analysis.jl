@@ -64,6 +64,10 @@ and the related keyword was not passed, is omitted from the panel.
 - `show_reentry_date::Bool`: If `true`, the estimated reentry date [UTC] is shown in the
     information panel below the time to reenter. Otherwise, only the timespan is shown.
     (**Default**: `false`)
+- `subtitle::Union{Nothing, String, Symbol}`: Subtitle rendered below the plot title. If it
+    is `:auto`, the subtitle shows the analysis timespan [UTC]. If it is `nothing`, no
+    subtitle is added to the figure. Any other `Symbol` raises an `ArgumentError`.
+    (**Default**: `:auto`)
 - `terminate_altitude::Union{Nothing, Number}`: Mean perigee altitude [m] that terminates
     the decay analysis, used to detect if a reentry happened. If it is `nothing`, the value
     is obtained from the metadata `Terminate Altitude` of `df`.
@@ -71,6 +75,8 @@ and the related keyword was not passed, is omitted from the panel.
 - `theme::Symbol`: Theme variant used to style the figure, applied locally through the
     function `SatelliteAnalysis.makie_theme`. It can be `:light` or `:dark`.
     (**Default**: `:light`)
+- `title::String`: Title of the plot.
+    (**Default**: `"Orbital Decay Analysis"`)
 - `size::Tuple`: Size of the figure.
     (**Default**: `(1280, 720)`)
 
@@ -84,6 +90,7 @@ All other `kwargs...` are passed to the function `Figure`.
     `perigee_altitude`, or if the keyword `show_f107` is `true` and `df` does not have the
     column `f107`.
 - `ArgumentError`: If the theme variant in `theme` is not `:dark` or `:light`.
+- `ArgumentError`: If the keyword `subtitle` is a `Symbol` other than `:auto`.
 
 ## Examples
 

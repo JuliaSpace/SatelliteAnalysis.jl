@@ -17,8 +17,10 @@ function SatelliteAnalysis.plot_decay_analysis(
     show_f107::Bool = false,
     show_reentry_callout::Bool = true,
     show_reentry_date::Bool = false,
+    subtitle::Union{Nothing, String, Symbol} = :auto,
     terminate_altitude::Union{Nothing, Number}  = nothing,
     theme::Symbol = :light,
+    title::String = "Orbital Decay Analysis",
     size = (1280, 720),
     kwargs...
 )
@@ -36,6 +38,10 @@ function SatelliteAnalysis.plot_decay_analysis(
     end
 
     isempty(df) && throw(ArgumentError("The input `DataFrame` is empty."))
+
+    (subtitle isa Symbol && subtitle != :auto) && throw(
+        ArgumentError("The keyword `subtitle` must be a `String`, `nothing`, or `:auto`.")
+    )
 
     # Build the theme first since it also validates the variant in `theme`.
     sa_theme = makie_theme(theme)
@@ -187,11 +193,24 @@ function SatelliteAnalysis.plot_decay_analysis(
 
         main_axis_background = show_f107 ? (; backgroundcolor = :transparent) : (;)
 
+        # The automatic subtitle shows the analysis timespan.
+        subtitle_str = subtitle isa Symbol ?
+            Dates.format(first(df.date), dateformat"yyyy-mm-dd") * " → " *
+                Dates.format(last(df.date), dateformat"yyyy-mm-dd") * " UTC" :
+            subtitle
+
+        subtitle_attrs = isnothing(subtitle_str) ? (;) : (;
+            subtitle      = subtitle_str,
+            subtitlecolor = subline_color,
+            subtitlesize  = 16.0,
+        )
+
         ax = Axis(
             fig[1, 1];
-            title  = "Orbital Decay Analysis",
+            title  = title,
             xlabel = "Time [$time_unit]",
             ylabel = "Altitude [$distance_unit]",
+            subtitle_attrs...,
             main_axis_background...
         )
 
