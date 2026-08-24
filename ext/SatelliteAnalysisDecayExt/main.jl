@@ -49,7 +49,7 @@ function SatelliteAnalysis.decay_analysis(
     # The default atmospheric model carries a mutable buffer, so a fresh instance is built
     # per call to keep the public API thread-safe.
     atmospheric_model′ = isnothing(atmospheric_model) ?
-        _Nrlmsise00AtmosphericModel() :
+        Nrlmsise00AtmosphericModel() :
         atmospheric_model
 
     # Descriptions of the atmospheric model and the F10.7 source, recorded as metadata in
@@ -288,7 +288,7 @@ function _decay_analysis(
 end
 
 """
-    struct _Nrlmsise00AtmosphericModel
+    struct Nrlmsise00AtmosphericModel
 
 Default atmospheric model of the decay analysis, wrapping the NRLMSISE-00 model provided
 by **AtmosphericModels.jl** with a constant geomagnetic index Ap = 9, as in STELA.
@@ -299,21 +299,21 @@ by **AtmosphericModels.jl** with a constant geomagnetic index Ap = 9, as in STEL
     avoiding one matrix allocation per density evaluation. Since it is mutated at every
     evaluation, an instance must not be shared across concurrent computations.
 """
-struct _Nrlmsise00AtmosphericModel
+struct Nrlmsise00AtmosphericModel
     P::Matrix{Float64}
 
-    _Nrlmsise00AtmosphericModel() = new(Matrix{Float64}(undef, 8, 4))
+    Nrlmsise00AtmosphericModel() = new(Matrix{Float64}(undef, 8, 4))
 end
 
 """
-    (m::_Nrlmsise00AtmosphericModel)(jd_utc::Number, lat::Number, lon::Number, h::Number, F107::Number) -> Float64
+    (m::Nrlmsise00AtmosphericModel)(jd_utc::Number, lat::Number, lon::Number, h::Number, F107::Number) -> Float64
 
 Compute the atmospheric density [kg/m³] using the NRLMSISE-00 model at the Julian date
 `jd_utc` [UTC], geodetic latitude `lat` [rad], longitude `lon` [rad], and altitude `h` [m],
 considering the 10.7 cm solar flux index `F107` [sfu] as both the daily value and the
 81-day centered average.
 """
-function (m::_Nrlmsise00AtmosphericModel)(
+function (m::Nrlmsise00AtmosphericModel)(
     jd_utc::Number, lat::Number, lon::Number, h::Number, F107::Number
 )
     # We use the default Ap value of 9 as in STELA. Notice that the influence of Ap on the

@@ -323,7 +323,7 @@ end
     C_r      = 1.25
 
     # Instance of the default atmospheric model used by the Cowell reference.
-    atm_model = ext._Nrlmsise00AtmosphericModel()
+    atm_model = ext.Nrlmsise00AtmosphericModel()
 
     jd₀ = date_to_jd(2024, 1, 1)
 
