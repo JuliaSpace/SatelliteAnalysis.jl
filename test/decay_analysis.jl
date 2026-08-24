@@ -314,6 +314,9 @@ end
     C_d      = 2.2
     C_r      = 1.25
 
+    # Instance of the default atmospheric model used by the Cowell reference.
+    atm_model = ext._Nrlmsise00AtmosphericModel()
+
     jd₀ = date_to_jd(2024, 1, 1)
 
     orb = KeplerianElements(
@@ -360,7 +363,7 @@ end
 
         # Atmospheric drag using the same routine, atmospheric model, and space index.
         a_drag_pef = ext._atmospheric_drag_acceleration(
-            ext._decay_analysis__nrlmsise00, jd_utc, r_pef, v_pef, area, mass, C_d, F107
+            atm_model, jd_utc, r_pef, v_pef, area, mass, C_d, F107
         )
 
         # Third-body point masses using the same routine.

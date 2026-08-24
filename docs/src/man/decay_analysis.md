@@ -50,10 +50,10 @@ The following keywords are available:
   where `jd_utc` is the Julian date in UTC and `lat`, `lon`, and `alt` are the
   geodetic latitude [rad], longitude [rad], and altitude [m] of the point where the density
   is evaluated, and `F107` is the 10.7 cm solar flux index [sfu] at that instant. The latter
-  must be considered as the daily value and also the 81-day centered average. By default,
-  the system uses an internal wrapper for the NRLMSISE-00 model provided by
+  must be considered as the daily value and also the 81-day centered average. If it is
+  `nothing`, the system uses an internal wrapper for the NRLMSISE-00 model provided by
   **AtmosphericModels.jl** with a constant geomagnetic index Ap = 9, as in STELA.
-  (**Default**: `_decay_analysis__nrlmsise00`)
+  (**Default**: `nothing`)
 - `gravity_model::Union{AbstractGravityModel, Nothing}`: Gravity model used to compute the
   Earth gravitational perturbation. If it is `nothing`, the system fetches and loads the
   EGM2008 model.

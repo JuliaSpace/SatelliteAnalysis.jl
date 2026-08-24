@@ -20,7 +20,7 @@ function SatelliteAnalysis.decay_analysis(
     satellite_mean_area::Number,
     # Optional keywords. The keywords `atmospheric_model` and `F107` accept any callable
     # object, hence they are not annotated with `::Function`.
-    atmospheric_model = _decay_analysis__nrlmsise00,
+    atmospheric_model = nothing,
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
     num_sampling_points_per_orbit::Int = 17,
     abstol::Number = 1e-6,
@@ -46,6 +46,12 @@ function SatelliteAnalysis.decay_analysis(
         gravity_model
     end
 
+    # The default atmospheric model carries a mutable buffer, so a fresh instance is built
+    # per call to keep the public API thread-safe.
+    atmospheric_model′ = isnothing(atmospheric_model) ?
+        _Nrlmsise00AtmosphericModel() :
+        atmospheric_model
+
     F107′ = if isnothing(F107)
         # Notice that if the user calls `SpaceIndices.destroy()` after this initialization,
         # `space_index` raises a clear error asking to initialize the space indices again.
@@ -70,7 +76,7 @@ function SatelliteAnalysis.decay_analysis(
     return _decay_analysis(
         orb,
         gm,
-        atmospheric_model,
+        atmospheric_model′,
         F107′;
         satellite_mass                = satellite_mass,
         satellite_mean_area           = satellite_mean_area,
@@ -241,14 +247,40 @@ function _decay_analysis(
     return df
 end
 
-function _decay_analysis__nrlmsise00(
+"""
+    struct _Nrlmsise00AtmosphericModel
+
+Default atmospheric model of the decay analysis, wrapping the NRLMSISE-00 model provided
+by **AtmosphericModels.jl** with a constant geomagnetic index Ap = 9, as in STELA.
+
+# Fields
+
+- `P::Matrix{Float64}`: Pre-allocated buffer for the Legendre matrix used by the model,
+    avoiding one matrix allocation per density evaluation. Since it is mutated at every
+    evaluation, an instance must not be shared across concurrent computations.
+"""
+struct _Nrlmsise00AtmosphericModel
+    P::Matrix{Float64}
+
+    _Nrlmsise00AtmosphericModel() = new(Matrix{Float64}(undef, 8, 4))
+end
+
+"""
+    (m::_Nrlmsise00AtmosphericModel)(jd_utc::Number, lat::Number, lon::Number, h::Number, F107::Number) -> Float64
+
+Compute the atmospheric density [kg/m³] using the NRLMSISE-00 model at the Julian date
+`jd_utc` [UTC], geodetic latitude `lat` [rad], longitude `lon` [rad], and altitude `h` [m],
+considering the 10.7 cm solar flux index `F107` [sfu] as both the daily value and the
+81-day centered average.
+"""
+function (m::_Nrlmsise00AtmosphericModel)(
     jd_utc::Number, lat::Number, lon::Number, h::Number, F107::Number
 )
     # We use the default Ap value of 9 as in STELA. Notice that the influence of Ap on the
     # atmospheric density is much smaller than that of F10.7, and the geomagnetic index is
     # not known in advance for a decay analysis.
     Ap    = 9
-    atmos = AtmosphericModels.nrlmsise00(jd_utc, h, lat, lon, F107, F107, Ap)
+    atmos = AtmosphericModels.nrlmsise00(jd_utc, h, lat, lon, F107, F107, Ap; P = m.P)
     ρ     = atmos.total_density
 
     return ρ
