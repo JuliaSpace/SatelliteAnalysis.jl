@@ -6,7 +6,7 @@
 
 """
     _atmospheric_drag_acceleration(
-        atmospheric_model::Function,
+        atmospheric_model::Any,
         jd_utc::Number,
         r_ecef::AbstractVector{T},
         v_ecef::AbstractVector{T},
@@ -21,8 +21,8 @@ atmospheric model `am`.
 
 # Arguments
 
-- `atmospheric_model::Function`: Function that returns the atmospheric density [kg/m³] at a
-    given location and time considering a specific F10.7 index. The function must have the
+- `atmospheric_model::Any`: Callable object that returns the atmospheric density [kg/m³] at
+    a given location and time considering a specific F10.7 index. It must have the
     signature
     `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) -> Number`
     where `jd_utc` is the Julian date in UTC and `lat`, `lon`, and `alt` are the geodetic
@@ -42,7 +42,7 @@ atmospheric model `am`.
 - `SVector{3, T}`: Drag acceleration vector [m/s²] represented in the ECEF frame.
 """
 function _atmospheric_drag_acceleration(
-    atmospheric_model::Function,
+    atmospheric_model,
     jd_utc::Number,
     r_ecef::AbstractVector{T},
     v_ecef::AbstractVector{T},

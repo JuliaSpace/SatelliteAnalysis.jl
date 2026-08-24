@@ -43,10 +43,11 @@ The following keywords are available:
 - `satellite_mass::Number`: Satellite mass [kg]. This keyword is required.
 - `satellite_mean_area::Number`: Mean cross-sectional area [m²] used for both the
   atmospheric drag and the solar radiation pressure. This keyword is required.
-- `atmospheric_model::Function`: Function that returns the atmospheric density [kg/m³] at a
-  given location and time considering a specific F10.7 index. The function must have the
-  signature `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) ->
-  Number` where `jd_utc` is the Julian date in UTC and `lat`, `lon`, and `alt` are the
+- `atmospheric_model::Any`: Callable object (a function or a callable structure) that
+  returns the atmospheric density [kg/m³] at a given location and time considering a
+  specific F10.7 index. It must have the signature
+  `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) -> Number`
+  where `jd_utc` is the Julian date in UTC and `lat`, `lon`, and `alt` are the
   geodetic latitude [rad], longitude [rad], and altitude [m] of the point where the density
   is evaluated, and `F107` is the 10.7 cm solar flux index [sfu] at that instant. The latter
   must be considered as the daily value and also the 81-day centered average. By default,
@@ -69,9 +70,9 @@ The following keywords are available:
 - `distance_unit::Symbol`: Unit of the altitude columns in the output `DataFrame`. It can
   be `:m` for meters or `:km` for kilometers.
   (**Default**: `:km`)
-- `F107::Union{Function, Nothing, Number}`: 10.7 cm solar flux index [sfu]. It can be a
-  constant value or a function of time (in Julian days) that returns the solar flux index
-  at that instant: `(jd_utc::Number) -> Number`. If it is `nothing`, the system uses the
+- `F107::Any`: 10.7 cm solar flux index [sfu]. It can be a constant value or a callable
+  object of time (in Julian days) that returns the solar flux index at that instant:
+  `(jd_utc::Number) -> Number`. If it is `nothing`, the system uses the
   predicted F10.7 provided by **SpaceIndices.jl** (space index `F10predicted`), a harmonic
   model fitted to the observed data that captures the mean solar cycle behavior. In this
   case, the required space index set is initialized automatically, downloading the

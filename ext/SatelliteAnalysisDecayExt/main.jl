@@ -14,15 +14,16 @@ function SatelliteAnalysis.decay_analysis(
     # Required keywords.
     satellite_mass::Number,
     satellite_mean_area::Number,
-    # Optional keywords.
-    atmospheric_model::Function = _decay_analysis__nrlmsise00,
+    # Optional keywords. The keywords `atmospheric_model` and `F107` accept any callable
+    # object, hence they are not annotated with `::Function`.
+    atmospheric_model = _decay_analysis__nrlmsise00,
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
     num_sampling_points_per_orbit::Int = 17,
     abstol::Number = 1e-6,
     C_d::Number = 2.2,
     C_r::Number = 1.25,
     distance_unit::Symbol = :km,
-    F107::Union{Function, Nothing, Number} = nothing,
+    F107 = nothing,
     reltol::Number = 1e-6,
     return_solution::Bool = false,
     solver = VCABM(),
@@ -49,21 +50,24 @@ function SatelliteAnalysis.decay_analysis(
         F107
     end
 
-    # The keyword `gravity_model` is abstractly typed. This function barrier ensures the
-    # gravity model is concretely typed inside the numerical integration, avoiding dynamic
-    # dispatch at every right-hand-side evaluation.
+    # The keyword `gravity_model` is abstractly typed and the callables in
+    # `atmospheric_model` and `F107′` have call-site dependent types. This function
+    # barrier ensures they are concretely typed inside the numerical integration, avoiding
+    # dynamic dispatch at every right-hand-side evaluation. The callables are passed as
+    # positional arguments since keyword arguments cannot bind the type parameters that
+    # force the specialization.
     return _decay_analysis(
         orb,
-        gm;
+        gm,
+        atmospheric_model,
+        F107′;
         satellite_mass                = satellite_mass,
         satellite_mean_area           = satellite_mean_area,
         num_sampling_points_per_orbit = num_sampling_points_per_orbit,
         abstol                        = abstol,
-        atmospheric_model             = atmospheric_model,
         C_d                           = C_d,
         C_r                           = C_r,
         distance_unit                 = distance_unit,
-        F107                          = F107′,
         reltol                        = reltol,
         return_solution               = return_solution,
         solver                        = solver,
@@ -79,23 +83,23 @@ end
 
 function _decay_analysis(
     orb::KeplerianElements,
-    gm::AbstractGravityModel;
+    gm::AbstractGravityModel,
+    atmospheric_model::AM,
+    F107::FF;
     satellite_mass::Number,
     satellite_mean_area::Number,
     num_sampling_points_per_orbit::Int,
     abstol::Number,
-    atmospheric_model::Function,
     C_d::Number,
     C_r::Number,
     distance_unit::Symbol,
-    F107::Function,
     reltol::Number,
     return_solution::Bool,
     solver,
     terminate_altitude::Number,
     tf::Number,
     time_unit::Symbol,
-)
+) where {AM, FF}
     M = true_to_mean_anomaly(orb.e, orb.f)
     ā, ē, ī, Ω̄, ω̄, M̄ = _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M)
     u = Vector(_classical_to_equinoctial(ā, ē, ī, Ω̄, ω̄, M̄))
