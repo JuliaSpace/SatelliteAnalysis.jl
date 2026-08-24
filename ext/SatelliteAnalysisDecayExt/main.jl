@@ -15,10 +15,10 @@ function SatelliteAnalysis.decay_analysis(
     satellite_mass::Number,
     satellite_mean_area::Number,
     # Optional keywords.
+    atmospheric_model::Function = _decay_analysis__nrlmsise00,
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
     num_sampling_points_per_orbit::Int = 17,
     abstol::Number = 1e-6,
-    Ap::Union{Function, Nothing, Number} = nothing,
     C_d::Number = 2.2,
     C_r::Number = 1.25,
     distance_unit::Symbol = :km,
@@ -33,14 +33,6 @@ function SatelliteAnalysis.decay_analysis(
     gm = isnothing(gravity_model) ?
         GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008)) :
         gravity_model
-
-    Ap′ = if isnothing(Ap)
-        _ -> Float64(12)
-    elseif Ap isa Number
-        _ -> Float64(Ap)
-    else
-        Ap
-    end
 
     F107′ = if isnothing(F107)
         # Notice that if the user calls `SpaceIndices.destroy()` after this initialization,
@@ -67,7 +59,7 @@ function SatelliteAnalysis.decay_analysis(
         satellite_mean_area           = satellite_mean_area,
         num_sampling_points_per_orbit = num_sampling_points_per_orbit,
         abstol                        = abstol,
-        Ap                            = Ap′,
+        atmospheric_model             = atmospheric_model,
         C_d                           = C_d,
         C_r                           = C_r,
         distance_unit                 = distance_unit,
@@ -92,7 +84,7 @@ function _decay_analysis(
     satellite_mean_area::Number,
     num_sampling_points_per_orbit::Int,
     abstol::Number,
-    Ap::Function,
+    atmospheric_model::Function,
     C_d::Number,
     C_r::Number,
     distance_unit::Symbol,
@@ -122,7 +114,7 @@ function _decay_analysis(
         satellite_mean_area           = satellite_mean_area,
         satellite_mass                = satellite_mass,
         num_sampling_points_per_orbit = num_sampling_points_per_orbit,
-        Ap                            = Ap,
+        atmospheric_model             = atmospheric_model,
         C_d                           = C_d,
         C_r                           = C_r,
         F107                          = F107,
@@ -152,7 +144,6 @@ function _decay_analysis(
     date             = Vector{DateTime}(undef, num_points)
     time             = Vector{Float64}(undef, num_points)
     f107             = Vector{Float64}(undef, num_points)
-    ap               = Vector{Float64}(undef, num_points)
     mean_elements    = Vector{KeplerianElements{Float64, Float64}}(undef, num_points)
     apogee_altitude  = Vector{Float64}(undef, num_points)
     perigee_altitude = Vector{Float64}(undef, num_points)
@@ -167,7 +158,6 @@ function _decay_analysis(
 
         # Record the space indices used by the dynamics at each instant.
         f107[k] = F107(jdₖ)
-        ap[k]   = Ap(jdₖ)
 
         mean_elements[k] = KeplerianElements(
             jdₖ, aₖ, eₖ, iₖ, Ωₖ, ωₖ, mean_to_true_anomaly(eₖ, Mₖ)
@@ -202,7 +192,6 @@ function _decay_analysis(
         date             = date,
         time             = time,
         f107             = f107,
-        ap               = ap,
         mean_elements    = mean_elements,
         apogee_altitude  = apogee_altitude,
         perigee_altitude = perigee_altitude,
@@ -218,7 +207,6 @@ function _decay_analysis(
     colmetadata!(df, :date,             "Unit", :UTC)
     colmetadata!(df, :time,             "Unit", time_unit)
     colmetadata!(df, :f107,             "Unit", :sfu)
-    colmetadata!(df, :ap,               "Unit", :dimensionless)
     colmetadata!(df, :mean_elements,    "Unit", :SI)
     colmetadata!(df, :apogee_altitude,  "Unit", distance_unit)
     colmetadata!(df, :perigee_altitude, "Unit", distance_unit)
@@ -228,8 +216,21 @@ function _decay_analysis(
     return df
 end
 
+function _decay_analysis__nrlmsise00(
+    jd_utc::Number, lat::Number, lon::Number, h::Number, F107::Number
+)
+    # We use the default Ap value of 9 as in STELA. Notice that the influence of Ap on the
+    # atmospheric density is much smaller than that of F10.7, and the geomagnetic index is
+    # not known in advance for a decay analysis.
+    Ap    = 9
+    atmos = AtmosphericModels.nrlmsise00(jd_utc, h, lat, lon, F107, F107, Ap)
+    ρ     = atmos.total_density
+
+    return ρ
+end
+
 function _cb_altitude_condition(u, t, integrator)
-    a_mean, e_mean, i_mean, Ω_mean, ω_mean, M_mean = _equinoctial_to_classical(u)
+    a_mean, e_mean, _, _, _, _ = _equinoctial_to_classical(u)
 
     # Terminate on the perigee altitude of the mean orbit. This condition is a smooth,
     # monotonically decreasing function of the mean elements, whereas the instantaneous

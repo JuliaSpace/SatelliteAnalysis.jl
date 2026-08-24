@@ -16,8 +16,7 @@ propagation time reaches `tf`.
 
 The model averages the following perturbations over one orbit: Earth gravity zonal
 harmonics (including a closed-form J₂² correction), third-body attraction of the Sun and
-the Moon, atmospheric drag using the NRLMSISE-00 model, and solar radiation pressure gated
-by the Earth shadow.
+the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shadow.
 
 !!! warning
 
@@ -42,6 +41,17 @@ by the Earth shadow.
 - `satellite_mass::Number`: Satellite mass [kg]. This keyword is required.
 - `satellite_mean_area::Number`: Mean cross-sectional area [m²] used for both the
     atmospheric drag and the solar radiation pressure. This keyword is required.
+- `atmospheric_model::Function`: Function that returns the atmospheric density [kg/m³] at a
+    given location and time considering a specific F10.7 index. The function must have the
+    signature
+    `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) -> Number`
+    where `jd_utc` is the Julian date in UTC and `lat`, `lon`, and `alt` are the geodetic
+    latitude [rad], longitude [rad], and altitude [m] of the point where the density is
+    evaluated, and `F107` is the 10.7 cm solar flux index [sfu] at that instant. The latter
+    must be considered as the daily value and also the 81-day centered average. By default,
+    the system uses an internal wrapper for the NRLMSISE-00 model provided by
+    **AtmosphericModels.jl**.
+    (**Default**: `_decay_analysis__nrlmsise00`)
 - `gravity_model::Union{AbstractGravityModel, Nothing}`: Gravity model used to compute the
     Earth gravitational perturbation. If it is `nothing`, the system fetches and loads the
     EGM2008 model.
@@ -51,12 +61,6 @@ by the Earth shadow.
     (**Default**: 17)
 - `abstol::Number`: Absolute tolerance of the numerical integration.
     (**Default**: 1e-6)
-- `Ap::Union{Function, Nothing, Number}`: Geomagnetic index [-]. It can be a constant value
-    or a function of time (in Julian days) that returns the geomagnetic index at that
-    instant: `(jd_utc::Number) -> Number`. If it is `nothing`, the system uses the constant
-    value 12, a typical long-term average of the geomagnetic activity that is suitable for
-    decay lifetime estimation.
-    (**Default**: `nothing`)
 - `C_d::Number`: Drag coefficient [-].
     (**Default**: 2.2)
 - `C_r::Number`: Solar radiation pressure coefficient [-].

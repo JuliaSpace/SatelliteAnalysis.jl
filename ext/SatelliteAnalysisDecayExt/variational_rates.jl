@@ -31,14 +31,16 @@ atmospheric drag using quadrature equally spaced in true anomaly and temporal we
 - `ω̄::T`: Mean argument of perigee [rad].
 - `rsun_tod::SVector{3, T}`: Sun position vector [m] in TOD frame.
 - `params::NamedTuple`: Named tuple containing environment parameters:
+    - `atmospheric_model::Function`: Function to compute the atmospheric density [kg/m³] at
+        a given location and time considering a specific F10.7 index. It must have the
+        signature
+        `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) -> Number`.
     - `gm::AbstractGravityModel`: Gravity model for Earth.
     - `num_sampling_points_per_orbit::Int`: Number of quadrature points for averaging.
     - `satellite_mass::Number`: Spacecraft mass [kg].
     - `satellite_mean_area::Number`: Effective cross-sectional area [m²].
     - `j2osc_prop::OrbitPropagatorJ2Osculating`: Pre-allocated J2 osculating propagator
         used for the mean-to-osculating conversion.
-    - `Ap::Function`: A function to retrieve the geomagnetic index [-]. It must have the
-        signature `Ap(jd_utc::Number) -> Number`.
     - `C_d::Number`: Drag coefficient [-].
     - `C_r::Number`: Reflectivity coefficient [-].
     - `F107::Function`: A function to retrieve the solar flux index [sfu]. It must have the
@@ -64,18 +66,18 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
     rsun_tod::SVector{3, T},
     params::NamedTuple
 ) where T<:Number
-    C_d       = params.C_d
-    C_r       = params.C_r
-    N         = params.num_sampling_points_per_orbit
-    gm        = params.gm
-    mass      = params.satellite_mass
-    mean_area = params.satellite_mean_area
-    orbp      = params.j2osc_prop
+    atmospheric_model = params.atmospheric_model
+    C_d               = params.C_d
+    C_r               = params.C_r
+    N                 = params.num_sampling_points_per_orbit
+    gm                = params.gm
+    mass              = params.satellite_mass
+    mean_area         = params.satellite_mean_area
+    orbp              = params.j2osc_prop
 
     # Resolve the space indices once per evaluation since `jd_utc` is constant here,
     # avoiding one interpolation per sampling point.
     F107 = Float64(params.F107(jd_utc))
-    Ap   = Float64(params.Ap(jd_utc))
 
     μ = GravityModels.gravity_constant(gm)
 
@@ -125,12 +127,12 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
 
         # Drag acceleration in PEF.
         adrag_pef = _atmospheric_drag_acceleration(
+            atmospheric_model,
             jd_utc,
             rk_pef,
             vk_pef,
             mean_area,
             mass,
-            Ap,
             C_d,
             F107
         )
