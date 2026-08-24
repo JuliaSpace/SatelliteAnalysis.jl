@@ -172,9 +172,10 @@ eccentricity and inclination.
 
 !!! note
 
-    - Eccentricity `e` is constrained to `e ≥ 1e-6` to avoid division by zero.
     - Inclination is reconstructed from half-angle parameters `(i_x, i_y)`.
     - All angular quantities are normalized to the range `[0, 2π)` [rad].
+    - The eccentricity is not clamped, so the returned value is faithful to the input.
+      Consumers that require `e > 0` must clamp it themselves.
 
 # Returns
 
@@ -198,7 +199,7 @@ function _equinoctial_to_classical(
     # Unpack.
     a, ψ, e_x, e_y, i_x, i_y = eq
 
-    e = max(√(e_x^2 + e_y^2), T(1e-6))
+    e = √(e_x^2 + e_y^2)
 
     i_half_sq = clamp(i_x^2 + i_y^2, 0, 1)
     i = 2asin(√i_half_sq)
