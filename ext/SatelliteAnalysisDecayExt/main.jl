@@ -197,9 +197,14 @@ function _decay_analysis(
         perigee_altitude = perigee_altitude,
     )
 
-    metadata!(df, "Description", "Mean orbital element evolution during the orbital decay.")
-
     # The style `:note` makes the metadata propagate through DataFrame transformations.
+    metadata!(
+        df,
+        "Description",
+        "Mean orbital element evolution during the orbital decay.";
+        style = :note
+    )
+
     metadata!(df, "Satellite Mass",      satellite_mass;      style = :note)
     metadata!(df, "Satellite Mean Area", satellite_mean_area; style = :note)
     metadata!(df, "Terminate Altitude",  terminate_altitude;  style = :note)

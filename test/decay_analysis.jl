@@ -63,6 +63,12 @@ end
     @test metadata(df, "Satellite Mean Area") == 1.0
     @test metadata(df, "Terminate Altitude")  == 120e3
 
+    # All the table-level metadata must use the style `:note` to propagate through
+    # DataFrame transformations.
+    for k in metadatakeys(df)
+        @test metadata(df, k; style = true)[2] == :note
+    end
+
     @test colmetadata(df, :date,             "Unit") == :UTC
     @test colmetadata(df, :time,             "Unit") == :y
     @test colmetadata(df, :f107,             "Unit") == :sfu
