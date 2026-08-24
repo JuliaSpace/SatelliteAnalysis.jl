@@ -132,10 +132,16 @@ function _decay_analysis(
         KeplerianElements(0.0, ā, ē, ī, Ω̄, ω̄, mean_to_true_anomaly(ē, M̄))
     )
 
-    # NOTE: `params` carries per-call mutable workspaces, currently the propagator
-    # `j2osc_prop`. Hence, the assembled ODE problem must not be shared across concurrent
-    # solves. Every call to `decay_analysis` builds fresh workspaces, keeping the public
-    # API thread-safe.
+    # Pre-allocate the Legendre buffers used by the gravity model, avoiding two matrix
+    # allocations per acceleration evaluation. The size supports the maximum degree 7 used
+    # by `_perturbational_gravity_acceleration`.
+    gravity_P  = Matrix{Float64}(undef, 8, 8)
+    gravity_dP = Matrix{Float64}(undef, 8, 8)
+
+    # NOTE: `params` carries per-call mutable workspaces: the propagator `j2osc_prop` and
+    # the gravity model buffers `gravity_P` and `gravity_dP`. Hence, the assembled ODE
+    # problem must not be shared across concurrent solves. Every call to `decay_analysis`
+    # builds fresh workspaces, keeping the public API thread-safe.
     params = (
         satellite_mean_area           = satellite_mean_area,
         satellite_mass                = satellite_mass,
@@ -145,6 +151,8 @@ function _decay_analysis(
         C_r                           = C_r,
         F107                          = F107,
         gm                            = gm,
+        gravity_P                     = gravity_P,
+        gravity_dP                    = gravity_dP,
         jd₀_utc                       = orb.t,
         j2osc_prop                    = j2osc_prop,
         terminate_altitude            = terminate_altitude,
