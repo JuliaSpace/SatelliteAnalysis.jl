@@ -10,7 +10,10 @@
 
 function SatelliteAnalysis.plot_decay_analysis(
     df::DataFrame;
+    fontscale::Real = 1,
     mission_name::Union{Nothing, String}        = nothing,
+    mono_ticklabels::Bool = false,
+    panel_width::Union{Nothing, Int} = nothing,
     satellite_mass::Union{Nothing, Number}      = nothing,
     satellite_mean_area::Union{Nothing, Number} = nothing,
     show_assumptions::Bool = true,
@@ -21,6 +24,8 @@ function SatelliteAnalysis.plot_decay_analysis(
     terminate_altitude::Union{Nothing, Number}  = nothing,
     theme::Symbol = :light,
     title::String = "Orbital Decay Analysis",
+    xlims::Union{Nothing, Tuple} = nothing,
+    ylims::Union{Nothing, Tuple} = nothing,
     size = (1280, 720),
     kwargs...
 )
@@ -44,7 +49,13 @@ function SatelliteAnalysis.plot_decay_analysis(
     )
 
     # Build the theme first since it also validates the variant in `theme`.
-    sa_theme = makie_theme(theme)
+    sa_theme = makie_theme(theme; fontscale = fontscale, mono_ticklabels = mono_ticklabels)
+
+    # Width of the column with the information panel and the legend, scaling with the
+    # figure width by default.
+    panel_width′ = isnothing(panel_width) ?
+        clamp(round(Int, 0.22 * size[1]), 240, 360) :
+        panel_width
 
     # == Information Panel Values ==========================================================
 
@@ -206,7 +217,7 @@ function SatelliteAnalysis.plot_decay_analysis(
         subtitle_attrs = isnothing(subtitle_str) ? (;) : (;
             subtitle      = subtitle_str,
             subtitlecolor = subline_color,
-            subtitlesize  = 16.0,
+            subtitlesize  = 16.0 * fontscale,
         )
 
         ax = Axis(
@@ -270,12 +281,17 @@ function SatelliteAnalysis.plot_decay_analysis(
                     align    = (:right, :bottom),
                     color    = accent_color,
                     font     = :bold,
-                    fontsize = 15,
+                    fontsize = 15 * fontscale,
                     offset   = (-12, 12),
                 )
                 translate!(callout, 0, 0, 11)
             end
         end
+
+        # == Axis Limits ===================================================================
+
+        !isnothing(xlims) && xlims!(ax, xlims...)
+        !isnothing(ylims) && ylims!(ax, ylims...)
 
         if show_f107
             push!(legend_plots, f107_line)
@@ -321,7 +337,7 @@ function SatelliteAnalysis.plot_decay_analysis(
             "LEGEND";
             color     = title_color,
             font      = :bold,
-            fontsize  = 14,
+            fontsize  = 14 * fontscale,
             halign    = :left,
             tellwidth = false,
         )
@@ -340,7 +356,7 @@ function SatelliteAnalysis.plot_decay_analysis(
 
         rowgap!(legend_content, 6)
 
-        colsize!(fig.layout, 2, Fixed(280))
+        colsize!(fig.layout, 2, Fixed(panel_width′))
 
         # == Mission Name ==================================================================
 
@@ -350,7 +366,7 @@ function SatelliteAnalysis.plot_decay_analysis(
                 uppercase(mission_name);
                 color     = title_color,
                 font      = :bold,
-                fontsize  = 16,
+                fontsize  = 16 * fontscale,
                 tellwidth = false,
             )
 
@@ -372,6 +388,7 @@ function SatelliteAnalysis.plot_decay_analysis(
                     border_color  = border_color,
                     card_color    = card_color,
                     compact       = compact,
+                    fontscale     = fontscale,
                     subline_color = subline_color,
                     title_color   = title_color,
                 )
@@ -408,6 +425,8 @@ as the card value, whereas the other elements are rendered as smaller complement
 - `compact::Bool`: If `true`, all the value lines are rendered with a small font size,
     yielding a denser card suited for multi-line textual content.
     (**Default**: `false`)
+- `fontscale::Real`: Scale applied to the font sizes of the card.
+    (**Default**: 1)
 - `subline_color::Colorant`: Color of the card complementary lines.
 - `title_color::Colorant`: Color of the card title.
 """
@@ -419,6 +438,7 @@ function _add_stat_card!(
     border_color::Colorant,
     card_color::Colorant,
     compact::Bool = false,
+    fontscale::Real = 1,
     subline_color::Colorant,
     title_color::Colorant,
 )
@@ -437,7 +457,7 @@ function _add_stat_card!(
         title;
         color     = title_color,
         font      = :bold,
-        fontsize  = 14,
+        fontsize  = 14 * fontscale,
         halign    = :left,
         tellwidth = false,
     )
@@ -446,7 +466,7 @@ function _add_stat_card!(
         card[2, 1],
         first(value_lines);
         font      = compact ? :regular : :bold,
-        fontsize  = compact ? 15 : 24,
+        fontsize  = (compact ? 15 : 24) * fontscale,
         halign    = :left,
         tellwidth = false,
     )
@@ -456,7 +476,7 @@ function _add_stat_card!(
             card[k + 1, 1],
             value_lines[k];
             color     = subline_color,
-            fontsize  = 15,
+            fontsize  = 15 * fontscale,
             halign    = :left,
             tellwidth = false,
         )

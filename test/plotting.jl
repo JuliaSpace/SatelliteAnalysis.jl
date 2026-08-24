@@ -95,6 +95,19 @@ end
     @test ext._format_number(1234)    == "1234"
     @test ext._format_number(3.14159) == "3.142"
 
+    # Theme and layout keywords.
+    fig, ax = plot_decay_analysis(
+        df;
+        fontscale       = 1.4,
+        mono_ticklabels = true,
+        panel_width     = 300,
+        xlims           = (0.0, 0.2),
+        ylims           = (100.0, 350.0)
+    )
+
+    @test fig isa Figure
+    @test ax isa Axis
+
     # Optional decorations: mission name, reentry date, and F10.7 twin y-axis.
     fig, ax = plot_decay_analysis(
         df;

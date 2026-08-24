@@ -38,8 +38,17 @@ and the related keyword was not passed, is omitted from the panel.
 
 # Keywords
 
+- `fontscale::Real`: Factor to uniformly scale every font size of the figure, useful when
+    rendering at a size other than the default.
+    (**Default**: 1)
 - `mission_name::Union{Nothing, String}`: Mission name rendered in uppercase above the plot
     title. If it is `nothing`, no mission name is added to the figure.
+    (**Default**: `nothing`)
+- `mono_ticklabels::Bool`: If `true`, the tick labels are rendered using a monospaced
+    font.
+    (**Default**: `false`)
+- `panel_width::Union{Nothing, Int}`: Width [px] of the column with the information panel
+    and the legend. If it is `nothing`, the width scales with the figure width.
     (**Default**: `nothing`)
 - `satellite_mass::Union{Nothing, Number}`: Satellite mass [kg] shown in the information
     panel. If it is `nothing`, the value is obtained from the metadata `Satellite Mass` of
@@ -77,6 +86,12 @@ and the related keyword was not passed, is omitted from the panel.
     (**Default**: `:light`)
 - `title::String`: Title of the plot.
     (**Default**: `"Orbital Decay Analysis"`)
+- `xlims::Union{Nothing, Tuple}`: Limits of the x-axis of the main plot. If it is
+    `nothing`, the limits are computed automatically.
+    (**Default**: `nothing`)
+- `ylims::Union{Nothing, Tuple}`: Limits of the y-axis of the main plot. If it is
+    `nothing`, the limits are computed automatically.
+    (**Default**: `nothing`)
 - `size::Tuple`: Size of the figure.
     (**Default**: `(1280, 720)`)
 
