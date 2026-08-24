@@ -5,10 +5,10 @@
 ############################################################################################
 
 """
-    _dynamics!(du::AbstractVector{T}, u::AbstractVector{T}, params::NamedTuple, t::Real) where T <: Number -> Nothing
+    _dynamics(u::AbstractVector{T}, params::NamedTuple, t::Real) where T <: Number -> SVector{6, T}
 
-Compute in `du` the time derivatives of the mean equinoctial orbital elements `u` at the
-time `t` [s] after the epoch using Gauss variational equations with averaged perturbations.
+Compute the time derivatives of the mean equinoctial orbital elements `u` at the time `t`
+[s] after the epoch using Gauss variational equations with averaged perturbations.
 
 This routine evaluates instantaneous forces on the mean-reference orbit for conservative
 perturbations (Earth gravity and third bodies) and adds temporally averaged rates for
@@ -24,24 +24,22 @@ with closed-form J₂² rates.
 
 # Arguments
 
-- `du::AbstractVector{T}`: Output derivative vector of the mean equinoctial elements
-    `[da, dψ, de_x, de_y, di_x, di_y]`. This vector is modified in place.
 - `u::AbstractVector{T}`: Mean equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`.
 - `params::NamedTuple`: Named tuple with the integration parameters. See
     `_decay_analysis`.
 - `t::Real`: Time since the orbit epoch [s].
+
+# Returns
+
+- `SVector{6, T}`: Time derivatives of the mean equinoctial orbital elements
+    `[da, dψ, de_x, de_y, di_x, di_y]`.
 
 # References
 
 - **[1]** Battin, R. H. (1999). An Introduction to the Mathematics and Methods of
     Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
 """
-function _dynamics!(
-    du::AbstractVector{T},
-    u::AbstractVector{T},
-    params,
-    t::Real
-) where T <: Number
+function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
     # Gravity model.
     gm = params.gm
     μ  = GravityModels.gravity_constant(gm)
@@ -145,7 +143,5 @@ function _dynamics!(
 
     ∂C_total = ∂C_total + ∂u_drag + ∂u_srp + ∂u_J₂²
 
-    du .= ∂C_total
-
-    return nothing
+    return ∂C_total
 end

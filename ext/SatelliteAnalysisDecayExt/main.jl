@@ -119,7 +119,10 @@ function _decay_analysis(
 ) where {AM, FF}
     M = true_to_mean_anomaly(orb.e, orb.f)
     ā, ē, ī, Ω̄, ω̄, M̄ = _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M)
-    u = Vector(_classical_to_equinoctial(ā, ē, ī, Ω̄, ω̄, M̄))
+
+    # The state is a static vector with an out-of-place right-hand side, removing the
+    # per-step state allocations of the numerical integration.
+    u₀ = _classical_to_equinoctial(ā, ē, ī, Ω̄, ω̄, M̄)
 
     # Force a homogeneous time span even if the user passes an integer `tf`.
     tspan = (0.0, Float64(tf))
@@ -160,7 +163,7 @@ function _decay_analysis(
 
     cbset = CallbackSet(ContinuousCallback(_cb_altitude_condition, _cb_altitude_affect!))
 
-    prob = ODEProblem(_dynamics!, u, tspan, params)
+    prob = ODEProblem(_dynamics, u₀, tspan, params)
     sol = solve(
         prob,
         solver;
