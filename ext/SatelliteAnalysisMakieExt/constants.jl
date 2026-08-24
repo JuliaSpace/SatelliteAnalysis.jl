@@ -54,3 +54,21 @@ const CATEGORICAL_LIGHT = [
     colorant"#7C3AED",   # 5  violet
     colorant"#DC2626",   # 6  coral
 ]
+
+# == Unit Labels ===========================================================================
+
+# Human-readable labels for the time and distance unit symbols used by `decay_analysis`.
+# The mapping also resolves the ambiguity of the symbol `:m`, which means minutes for time
+# and meters for distance.
+const _TIME_UNIT_LABELS = Dict{Symbol, String}(
+    :s => "s",
+    :m => "min",
+    :h => "h",
+    :d => "days",
+    :y => "years",
+)
+
+const _DISTANCE_UNIT_LABELS = Dict{Symbol, String}(
+    :km => "km",
+    :m  => "m",
+)

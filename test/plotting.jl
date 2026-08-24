@@ -82,6 +82,19 @@ end
 
     @test ax.subtitle[] == "2024-01-01 → 2024-02-06 UTC"
 
+    # The axis labels must use human-readable unit names.
+    @test ax.xlabel[] == "Time [years]"
+    @test ax.ylabel[] == "Altitude [km]"
+
+    # The card number formatter must group the digits of large integers.
+    ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisMakieExt)
+
+    @test ext._format_number(12340)   == "12 340"
+    @test ext._format_number(1234567) == "1 235 000"
+    @test ext._format_number(-12340)  == "-12 340"
+    @test ext._format_number(1234)    == "1234"
+    @test ext._format_number(3.14159) == "3.142"
+
     # Optional decorations: mission name, reentry date, and F10.7 twin y-axis.
     fig, ax = plot_decay_analysis(
         df;

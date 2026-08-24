@@ -72,6 +72,10 @@ function SatelliteAnalysis.plot_decay_analysis(
     time_unit     = colmetadata(df, :time,            "Unit", :y)
     distance_unit = colmetadata(df, :apogee_altitude, "Unit", :km)
 
+    # Human-readable axis labels, falling back to the raw symbol if it is unknown.
+    time_unit_label     = get(_TIME_UNIT_LABELS,     time_unit,     string(time_unit))
+    distance_unit_label = get(_DISTANCE_UNIT_LABELS, distance_unit, string(distance_unit))
+
     # == Reentry Detection =================================================================
 
     reentered = false
@@ -208,8 +212,8 @@ function SatelliteAnalysis.plot_decay_analysis(
         ax = Axis(
             fig[1, 1];
             title  = title,
-            xlabel = "Time [$time_unit]",
-            ylabel = "Altitude [$distance_unit]",
+            xlabel = "Time [$time_unit_label]",
+            ylabel = "Altitude [$distance_unit_label]",
             subtitle_attrs...,
             main_axis_background...
         )
@@ -570,9 +574,36 @@ end
     _format_number(v::Number) -> String
 
 Format the number `v` with four significant digits, omitting the decimal part if the
-rounded value is an integer.
+rounded value is an integer and grouping the digits of large integers with thin spaces.
 """
 function _format_number(v::Number)
     rounded = round(v; sigdigits = 4)
-    return isinteger(rounded) ? string(Int(rounded)) : string(rounded)
+    str     = isinteger(rounded) ? string(Int(rounded)) : string(rounded)
+
+    return _group_digits(str)
+end
+
+"""
+    _group_digits(str::AbstractString) -> String
+
+Insert a thin space between each group of three digits in the number in `str`, counting
+from the right, when it is an integer with more than four digits.
+"""
+function _group_digits(str::AbstractString)
+    neg  = startswith(str, '-')
+    body = neg ? str[2:end] : str
+
+    # Grouping only applies to plain integers with more than four digits.
+    (occursin('.', body) || occursin('e', body) || length(body) <= 4) && return String(str)
+
+    n       = length(body)
+    grouped = sprint() do io
+        for (k, c) in pairs(body)
+            print(io, c)
+            r = n - k
+            (r > 0) && (r % 3 == 0) && print(io, ' ')
+        end
+    end
+
+    return (neg ? "-" : "") * grouped
 end
