@@ -26,6 +26,7 @@ include("accelerations.jl")
 include("dynamics.jl")
 include("gauss_matrices.jl")
 include("misc.jl")
+include("progress.jl")
 include("variational_rates.jl")
 include("main.jl")
 

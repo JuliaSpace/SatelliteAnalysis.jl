@@ -35,6 +35,7 @@ function SatelliteAnalysis.decay_analysis(
     terminate_altitude::Number = 120e3,
     tf::Number = 30 * 365.25 * 86400.0,
     time_unit::Symbol = :y,
+    verbose::Bool = false,
 )
     gm = if isnothing(gravity_model)
         if isnothing(_DEFAULT_GRAVITY_MODEL[])
@@ -109,7 +110,8 @@ function SatelliteAnalysis.decay_analysis(
         solver                        = solver,
         terminate_altitude            = terminate_altitude,
         tf                            = tf,
-        time_unit                     = time_unit
+        time_unit                     = time_unit,
+        verbose                       = verbose
     )
 end
 
@@ -137,6 +139,7 @@ function _decay_analysis(
     terminate_altitude::Number,
     tf::Number,
     time_unit::Symbol,
+    verbose::Bool,
 ) where {AM, FF}
     M = true_to_mean_anomaly(orb.e, orb.f)
     ā, ē, ī, Ω̄, ω̄, M̄ = _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M)
@@ -190,18 +193,50 @@ function _decay_analysis(
         terminate_altitude            = terminate_altitude,
     )
 
-    cbset = CallbackSet(ContinuousCallback(_cb_altitude_condition, _cb_altitude_affect!))
+    # Progress interface shown during the integration when `verbose` is enabled.
+    progress = verbose ?
+        DecayProgress(
+            stderr,
+            tspan[2],
+            ā * (1 - ē) - EARTH_EQUATORIAL_RADIUS,
+            Float64(terminate_altitude)
+        ) :
+        nothing
+
+    termination_cb = ContinuousCallback(_cb_altitude_condition, _cb_altitude_affect!)
+
+    cbset = isnothing(progress) ?
+        CallbackSet(termination_cb) :
+        CallbackSet(termination_cb, _decay_progress_callback(progress))
+
+    isnothing(progress) ||
+        _start_decay_progress!(progress, ā * (1 + ē) - EARTH_EQUATORIAL_RADIUS)
 
     prob = ODEProblem(_dynamics, u₀, tspan, params)
-    sol = solve(
-        prob,
-        solver;
-        dt       = 24.0 * 60 * 60,
-        reltol   = reltol,
-        abstol   = abstol,
-        callback = cbset,
-        maxiters = 1e8
-    )
+
+    sol = try
+        solve(
+            prob,
+            solver;
+            dt       = 24.0 * 60 * 60,
+            reltol   = reltol,
+            abstol   = abstol,
+            callback = cbset,
+            maxiters = 1e8
+        )
+    finally
+        # Restore the terminal cursor even if the solver throws.
+        isnothing(progress) || _cleanup_decay_progress!(progress)
+    end
+
+    if !isnothing(progress)
+        aₑ, eₑ, _, _, _, _ = _equinoctial_to_classical(sol.u[end])
+
+        perigee_end = aₑ * (1 - eₑ) - EARTH_EQUATORIAL_RADIUS
+        reentered   = perigee_end <= terminate_altitude * (1 + 1e-6)
+
+        _finish_decay_progress!(progress, sol.t[end], reentered)
+    end
 
     # == Assemble the Output ===============================================================
 

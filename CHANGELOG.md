@@ -32,6 +32,12 @@ Version 0.4.0
   By default, the analysis uses the NRLMSISE-00 model with a constant geomagnetic index
   Ap = 9, as in STELA. The keyword `atmospheric_model_name` overrides the model name
   recorded in the output metadata.
+- ![Feature][badge-feature] We added the keyword `verbose` to `decay_analysis`. When
+  enabled, a progress interface is shown in `stderr` during the numerical integration: in
+  interactive terminals, a live panel with a progress bar, the current perigee and apogee
+  altitudes, the elapsed model time, and the elapsed wall time; otherwise, plain progress
+  lines at every 10%. A summary line with the outcome and the wall time is printed at the
+  end. Enabling the interface does not change the analysis result.
 - ![Feature][badge-feature] We highly improved the `plot_decay_analysis` output for
   reports: the information panel now shows a card with the analysis assumptions
   (atmospheric model and drag and SRP coefficients), a

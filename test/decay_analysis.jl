@@ -310,6 +310,99 @@ end
     @test metadata(df_thin, "Atmospheric Model") == "Uniform (2e-11)"
 end
 
+@testset "Verbose Progress" begin
+    jd₀ = date_to_jd(2024, 1, 1)
+
+    orb = KeplerianElements(
+        jd₀,
+        EARTH_EQUATORIAL_RADIUS + 300e3,
+        0.001,
+        98.0    |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90.0    |> deg2rad,
+        0.0
+    )
+
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+
+    dense_model = (jd_utc, lat, lon, h, F107) -> 5.0e-11
+
+    # == Plain Fallback and Result Invariance ==============================================
+
+    # The redirected stream is not a terminal, so the plain fallback must be used.
+    path = tempname()
+
+    df_verbose = open(path, "w") do io
+        redirect_stderr(io) do
+            decay_analysis(
+                orb;
+                satellite_mass      = 100.0,
+                satellite_mean_area = 1.0,
+                gravity_model       = gm,
+                F107                = 140.0,
+                atmospheric_model   = dense_model,
+                verbose             = true
+            )
+        end
+    end
+
+    log = read(path, String)
+
+    @test occursin("Decay analysis: 0% (perigee", log)
+    @test occursin("Decay analysis: reentry after", log)
+    @test occursin("wall time:", log)
+    @test !occursin('\e', log)
+
+    # Enabling the progress interface must not change the analysis result.
+    df = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        F107                = 140.0,
+        atmospheric_model   = dense_model
+    )
+
+    @test df_verbose[end, :date] == df[end, :date]
+    @test df_verbose.time == df.time
+
+    # == ANSI Panel ========================================================================
+
+    ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
+    buf = IOBuffer()
+
+    p = ext.DecayProgress(buf, 86400.0, 300e3, 120e3; ansi = true)
+
+    ext._start_decay_progress!(p, 310e3)
+    ext._update_decay_progress!(p, 86400.0, 120e3, 130e3)
+    ext._finish_decay_progress!(p, 86400.0, true)
+    ext._cleanup_decay_progress!(p)
+
+    out = String(take!(buf))
+
+    @test occursin("DECAY ANALYSIS", out)
+    @test occursin("100.0%", out)
+    @test occursin("✓", out)
+    @test occursin("reentry after 24.0 h", out)
+
+    # The no-reentry summary must report the maximum propagation time.
+    p₂ = ext.DecayProgress(buf, 86400.0, 300e3, 120e3; ansi = true)
+
+    ext._finish_decay_progress!(p₂, 86400.0, false)
+
+    out = String(take!(buf))
+
+    @test occursin("no reentry within 24.0 h", out)
+
+    # == Progress Fraction =================================================================
+
+    p₃ = ext.DecayProgress(devnull, 100.0, 300e3, 120e3)
+
+    @test ext._decay_progress_fraction(p₃, 50.0,  300e3) ≈ 0.5
+    @test ext._decay_progress_fraction(p₃, 10.0,  165e3) ≈ 0.75
+    @test ext._decay_progress_fraction(p₃, 200.0, 400e3) == 1.0
+end
+
 @testset "Validation Against a Cowell Reference" begin
     # Propagate the full osculating dynamics (Cowell formulation) using the same force
     # model implementations of the extension, and compare the mean elements after seven
