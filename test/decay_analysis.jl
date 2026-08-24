@@ -337,9 +337,10 @@ end
         v_pef = D_pef_tod * v_tod - ω_pef × r_pef
 
         # Total gravity: central term plus zonal harmonics up to degree 7, as in the
-        # averaged model.
+        # averaged model. The gravity model API expects the time as the number of elapsed
+        # seconds from the J2000.0 epoch.
         a_grav_pef = GravityModels.gravitational_acceleration(
-            params.gm, r_pef, jd_utc; max_degree = 7, max_order = 0
+            params.gm, r_pef, (jd_utc - JD_J2000) * 86400; max_degree = 7, max_order = 0
         )
 
         # Atmospheric drag using the same routine, atmospheric model, and space index.

@@ -28,7 +28,7 @@ atmospheric model `am`.
     where `jd_utc` is the Julian date in UTC and `lat`, `lon`, and `alt` are the geodetic
     latitude [rad], longitude [rad], and altitude [m] of the point where the density is
     evaluated, and `F107` is the 10.7 cm solar flux index [sfu] at that instant. The latter
-    must be considered as the instantaneous value and also the 81-day centered average.
+    must be considered as the daily value and also the 81-day centered average.
 - `jd_utc::Number`: Julian date [UTC] in which the atmospheric drag will be computed.
 - `r_ecef::AbstractVector{T}`: Satellite position vector [m] in ECEF frame.
 - `v_ecef::AbstractVector{T}`: Satellite velocity vector [m/s] in ECEF frame.
@@ -73,7 +73,7 @@ end
         kwargs...
     ) -> SVector{3, Number}
 
-Compute the perturbational acceleration [m/s²] due to Earth's gravity field in the ECI
+Compute the perturbational acceleration [m/s²] due to Earth's gravity field in the ECEF
 frame. This algorithm obtains the acceleration from the gravity model `gm` at the ECEF
 position `r_ecef` [m] and the Julian date `jd_utc` [UTC]. This algorithm obtains the
 perturbed acceleration by computing the gravitational acceleration using `max_degree` and
@@ -99,11 +99,15 @@ function _perturbational_gravity_acceleration(
     max_degree::Int = 7,
     max_order::Int = 0,
 )
+    # The gravity model API expects the time as the number of elapsed seconds from the
+    # J2000.0 epoch, which is only used by models with time-variable coefficients.
+    Δt_j2000 = (jd_utc - JD_J2000) * 86400
+
     # Total acceleration.
     a_ecef_total = GravityModels.gravitational_acceleration(
         gm,
         r_ecef,
-        jd_utc;
+        Δt_j2000;
         max_degree = max_degree,
         max_order = max_order
     )
