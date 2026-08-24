@@ -13,66 +13,6 @@ const _PREDICTED_F107_INITIALIZED = Ref(false)
 # ICGEM file at every call. A benign race that loads the model twice is acceptable.
 const _DEFAULT_GRAVITY_MODEL = Ref{Union{Nothing, AbstractGravityModel}}(nothing)
 
-# Maximum degree kept in the truncated default gravity model file. The decay analysis
-# evaluates the gravity field up to degree 7, so the truncation is transparent while
-# making the model parsing about two orders of magnitude faster than with the full
-# EGM2008 file.
-const _DEFAULT_GRAVITY_MODEL_MAX_DEGREE = 36
-
-"""
-    _default_gravity_model_file() -> String
-
-Return the path of the truncated EGM2008 file used by the default gravity model, building
-it in the package scratch space at the first call ever. The truncation keeps the
-coefficients up to the degree `_DEFAULT_GRAVITY_MODEL_MAX_DEGREE` and is transparent for
-the decay analysis, which evaluates the gravity field up to degree 7.
-"""
-function _default_gravity_model_file()
-    dir  = SatelliteAnalysis.Scratch.get_scratch!(SatelliteAnalysis, "decay_analysis")
-    path = joinpath(dir, "EGM2008_max_degree_$(_DEFAULT_GRAVITY_MODEL_MAX_DEGREE).gfc")
-
-    isfile(path) && return path
-
-    source = fetch_icgem_file(:EGM2008)
-    tmp    = path * ".tmp"
-
-    n    = _DEFAULT_GRAVITY_MODEL_MAX_DEGREE
-    seen = falses(n + 1, n + 1)
-
-    open(tmp, "w") do out
-        for line in eachline(source)
-            if startswith(line, "gfc")
-                tokens = split(line; limit = 4)
-                degree = parse(Int, tokens[2])
-
-                if degree <= n
-                    order = parse(Int, tokens[3])
-                    seen[degree + 1, order + 1] = true
-                    println(out, line)
-                end
-            elseif startswith(line, "max_degree")
-                println(out, "max_degree ", n)
-            else
-                println(out, line)
-            end
-        end
-
-        # The source file omits the null coefficients (e.g. degree 1 in EGM2008), which
-        # the parser would leave uninitialized. Hence, we explicitly write the missing
-        # entries as zeros.
-        for degree in 0:n, order in 0:degree
-            seen[degree + 1, order + 1] && continue
-            println(out, "gfc ", degree, " ", order, " 0.0 0.0 0.0 0.0")
-        end
-    end
-
-    # Move the finished file atomically so that an interrupted build does not leave a
-    # partial file behind.
-    mv(tmp, path; force = true)
-
-    return path
-end
-
 function SatelliteAnalysis.decay_analysis(
     orb::KeplerianElements;
     # Required keywords.
@@ -100,7 +40,7 @@ function SatelliteAnalysis.decay_analysis(
     gm = if isnothing(gravity_model)
         if isnothing(_DEFAULT_GRAVITY_MODEL[])
             _DEFAULT_GRAVITY_MODEL[] =
-                GravityModels.load(IcgemFile, _default_gravity_model_file())
+                GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
         end
 
         _DEFAULT_GRAVITY_MODEL[]

@@ -62,10 +62,7 @@ The following keywords are available:
   (**Default**: `nothing`)
 - `gravity_model::Union{AbstractGravityModel, Nothing}`: Gravity model used to compute the
   Earth gravitational perturbation. If it is `nothing`, the system fetches and loads the
-  EGM2008 model truncated to degree 36, which is transparent for the analysis since it
-  evaluates the gravity field up to degree 7. The truncated file is built once and cached
-  in the package scratch space, making the loading much faster than with the full EGM2008
-  file.
+  EGM2008 model.
   (**Default**: `nothing`)
 - `num_sampling_points_per_orbit::Int`: Number of sampling points used to average the
   perturbations over one orbit.

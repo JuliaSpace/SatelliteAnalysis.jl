@@ -72,12 +72,12 @@ Version 0.4.0
   a static state vector in the numerical integration, caching the default EGM2008 gravity
   model, removing redundant conversions and dead code from the averaging loops, and
   forcing the specialization on the model callbacks.
-- ![Enhancement][badge-enhancement] We highly reduced the time to the first execution of
-  `decay_analysis` (about 13x): the extension now runs a precompilation workload covering
-  the whole analysis pipeline, the default gravity model is loaded from a truncated
-  EGM2008 file cached in the package scratch space, and the progress callback type no
-  longer depends on the keyword `verbose`, sharing the solver specialization between the
-  verbose and silent paths.
+- ![Enhancement][badge-enhancement] We highly reduced the compilation time at the first
+  execution of `decay_analysis`: the extension now runs a precompilation workload
+  covering the whole analysis pipeline, and the progress callback type no longer depends
+  on the keyword `verbose`, sharing the solver specialization between the verbose and
+  silent paths. The remaining first-call cost is dominated by loading the default EGM2008
+  gravity model.
 - ![Bugfix][badge-bugfix] The decay analysis passed the Julian date to the gravity model
   where it expects elapsed seconds from the J2000.0 epoch. The error was harmless for the
   default EGM2008 model, whose coefficients are static, but it would produce wrong results
