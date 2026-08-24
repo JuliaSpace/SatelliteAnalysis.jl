@@ -49,7 +49,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
     jd_utc  = jd₀_utc + t / 86400.0
 
     # Unpack mean orbital elements.
-    ā, ē, ī, Ω̄, ω̄, M̄ = _equinoctial_to_classical(u)
+    ā, ē, ī, Ω̄, ω̄, _ = _equinoctial_to_classical(u)
 
     # Clamp the mean elements to a physically meaningful region. The adaptive integrator
     # can evaluate trial stages with unphysical states (e.g. e > 1) near the decay end.
@@ -90,7 +90,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
     # point, but for efficiency, we assume they are constant over one orbit.
     for k in 0:(N - 1)
         # Sampling point along the mean orbit.
-        M̄k = mod(M̄ + (2π * k / N), 2π)
+        M̄k = 2π * k / N
         f̄k = mean_to_true_anomaly(ē, M̄k)
 
         # Position and velocity from mean orbital elements.
