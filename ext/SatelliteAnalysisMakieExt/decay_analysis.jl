@@ -116,8 +116,9 @@ function SatelliteAnalysis.plot_decay_analysis(
     # == Assemble the Information Panel Cards =============================================
 
     # Each card has a title, its value lines, and a flag selecting the compact rendering,
-    # in which all the lines use a small font size.
-    cards = Tuple{String, Vector{String}, Bool}[]
+    # in which all the lines use a small font size. A value line is either a `String` or a
+    # Makie rich text object.
+    cards = Tuple{String, Vector, Bool}[]
 
     !isnothing(mass) &&
         push!(cards, ("SATELLITE MASS", ["$(_format_number(mass)) kg"], false))
@@ -140,21 +141,25 @@ function SatelliteAnalysis.plot_decay_analysis(
     end
 
     if show_assumptions
-        assumption_lines = String[]
+        assumption_lines = Any[]
 
         !isnothing(atm_model_name) &&
             push!(assumption_lines, "Atm. model: " * string(atm_model_name))
         !isnothing(f107_source) && push!(assumption_lines, "F10.7: " * string(f107_source))
 
+        # The drag and SRP coefficients are rendered with rich text subscripts.
         if !isnothing(C_d) && !isnothing(C_r)
             push!(
                 assumption_lines,
-                "C_d $(_format_number(C_d)) · C_r $(_format_number(C_r))"
+                rich(
+                    "C", subscript("d"), " = $(_format_number(C_d)),  C", subscript("r"),
+                    " = $(_format_number(C_r))"
+                )
             )
         elseif !isnothing(C_d)
-            push!(assumption_lines, "C_d $(_format_number(C_d))")
+            push!(assumption_lines, rich("C", subscript("d"), " = $(_format_number(C_d))"))
         elseif !isnothing(C_r)
-            push!(assumption_lines, "C_r $(_format_number(C_r))")
+            push!(assumption_lines, rich("C", subscript("r"), " = $(_format_number(C_r))"))
         end
 
         !isempty(assumption_lines) && push!(cards, ("ASSUMPTIONS", assumption_lines, true))
@@ -407,13 +412,14 @@ end
         panel::GridLayout,
         row::Int,
         title::String,
-        value_lines::Vector{String};
+        value_lines::AbstractVector;
         kwargs...
     ) -> Nothing
 
 Add to `panel` at `row` a card with the statistic `title` and its `value_lines`, modifying
-the layout of the figure that owns `panel`. The first element of `value_lines` is rendered
-as the card value, whereas the other elements are rendered as smaller complementary lines.
+the layout of the figure that owns `panel`. Each value line is either a `String` or a
+Makie rich text object. The first element of `value_lines` is rendered as the card value,
+whereas the other elements are rendered as smaller complementary lines.
 
 # Keywords
 
@@ -431,7 +437,7 @@ function _add_stat_card!(
     panel::GridLayout,
     row::Int,
     title::String,
-    value_lines::Vector{String};
+    value_lines::AbstractVector;
     border_color::Colorant,
     card_color::Colorant,
     compact::Bool = false,
