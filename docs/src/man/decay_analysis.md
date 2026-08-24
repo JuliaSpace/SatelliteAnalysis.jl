@@ -54,6 +54,12 @@ The following keywords are available:
   `nothing`, the system uses an internal wrapper for the NRLMSISE-00 model provided by
   **AtmosphericModels.jl** with a constant geomagnetic index Ap = 9, as in STELA.
   (**Default**: `nothing`)
+- `atmospheric_model_name::Union{Nothing, String}`: Name of the atmospheric model recorded
+  in the metadata `Atmospheric Model` of the output `DataFrame` and shown, for example, by
+  [`plot_decay_analysis`](@ref). If it is `nothing`, the name is derived from the keyword
+  `atmospheric_model`: `"NRLMSISE-00"` for the default model and `"Custom (<name>)"` for
+  user-provided callables.
+  (**Default**: `nothing`)
 - `gravity_model::Union{AbstractGravityModel, Nothing}`: Gravity model used to compute the
   Earth gravitational perturbation. If it is `nothing`, the system fetches and loads the
   EGM2008 model.

@@ -21,6 +21,7 @@ function SatelliteAnalysis.decay_analysis(
     # Optional keywords. The keywords `atmospheric_model` and `F107` accept any callable
     # object, hence they are not annotated with `::Function`.
     atmospheric_model = nothing,
+    atmospheric_model_name::Union{Nothing, String} = nothing,
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
     num_sampling_points_per_orbit::Int = 17,
     abstol::Number = 1e-6,
@@ -53,8 +54,11 @@ function SatelliteAnalysis.decay_analysis(
         atmospheric_model
 
     # Descriptions of the atmospheric model and the F10.7 source, recorded as metadata in
-    # the output so that, for example, `plot_decay_analysis` can show the assumptions.
-    atmospheric_model_name = if isnothing(atmospheric_model)
+    # the output so that, for example, `plot_decay_analysis` can show the assumptions. The
+    # name provided by the user has precedence over the derived one.
+    atmospheric_model_name′ = if !isnothing(atmospheric_model_name)
+        atmospheric_model_name
+    elseif isnothing(atmospheric_model)
         "NRLMSISE-00"
     elseif atmospheric_model isa Function
         "Custom (" * String(nameof(atmospheric_model)) * ")"
@@ -95,7 +99,7 @@ function SatelliteAnalysis.decay_analysis(
         satellite_mean_area           = satellite_mean_area,
         num_sampling_points_per_orbit = num_sampling_points_per_orbit,
         abstol                        = abstol,
-        atmospheric_model_name        = atmospheric_model_name,
+        atmospheric_model_name        = atmospheric_model_name′,
         f107_source                   = f107_source,
         C_d                           = C_d,
         C_r                           = C_r,

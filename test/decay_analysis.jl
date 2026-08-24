@@ -293,18 +293,21 @@ end
     @test all(0 .<= hs .<= 500e3)
     @test all(f107s .== 140.0)
 
-    # A thinner atmosphere must yield a longer lifetime.
+    # A thinner atmosphere must yield a longer lifetime. The keyword
+    # `atmospheric_model_name` must override the derived model name in the metadata.
     df_thin = decay_analysis(
         orb;
-        satellite_mass      = 100.0,
-        satellite_mean_area = 1.0,
-        gravity_model       = gm,
-        F107                = 140.0,
-        atmospheric_model   = (jd_utc, lat, lon, h, F107) -> 2.0e-11
+        satellite_mass         = 100.0,
+        satellite_mean_area    = 1.0,
+        gravity_model          = gm,
+        F107                   = 140.0,
+        atmospheric_model      = (jd_utc, lat, lon, h, F107) -> 2.0e-11,
+        atmospheric_model_name = "Uniform (2e-11)"
     )
 
     @test df_thin[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
     @test df_dense[end, :date] < df_thin[end, :date]
+    @test metadata(df_thin, "Atmospheric Model") == "Uniform (2e-11)"
 end
 
 @testset "Validation Against a Cowell Reference" begin

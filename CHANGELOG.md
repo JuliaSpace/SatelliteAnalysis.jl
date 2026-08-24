@@ -30,7 +30,8 @@ Version 0.4.0
   allowing the user to select the atmospheric density model used by the drag computation.
   It accepts any callable object, including callable structures carrying their own state.
   By default, the analysis uses the NRLMSISE-00 model with a constant geomagnetic index
-  Ap = 9, as in STELA.
+  Ap = 9, as in STELA. The keyword `atmospheric_model_name` overrides the model name
+  recorded in the output metadata.
 - ![Feature][badge-feature] We highly improved the `plot_decay_analysis` output for
   reports: the information panel now shows the ballistic coefficient and a card with the
   analysis assumptions (atmospheric model, F10.7 source, and drag and SRP coefficients), a
