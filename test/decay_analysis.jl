@@ -224,6 +224,15 @@ end
     )
 
     @test df₂[end, :date] == df[end, :date]
+
+    # A call without an explicit gravity model must fetch, cache, and use the default
+    # EGM2008 model, matching the results obtained with the explicitly loaded model.
+    df₃ = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0)
+
+    @test df₃[end, :date] == df[end, :date]
+
+    ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
+    @test !isnothing(ext._DEFAULT_GRAVITY_MODEL[])
 end
 
 @testset "Custom Atmospheric Model" begin

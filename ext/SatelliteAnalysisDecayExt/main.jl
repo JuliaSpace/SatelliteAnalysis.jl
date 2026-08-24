@@ -9,6 +9,10 @@
 # at every call. A benign race that initializes the set twice is acceptable.
 const _PREDICTED_F107_INITIALIZED = Ref(false)
 
+# Cache of the default gravity model (EGM2008), avoiding re-fetching and re-parsing the
+# ICGEM file at every call. A benign race that loads the model twice is acceptable.
+const _DEFAULT_GRAVITY_MODEL = Ref{Union{Nothing, AbstractGravityModel}}(nothing)
+
 function SatelliteAnalysis.decay_analysis(
     orb::KeplerianElements;
     # Required keywords.
@@ -31,9 +35,16 @@ function SatelliteAnalysis.decay_analysis(
     tf::Number = 30 * 365.25 * 86400.0,
     time_unit::Symbol = :y,
 )
-    gm = isnothing(gravity_model) ?
-        GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008)) :
+    gm = if isnothing(gravity_model)
+        if isnothing(_DEFAULT_GRAVITY_MODEL[])
+            _DEFAULT_GRAVITY_MODEL[] =
+                GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+        end
+
+        _DEFAULT_GRAVITY_MODEL[]
+    else
         gravity_model
+    end
 
     F107′ = if isnothing(F107)
         # Notice that if the user calls `SpaceIndices.destroy()` after this initialization,
