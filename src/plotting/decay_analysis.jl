@@ -17,6 +17,8 @@ The figure shows the evolution of the mean apogee and perigee altitudes and an i
 panel with the satellite mass, the satellite mean area, the ballistic coefficient
 (`C_d · A / m`) [m²/kg], the estimated time to reenter, and a card with the analysis
 assumptions (atmospheric model, F10.7 source, and drag and SRP coefficients).
+A dashed line marks the terminate altitude used to declare the reentry, and the estimated
+reentry date is annotated next to the reentry marker.
 The legend is placed outside the plot, at the bottom of the column that contains the
 information panel, inside a card that matches the information panel style.
 The time to reenter is only shown if the analysis detected a reentry, _i.e._, if the mean
@@ -56,6 +58,9 @@ and the related keyword was not passed, is omitted from the panel.
     is rendered with transparency below the other plot elements, and the twin y-axis ticks
     use canonical values aligned with the grid of the main axis.
     (**Default**: `false`)
+- `show_reentry_callout::Bool`: If `true` and the analysis detected a reentry, the
+    estimated reentry date [UTC] is annotated in the plot next to the reentry marker.
+    (**Default**: `true`)
 - `show_reentry_date::Bool`: If `true`, the estimated reentry date [UTC] is shown in the
     information panel below the time to reenter. Otherwise, only the timespan is shown.
     (**Default**: `false`)

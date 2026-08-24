@@ -15,6 +15,7 @@ function SatelliteAnalysis.plot_decay_analysis(
     satellite_mean_area::Union{Nothing, Number} = nothing,
     show_assumptions::Bool = true,
     show_f107::Bool = false,
+    show_reentry_callout::Bool = true,
     show_reentry_date::Bool = false,
     terminate_altitude::Union{Nothing, Number}  = nothing,
     theme::Symbol = :light,
@@ -83,12 +84,13 @@ function SatelliteAnalysis.plot_decay_analysis(
 
     dark = theme == :dark
 
-    accent_color   = dark ? MAGENTA_DARK        : MAGENTA_LIGHT
-    border_color   = dark ? BORDER_DARK         : BORDER_LIGHT
-    card_color     = dark ? NAVY_CARD           : SURFACE_CARD
-    f107_color     = dark ? CATEGORICAL_DARK[3] : CATEGORICAL_LIGHT[3]
-    subline_color  = dark ? TEXT_TERTIARY_DARK  : TEXT_TERTIARY_LIGHT
-    title_color    = dark ? CYAN_DARK           : CYAN_LIGHT
+    accent_color    = dark ? MAGENTA_DARK        : MAGENTA_LIGHT
+    border_color    = dark ? BORDER_DARK         : BORDER_LIGHT
+    card_color      = dark ? NAVY_CARD           : SURFACE_CARD
+    f107_color      = dark ? CATEGORICAL_DARK[3] : CATEGORICAL_LIGHT[3]
+    subline_color   = dark ? TEXT_TERTIARY_DARK  : TEXT_TERTIARY_LIGHT
+    threshold_color = dark ? CATEGORICAL_DARK[6] : CATEGORICAL_LIGHT[6]
+    title_color     = dark ? CYAN_DARK           : CYAN_LIGHT
 
     # == Assemble the Information Panel Cards =============================================
 
@@ -199,6 +201,26 @@ function SatelliteAnalysis.plot_decay_analysis(
         push!(legend_plots, lines!(ax, df.time, df.perigee_altitude))
         push!(legend_labels, "Perigee Altitude")
 
+        # == Terminate Altitude Threshold ==================================================
+
+        if !isnothing(term)
+            threshold_line = hlines!(
+                ax,
+                [term_alt];
+                color     = (threshold_color, 0.8),
+                linestyle = :dash,
+                linewidth = 1.5,
+            )
+
+            # Render the threshold below the altitude lines.
+            translate!(threshold_line, 0, 0, -1)
+
+            push!(legend_plots, threshold_line)
+            push!(legend_labels, "Reentry Altitude")
+        end
+
+        # == Reentry Marker and Callout ====================================================
+
         if reentered
             reentry_marker = scatter!(
                 ax,
@@ -211,6 +233,25 @@ function SatelliteAnalysis.plot_decay_analysis(
 
             push!(legend_plots, reentry_marker)
             push!(legend_labels, "Reentry")
+
+            if show_reentry_callout
+                callout_text = "Reentry: " *
+                    Dates.format(last(df.date), dateformat"yyyy-mm-dd")
+
+                # The pixel offset anchors the annotation next to the marker regardless of
+                # the axis limits.
+                callout = text!(
+                    ax,
+                    [Point2f(last(df.time), last(df.perigee_altitude))];
+                    text     = callout_text,
+                    align    = (:right, :bottom),
+                    color    = accent_color,
+                    font     = :bold,
+                    fontsize = 15,
+                    offset   = (-12, 12),
+                )
+                translate!(callout, 0, 0, 11)
+            end
         end
 
         if show_f107

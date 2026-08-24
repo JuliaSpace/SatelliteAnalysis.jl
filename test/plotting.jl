@@ -59,6 +59,12 @@ end
     @test fig isa Figure
     @test ax isa Axis
 
+    # The in-plot reentry callout can be turned off.
+    fig, ax = plot_decay_analysis(df; show_reentry_callout = false)
+
+    @test fig isa Figure
+    @test ax isa Axis
+
     # Optional decorations: mission name, reentry date, and F10.7 twin y-axis.
     fig, ax = plot_decay_analysis(
         df;
