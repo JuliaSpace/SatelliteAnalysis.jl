@@ -174,15 +174,25 @@ df_high[end, :date]
 If the user loads the package [Makie.jl](https://docs.makie.org/stable/), an extension is
 loaded and adds the possibility to plot the decay analysis using the function
 [`plot_decay_analysis`](@ref). The figure shows the evolution of the mean apogee and
-perigee altitudes together with an information panel. The keyword `show_f107` also plots
-the 10.7 cm solar flux index used by the dynamics using a twin y-axis:
+perigee altitudes, a dashed line marking the terminate altitude, an annotation with the
+estimated reentry date, and a subtitle with the analysis timespan. The information panel
+shows the satellite mass, the mean area, the ballistic coefficient, the time to reenter,
+and a card with the analysis assumptions (atmospheric model, F10.7 source, and drag and
+SRP coefficients), all resolved from the `DataFrame` metadata. The keyword `show_f107`
+also plots the 10.7 cm solar flux index used by the dynamics using a twin y-axis:
 
 ```@example decay_analysis
 using CairoMakie
 
-CairoMakie.activate!(type = "png") # hide
+CairoMakie.activate!(type = "png", px_per_unit = 2) # hide
 
 fig, ax = plot_decay_analysis(df; mission_name = "My Mission", show_f107 = true)
 
 fig
+```
+
+To export the figure in high resolution for reports, use:
+
+```julia
+save("decay_analysis.png", fig; px_per_unit = 2)
 ```

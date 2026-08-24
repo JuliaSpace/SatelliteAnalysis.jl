@@ -28,8 +28,19 @@ Version 0.4.0
   `DataFrame`.
 - ![Feature][badge-feature] We added the keyword `atmospheric_model` to `decay_analysis`,
   allowing the user to select the atmospheric density model used by the drag computation.
+  It accepts any callable object, including callable structures carrying their own state.
   By default, the analysis uses the NRLMSISE-00 model with a constant geomagnetic index
   Ap = 9, as in STELA.
+- ![Feature][badge-feature] We highly improved the `plot_decay_analysis` output for
+  reports: the information panel now shows the ballistic coefficient and a card with the
+  analysis assumptions (atmospheric model, F10.7 source, and drag and SRP coefficients), a
+  dashed line marks the terminate altitude, the estimated reentry date is annotated next
+  to the reentry marker, a subtitle shows the analysis timespan, and the axis labels use
+  human-readable unit names. The new keywords `title`, `subtitle`, `show_assumptions`,
+  `show_reentry_callout`, `fontscale`, `mono_ticklabels`, `panel_width`, `xlims`, and
+  `ylims` control the figure. To support it, `decay_analysis` now records the metadata
+  `Atmospheric Model`, `Drag Coefficient`, `F10.7 Source`, and `SRP Coefficient` in the
+  output `DataFrame`.
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were
@@ -47,6 +58,19 @@ Version 0.4.0
   `(jd_utc::Number) -> Number`, allowing time-varying solar flux profiles. By default, it
   uses the predicted F10.7 provided by **SpaceIndices.jl** (space index `F10predicted`),
   whose space index set is initialized automatically on first use.
+- ![Enhancement][badge-enhancement] We highly reduced the allocations of `decay_analysis`
+  (about 95%) by reusing the Legendre buffers of the atmospheric and gravity models, using
+  a static state vector in the numerical integration, caching the default EGM2008 gravity
+  model, removing redundant conversions and dead code from the averaging loops, and
+  forcing the specialization on the model callbacks.
+- ![Bugfix][badge-bugfix] The decay analysis passed the Julian date to the gravity model
+  where it expects elapsed seconds from the J2000.0 epoch. The error was harmless for the
+  default EGM2008 model, whose coefficients are static, but it would produce wrong results
+  for ICGEM models with time-variable coefficients.
+- ![Bugfix][badge-bugfix] The metadata `Description` of the `decay_analysis` output now
+  propagates through DataFrame transformations, and the reported mean eccentricity is no
+  longer clamped to 1e-6, removing a fake apogee and perigee split of about 13 m for
+  circular orbits.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to

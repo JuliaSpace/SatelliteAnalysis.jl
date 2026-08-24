@@ -97,6 +97,9 @@ and the related keyword was not passed, is omitted from the panel.
 
 All other `kwargs...` are passed to the function `Figure`.
 
+To export the figure in high resolution for reports, use
+`save("plot.png", fig; px_per_unit = 2)`.
+
 # Extended help
 
 ## Throws
