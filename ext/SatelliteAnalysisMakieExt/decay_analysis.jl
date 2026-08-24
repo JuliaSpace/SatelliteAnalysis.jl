@@ -316,21 +316,41 @@ function SatelliteAnalysis.plot_decay_analysis(
             )
         end
 
-        # == Legend ========================================================================
+        # == Side Column: Information Panel and Legend =====================================
 
-        # The legend is placed outside the plot, at the bottom of the right column, below
-        # the information panel, inside a card matching the information panel style.
-        legend_card = GridLayout(fig[1, 2]; tellheight = false, valign = :bottom)
+        # The information panel and the legend share a single column layout, so they can
+        # never overlap: the cards stack from the top, the legend card sits at the bottom,
+        # and a flexible spacer row absorbs the remaining vertical space.
+        side = GridLayout(fig[1, 2])
+
+        for (k, (card_title, value_lines, compact)) in enumerate(cards)
+            _add_stat_card!(
+                side,
+                k,
+                card_title,
+                value_lines;
+                border_color  = border_color,
+                card_color    = card_color,
+                compact       = compact,
+                fontscale     = fontscale,
+                subline_color = subline_color,
+                title_color   = title_color,
+            )
+        end
+
+        # The legend is placed at the bottom of the side column, inside a card matching
+        # the information panel style.
+        legend_row = length(cards) + 2
 
         Box(
-            legend_card[1, 1];
+            side[legend_row, 1];
             color        = card_color,
             cornerradius = 8,
             strokecolor  = border_color,
             strokewidth  = 1,
         )
 
-        legend_content = GridLayout(legend_card[1, 1]; alignmode = Outside(16))
+        legend_content = GridLayout(side[legend_row, 1]; alignmode = Outside(12))
 
         Label(
             legend_content[1, 1],
@@ -349,12 +369,18 @@ function SatelliteAnalysis.plot_decay_analysis(
             backgroundcolor = :transparent,
             framevisible    = false,
             halign          = :left,
+            labelsize       = 15 * fontscale,
             padding         = (0.0f0, 0.0f0, 0.0f0, 0.0f0),
+            rowgap          = 2,
             tellheight      = true,
             tellwidth       = false,
         )
 
         rowgap!(legend_content, 6)
+
+        # The spacer row between the cards and the legend absorbs the leftover space.
+        rowsize!(side, legend_row - 1, Auto(false))
+        rowgap!(side, 10)
 
         colsize!(fig.layout, 2, Fixed(panel_width′))
 
@@ -372,29 +398,6 @@ function SatelliteAnalysis.plot_decay_analysis(
 
             # Tighten the gap between the mission name and the plot title.
             rowgap!(fig.layout, 1, 4)
-        end
-
-        # == Information Panel =============================================================
-
-        if !isempty(cards)
-            panel = GridLayout(fig[1, 2]; tellheight = false, valign = :top)
-
-            for (k, (title, value_lines, compact)) in enumerate(cards)
-                _add_stat_card!(
-                    panel,
-                    k,
-                    title,
-                    value_lines;
-                    border_color  = border_color,
-                    card_color    = card_color,
-                    compact       = compact,
-                    fontscale     = fontscale,
-                    subline_color = subline_color,
-                    title_color   = title_color,
-                )
-            end
-
-            (length(cards) > 1) && rowgap!(panel, 15)
         end
 
         return fig, ax
@@ -450,7 +453,7 @@ function _add_stat_card!(
         strokewidth  = 1,
     )
 
-    card = GridLayout(panel[row, 1]; alignmode = Outside(16))
+    card = GridLayout(panel[row, 1]; alignmode = Outside(12))
 
     Label(
         card[1, 1],
@@ -466,7 +469,7 @@ function _add_stat_card!(
         card[2, 1],
         first(value_lines);
         font      = compact ? :regular : :bold,
-        fontsize  = (compact ? 15 : 24) * fontscale,
+        fontsize  = (compact ? 15 : 21) * fontscale,
         halign    = :left,
         tellwidth = false,
     )
@@ -482,7 +485,7 @@ function _add_stat_card!(
         )
     end
 
-    rowgap!(card, 6)
+    rowgap!(card, 4)
 
     return nothing
 end
