@@ -59,8 +59,12 @@ end
     @test metadata(df, "Description") ==
         "Mean orbital element evolution during the orbital decay."
 
+    @test metadata(df, "Atmospheric Model")   == "NRLMSISE-00"
+    @test metadata(df, "Drag Coefficient")    == 2.2
+    @test metadata(df, "F10.7 Source")        == "Constant (140.0 sfu)"
     @test metadata(df, "Satellite Mass")      == 100.0
     @test metadata(df, "Satellite Mean Area") == 1.0
+    @test metadata(df, "SRP Coefficient")     == 1.25
     @test metadata(df, "Terminate Altitude")  == 120e3
 
     # All the table-level metadata must use the style `:note` to propagate through
@@ -210,6 +214,7 @@ end
     # file is refitted over time, so we only check the values are physically plausible.
     @test all(isfinite, df.f107)
     @test all(60.0 .< df.f107 .< 400.0)
+    @test metadata(df, "F10.7 Source") == "Predicted"
 
     # The analysis must run until the termination altitude.
     @test df[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
@@ -276,6 +281,9 @@ end
     )
 
     @test df_dense[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
+
+    # A custom model must be recorded as such in the metadata.
+    @test startswith(metadata(df_dense, "Atmospheric Model"), "Custom (")
 
     # The model must receive the Julian date, the geodetic latitude, longitude, and
     # altitude, and the F10.7 index selected by the user.

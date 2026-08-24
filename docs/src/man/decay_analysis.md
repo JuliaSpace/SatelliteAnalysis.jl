@@ -111,8 +111,9 @@ with the columns:
 - `perigee_altitude`: Mean perigee altitude [`distance_unit`].
 
 The unit of each column is stored in the `DataFrame` using metadata. The `DataFrame` also
-stores the table-level metadata `Satellite Mass` [kg], `Satellite Mean Area` [m²], and
-`Terminate Altitude` [m], which is used, for example, by the function
+stores the table-level metadata `Satellite Mass` [kg], `Satellite Mean Area` [m²],
+`Terminate Altitude` [m], `Drag Coefficient` [-], `SRP Coefficient` [-],
+`Atmospheric Model`, and `F10.7 Source`, which are used, for example, by the function
 [`plot_decay_analysis`](@ref).
 
 The satellite lifetime can be obtained from the last row of the returned `DataFrame`: if

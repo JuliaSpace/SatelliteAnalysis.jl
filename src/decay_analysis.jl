@@ -111,8 +111,12 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     The unit of each column is stored in the `DataFrame` using metadata. The `DataFrame`
     also stores the following table-level metadata, which is used, for example, by the
     function [`plot_decay_analysis`](@ref):
+    - `Atmospheric Model`: Name of the atmospheric model used by the drag computation.
+    - `Drag Coefficient`: Drag coefficient [-].
+    - `F10.7 Source`: Description of the F10.7 source used by the dynamics.
     - `Satellite Mass`: Satellite mass [kg].
     - `Satellite Mean Area`: Mean cross-sectional area [m²].
+    - `SRP Coefficient`: Solar radiation pressure coefficient [-].
     - `Terminate Altitude`: Mean perigee altitude that terminates the analysis [m].
     If the keyword `return_solution` is `true`, the function returns a tuple with the
     `DataFrame` and the raw `ODESolution`.

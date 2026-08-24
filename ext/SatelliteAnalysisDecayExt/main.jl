@@ -52,6 +52,19 @@ function SatelliteAnalysis.decay_analysis(
         _Nrlmsise00AtmosphericModel() :
         atmospheric_model
 
+    # Descriptions of the atmospheric model and the F10.7 source, recorded as metadata in
+    # the output so that, for example, `plot_decay_analysis` can show the assumptions.
+    atmospheric_model_name = if isnothing(atmospheric_model)
+        "NRLMSISE-00"
+    elseif atmospheric_model isa Function
+        "Custom (" * String(nameof(atmospheric_model)) * ")"
+    else
+        "Custom (" * String(nameof(typeof(atmospheric_model))) * ")"
+    end
+
+    f107_source = isnothing(F107) ? "Predicted" :
+        F107 isa Number ? "Constant ($(F107) sfu)" : "User function"
+
     F107′ = if isnothing(F107)
         # Notice that if the user calls `SpaceIndices.destroy()` after this initialization,
         # `space_index` raises a clear error asking to initialize the space indices again.
@@ -82,6 +95,8 @@ function SatelliteAnalysis.decay_analysis(
         satellite_mean_area           = satellite_mean_area,
         num_sampling_points_per_orbit = num_sampling_points_per_orbit,
         abstol                        = abstol,
+        atmospheric_model_name        = atmospheric_model_name,
+        f107_source                   = f107_source,
         C_d                           = C_d,
         C_r                           = C_r,
         distance_unit                 = distance_unit,
@@ -107,6 +122,8 @@ function _decay_analysis(
     satellite_mean_area::Number,
     num_sampling_points_per_orbit::Int,
     abstol::Number,
+    atmospheric_model_name::String,
+    f107_source::String,
     C_d::Number,
     C_r::Number,
     distance_unit::Symbol,
@@ -250,9 +267,13 @@ function _decay_analysis(
         style = :note
     )
 
-    metadata!(df, "Satellite Mass",      satellite_mass;      style = :note)
-    metadata!(df, "Satellite Mean Area", satellite_mean_area; style = :note)
-    metadata!(df, "Terminate Altitude",  terminate_altitude;  style = :note)
+    metadata!(df, "Atmospheric Model",   atmospheric_model_name; style = :note)
+    metadata!(df, "Drag Coefficient",    C_d;                    style = :note)
+    metadata!(df, "F10.7 Source",        f107_source;            style = :note)
+    metadata!(df, "Satellite Mass",      satellite_mass;         style = :note)
+    metadata!(df, "Satellite Mean Area", satellite_mean_area;    style = :note)
+    metadata!(df, "SRP Coefficient",     C_r;                    style = :note)
+    metadata!(df, "Terminate Altitude",  terminate_altitude;     style = :note)
 
     colmetadata!(df, :date,             "Unit", :UTC)
     colmetadata!(df, :time,             "Unit", time_unit)
