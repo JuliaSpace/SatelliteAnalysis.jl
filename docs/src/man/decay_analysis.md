@@ -183,8 +183,8 @@ loaded and adds the possibility to plot the decay analysis using the function
 perigee altitudes, a dashed line marking the terminate altitude, an annotation with the
 estimated reentry date, and a subtitle with the analysis timespan. The information panel
 shows the satellite mass, the mean area, the time to reenter, and a card with the analysis
-assumptions (atmospheric model, F10.7 source, and drag and SRP coefficients), all resolved
-from the `DataFrame` metadata. The keyword `show_f107`
+assumptions (atmospheric model and drag and SRP coefficients), all resolved from the
+`DataFrame` metadata. The keyword `show_f107`
 also plots the 10.7 cm solar flux index used by the dynamics using a twin y-axis:
 
 ```@example decay_analysis

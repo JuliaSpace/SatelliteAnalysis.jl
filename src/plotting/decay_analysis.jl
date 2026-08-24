@@ -15,8 +15,7 @@ refer to **Makie.jl** documentation.
 
 The figure shows the evolution of the mean apogee and perigee altitudes and an information
 panel with the satellite mass, the satellite mean area, the estimated time to reenter, and
-a card with the analysis assumptions (atmospheric model, F10.7 source, and drag and SRP
-coefficients).
+a card with the analysis assumptions (atmospheric model and drag and SRP coefficients).
 A dashed line marks the terminate altitude used to declare the reentry, and the estimated
 reentry date is annotated next to the reentry marker.
 The legend is placed outside the plot, at the bottom of the column that contains the
@@ -26,9 +25,9 @@ perigee altitude reached the terminate altitude. The satellite mass [kg], the sa
 mean area [m²], and the terminate altitude [m] are obtained from the `DataFrame` metadata
 written by [`decay_analysis`](@ref) (`Satellite Mass`, `Satellite Mean Area`, and
 `Terminate Altitude`), but they can be overridden using keywords. The assumptions are
-resolved from the metadata `Atmospheric Model`, `Drag Coefficient`, `SRP Coefficient`, and
-`F10.7 Source`. Information whose value cannot be resolved, because the metadata is absent
-and the related keyword was not passed, is omitted from the panel.
+resolved from the metadata `Atmospheric Model`, `Drag Coefficient`, and `SRP Coefficient`.
+Information whose value cannot be resolved, because the metadata is absent and the related
+keyword was not passed, is omitted from the panel.
 
 !!! warning
 

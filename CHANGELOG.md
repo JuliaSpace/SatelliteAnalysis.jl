@@ -34,7 +34,7 @@ Version 0.4.0
   recorded in the output metadata.
 - ![Feature][badge-feature] We highly improved the `plot_decay_analysis` output for
   reports: the information panel now shows a card with the analysis assumptions
-  (atmospheric model, F10.7 source, and drag and SRP coefficients), a
+  (atmospheric model and drag and SRP coefficients), a
   dashed line marks the terminate altitude, the estimated reentry date is annotated next
   to the reentry marker, a subtitle shows the analysis timespan, and the axis labels use
   human-readable unit names. The new keywords `title`, `subtitle`, `show_assumptions`,

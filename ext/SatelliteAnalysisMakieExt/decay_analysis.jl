@@ -76,7 +76,6 @@ function SatelliteAnalysis.plot_decay_analysis(
     atm_model_name = metadata(df, "Atmospheric Model", nothing)
     C_d            = metadata(df, "Drag Coefficient",  nothing)
     C_r            = metadata(df, "SRP Coefficient",   nothing)
-    f107_source    = metadata(df, "F10.7 Source",      nothing)
 
     # == Units =============================================================================
 
@@ -145,7 +144,6 @@ function SatelliteAnalysis.plot_decay_analysis(
 
         !isnothing(atm_model_name) &&
             push!(assumption_lines, "Atm. model: " * string(atm_model_name))
-        !isnothing(f107_source) && push!(assumption_lines, "F10.7: " * string(f107_source))
 
         # The drag and SRP coefficients are rendered with rich text subscripts.
         if !isnothing(C_d) && !isnothing(C_r)
