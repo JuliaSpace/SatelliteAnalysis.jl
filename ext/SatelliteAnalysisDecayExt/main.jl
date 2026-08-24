@@ -104,7 +104,8 @@ function _decay_analysis(
     ā, ē, ī, Ω̄, ω̄, M̄ = _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M)
     u = Vector(_classical_to_equinoctial(ā, ē, ī, Ω̄, ω̄, M̄))
 
-    tspan = (0.0, tf)
+    # Force a homogeneous time span even if the user passes an integer `tf`.
+    tspan = (0.0, Float64(tf))
 
     # Pre-allocate the J2 osculating propagator used for the mean-to-osculating
     # conversion inside the drag quadrature, avoiding one propagator allocation per

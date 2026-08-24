@@ -57,7 +57,7 @@ function _atmospheric_drag_acceleration(
     # The altitude can be negative when the integrator evaluates trial stages with
     # unphysical states near the decay end. Clamp it to keep the atmospheric model valid so
     # that the error control can reject the step.
-    h = max(h, 0.0)
+    h = max(h, zero(h))
     ρ = atmospheric_model(jd_utc, lat, lon, h, F107)
 
     a_drag_ecef = -(1 // 2) * T(Cd) * (T(area) / T(mass)) * T(ρ) * norm(v_ecef) .* v_ecef

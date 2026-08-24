@@ -270,8 +270,8 @@ function _mean_to_osculating_elements(
 ) where T <: Number
     # Normalize.
     a, e, i, Ω, ω, M = _normalize_classical_elements(a, e, i, Ω, ω, M)
-    e = max(e, 1e-6)
-    i = max(i, 1e-6)
+    e = max(e, T(1e-6))
+    i = max(i, T(1e-6))
 
     # Convert to osculating. The J2 osculating conversion is not total: for unphysical
     # states evaluated by the integrator in trial stages (mainly with loose tolerances),
@@ -338,8 +338,8 @@ perturbation model **[1]**.
 function _osculating_to_mean_elements(a::T, e::T, i::T, Ω::T, ω::T, M::T) where T <: Number
     # Normalize.
     a, e, i, Ω, ω, M = _normalize_classical_elements(a, e, i, Ω, ω, M)
-    e = max(e, 1e-6)
-    i = max(i, 1e-6)
+    e = max(e, T(1e-6))
+    i = max(i, T(1e-6))
 
     # Convert to mean.
     orb_osc_tod  = KeplerianElements(0.0, a, e, i, Ω, ω, mean_to_true_anomaly(e, M))
@@ -400,9 +400,9 @@ function _normalize_classical_elements(
     ω::T,
     M::T
 ) where T <: Number
-    a_norm = a > 0 ? a : abs(a)
-    e_norm = e < 0 ? 0.0 : e
-    i_norm = clamp(i, 0.0, π)
+    a_norm = abs(a)
+    e_norm = max(e, zero(T))
+    i_norm = clamp(i, zero(T), T(π))
     Ω_norm = mod(Ω, 2π)
     ω_norm = mod(ω, 2π)
     M_norm = mod(M, 2π)
