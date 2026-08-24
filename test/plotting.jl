@@ -31,9 +31,13 @@ end
         perigee_altitude = perigee_altitude,
     )
 
-    metadata!(df, "Satellite Mass",      100.0; style = :note)
-    metadata!(df, "Satellite Mean Area", 1.0;   style = :note)
-    metadata!(df, "Terminate Altitude",  120e3; style = :note)
+    metadata!(df, "Atmospheric Model",   "NRLMSISE-00";        style = :note)
+    metadata!(df, "Drag Coefficient",    2.2;                  style = :note)
+    metadata!(df, "F10.7 Source",        "Constant (140 sfu)"; style = :note)
+    metadata!(df, "Satellite Mass",      100.0;                style = :note)
+    metadata!(df, "Satellite Mean Area", 1.0;                  style = :note)
+    metadata!(df, "SRP Coefficient",     1.25;                 style = :note)
+    metadata!(df, "Terminate Altitude",  120e3;                style = :note)
 
     colmetadata!(df, :time,             "Unit", :y;  style = :note)
     colmetadata!(df, :apogee_altitude,  "Unit", :km; style = :note)
@@ -45,6 +49,12 @@ end
     @test ax isa Axis
 
     fig, ax = plot_decay_analysis(df; theme = :dark)
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # The ballistic coefficient and assumptions cards can be turned off.
+    fig, ax = plot_decay_analysis(df; show_assumptions = false)
 
     @test fig isa Figure
     @test ax isa Axis
@@ -81,6 +91,15 @@ end
         satellite_mean_area = 0.5,
         terminate_altitude  = 120e3
     )
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # Partial assumption metadata must render only the resolvable lines.
+    df_partial = copy(df_no_metadata)
+    metadata!(df_partial, "Drag Coefficient", 2.0; style = :note)
+
+    fig, ax = plot_decay_analysis(df_partial)
 
     @test fig isa Figure
     @test ax isa Axis

@@ -14,16 +14,19 @@ returns the objects `Figure` and `Axis` used to plot the data. For more informat
 refer to **Makie.jl** documentation.
 
 The figure shows the evolution of the mean apogee and perigee altitudes and an information
-panel with the satellite mass, the satellite mean area, and the estimated time to reenter.
+panel with the satellite mass, the satellite mean area, the ballistic coefficient
+(`C_d · A / m`) [m²/kg], the estimated time to reenter, and a card with the analysis
+assumptions (atmospheric model, F10.7 source, and drag and SRP coefficients).
 The legend is placed outside the plot, at the bottom of the column that contains the
 information panel, inside a card that matches the information panel style.
-The latter is only shown if the analysis detected a reentry, _i.e._, if the mean perigee
-altitude reached the terminate altitude. The satellite mass [kg], the satellite mean area
-[m²], and the terminate altitude [m] are obtained from the `DataFrame` metadata written by
-[`decay_analysis`](@ref) (`Satellite Mass`, `Satellite Mean Area`, and
-`Terminate Altitude`), but they can be overridden using keywords. Information whose value
-cannot be resolved, because the metadata is absent and the related keyword was not passed,
-is omitted from the panel.
+The time to reenter is only shown if the analysis detected a reentry, _i.e._, if the mean
+perigee altitude reached the terminate altitude. The satellite mass [kg], the satellite
+mean area [m²], and the terminate altitude [m] are obtained from the `DataFrame` metadata
+written by [`decay_analysis`](@ref) (`Satellite Mass`, `Satellite Mean Area`, and
+`Terminate Altitude`), but they can be overridden using keywords. The assumptions are
+resolved from the metadata `Atmospheric Model`, `Drag Coefficient`, `SRP Coefficient`, and
+`F10.7 Source`. Information whose value cannot be resolved, because the metadata is absent
+and the related keyword was not passed, is omitted from the panel.
 
 !!! warning
 
@@ -44,6 +47,10 @@ is omitted from the panel.
     information panel. If it is `nothing`, the value is obtained from the metadata
     `Satellite Mean Area` of `df`.
     (**Default**: `nothing`)
+- `show_assumptions::Bool`: If `true`, the information panel shows the ballistic
+    coefficient [m²/kg] and a card with the analysis assumptions resolved from the
+    `DataFrame` metadata written by [`decay_analysis`](@ref).
+    (**Default**: `true`)
 - `show_f107::Bool`: If `true`, the 10.7 cm solar flux index in the column `f107` of `df`
     is plotted [sfu] using a twin y-axis placed at the right side of the figure. The line
     is rendered with transparency below the other plot elements, and the twin y-axis ticks

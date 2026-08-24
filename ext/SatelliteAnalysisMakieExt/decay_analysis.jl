@@ -13,6 +13,7 @@ function SatelliteAnalysis.plot_decay_analysis(
     mission_name::Union{Nothing, String}        = nothing,
     satellite_mass::Union{Nothing, Number}      = nothing,
     satellite_mean_area::Union{Nothing, Number} = nothing,
+    show_assumptions::Bool = true,
     show_f107::Bool = false,
     show_reentry_date::Bool = false,
     terminate_altitude::Union{Nothing, Number}  = nothing,
@@ -53,6 +54,12 @@ function SatelliteAnalysis.plot_decay_analysis(
         metadata(df, "Terminate Altitude", nothing) :
         terminate_altitude
 
+    # Assumption values, resolved only from the `DataFrame` metadata.
+    atm_model_name = metadata(df, "Atmospheric Model", nothing)
+    C_d            = metadata(df, "Drag Coefficient",  nothing)
+    C_r            = metadata(df, "SRP Coefficient",   nothing)
+    f107_source    = metadata(df, "F10.7 Source",      nothing)
+
     # == Units =============================================================================
 
     time_unit     = colmetadata(df, :time,            "Unit", :y)
@@ -85,10 +92,20 @@ function SatelliteAnalysis.plot_decay_analysis(
 
     # == Assemble the Information Panel Cards =============================================
 
-    cards = Tuple{String, Vector{String}}[]
+    # Each card has a title, its value lines, and a flag selecting the compact rendering,
+    # in which all the lines use a small font size.
+    cards = Tuple{String, Vector{String}, Bool}[]
 
-    !isnothing(mass) && push!(cards, ("SATELLITE MASS", ["$(_format_number(mass)) kg"]))
-    !isnothing(area) && push!(cards, ("MEAN AREA", ["$(_format_number(area)) m²"]))
+    !isnothing(mass) &&
+        push!(cards, ("SATELLITE MASS", ["$(_format_number(mass)) kg"], false))
+    !isnothing(area) &&
+        push!(cards, ("MEAN AREA", ["$(_format_number(area)) m²"], false))
+
+    if show_assumptions && !isnothing(mass) && !isnothing(area) && !isnothing(C_d)
+        # Drag-facing ballistic coefficient convention, as used by STELA.
+        bc = C_d * area / mass
+        push!(cards, ("BALLISTIC COEFF.", ["$(_format_number(bc)) m²/kg"], false))
+    end
 
     if !isnothing(term)
         if reentered
@@ -99,10 +116,31 @@ function SatelliteAnalysis.plot_decay_analysis(
                 push!(value_lines, reentry_epoch * " UTC")
             end
 
-            push!(cards, ("TIME TO REENTER", value_lines))
+            push!(cards, ("TIME TO REENTER", value_lines, false))
         else
-            push!(cards, ("TIME TO REENTER", ["No reentry"]))
+            push!(cards, ("TIME TO REENTER", ["No reentry"], false))
         end
+    end
+
+    if show_assumptions
+        assumption_lines = String[]
+
+        !isnothing(atm_model_name) &&
+            push!(assumption_lines, "Atm. model: " * string(atm_model_name))
+        !isnothing(f107_source) && push!(assumption_lines, "F10.7: " * string(f107_source))
+
+        if !isnothing(C_d) && !isnothing(C_r)
+            push!(
+                assumption_lines,
+                "C_d $(_format_number(C_d)) · C_r $(_format_number(C_r))"
+            )
+        elseif !isnothing(C_d)
+            push!(assumption_lines, "C_d $(_format_number(C_d))")
+        elseif !isnothing(C_r)
+            push!(assumption_lines, "C_r $(_format_number(C_r))")
+        end
+
+        !isempty(assumption_lines) && push!(cards, ("ASSUMPTIONS", assumption_lines, true))
     end
 
     # == Plot ==============================================================================
@@ -261,7 +299,7 @@ function SatelliteAnalysis.plot_decay_analysis(
         if !isempty(cards)
             panel = GridLayout(fig[1, 2]; tellheight = false, valign = :top)
 
-            for (k, (title, value_lines)) in enumerate(cards)
+            for (k, (title, value_lines, compact)) in enumerate(cards)
                 _add_stat_card!(
                     panel,
                     k,
@@ -269,6 +307,7 @@ function SatelliteAnalysis.plot_decay_analysis(
                     value_lines;
                     border_color  = border_color,
                     card_color    = card_color,
+                    compact       = compact,
                     subline_color = subline_color,
                     title_color   = title_color,
                 )
@@ -302,6 +341,9 @@ as the card value, whereas the other elements are rendered as smaller complement
 
 - `border_color::Colorant`: Color of the card border.
 - `card_color::Colorant`: Color of the card background.
+- `compact::Bool`: If `true`, all the value lines are rendered with a small font size,
+    yielding a denser card suited for multi-line textual content.
+    (**Default**: `false`)
 - `subline_color::Colorant`: Color of the card complementary lines.
 - `title_color::Colorant`: Color of the card title.
 """
@@ -312,6 +354,7 @@ function _add_stat_card!(
     value_lines::Vector{String};
     border_color::Colorant,
     card_color::Colorant,
+    compact::Bool = false,
     subline_color::Colorant,
     title_color::Colorant,
 )
@@ -338,8 +381,8 @@ function _add_stat_card!(
     Label(
         card[2, 1],
         first(value_lines);
-        font      = :bold,
-        fontsize  = 24,
+        font      = compact ? :regular : :bold,
+        fontsize  = compact ? 15 : 24,
         halign    = :left,
         tellwidth = false,
     )
