@@ -110,6 +110,10 @@ function _decay_analysis(
         KeplerianElements(0.0, ā, ē, ī, Ω̄, ω̄, mean_to_true_anomaly(ē, M̄))
     )
 
+    # NOTE: `params` carries per-call mutable workspaces, currently the propagator
+    # `j2osc_prop`. Hence, the assembled ODE problem must not be shared across concurrent
+    # solves. Every call to `decay_analysis` builds fresh workspaces, keeping the public
+    # API thread-safe.
     params = (
         satellite_mean_area           = satellite_mean_area,
         satellite_mass                = satellite_mass,

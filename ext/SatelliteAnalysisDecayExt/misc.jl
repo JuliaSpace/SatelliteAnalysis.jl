@@ -285,7 +285,11 @@ function _mean_to_osculating_elements(
         ke           = rv_to_kepler(r_tod, v_tod)
 
         ke.a, ke.e, ke.i, ke.Ω, ke.ω, true_to_mean_anomaly(ke.e, ke.f)
-    catch
+    catch err
+        # The propagator and the element conversions throw `ArgumentError` or
+        # `DomainError` for those unphysical states. Any other exception is a genuine
+        # error and must propagate.
+        err isa Union{ArgumentError, DomainError} || rethrow()
         a, e, i, Ω, ω, M
     end
 
