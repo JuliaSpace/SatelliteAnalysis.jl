@@ -88,32 +88,79 @@ end
 ############################################################################################
 
 """
-    _decay_progress_callback(progress::DecayProgress) -> DiscreteCallback
+    struct DecayProgressCondition
+
+Condition of the progress callback of the decay analysis.
+
+# Fields
+
+- `progress::Union{Nothing, DecayProgress}`: Progress interface state, or `nothing` when
+    the interface is disabled.
+"""
+struct DecayProgressCondition
+    progress::Union{Nothing, DecayProgress}
+end
+
+"""
+    (c::DecayProgressCondition)(u, t, integrator) -> Bool
+
+Return whether the progress interface of the condition `c` is enabled.
+"""
+function (c::DecayProgressCondition)(u, t, integrator)
+    return !isnothing(c.progress)
+end
+
+"""
+    struct DecayProgressAffect
+
+Affect of the progress callback of the decay analysis, updating the progress interface at
+every accepted step of the numerical integration.
+
+# Fields
+
+- `progress::Union{Nothing, DecayProgress}`: Progress interface state, or `nothing` when
+    the interface is disabled.
+"""
+struct DecayProgressAffect
+    progress::Union{Nothing, DecayProgress}
+end
+
+"""
+    (a::DecayProgressAffect)(integrator) -> Nothing
+
+Update the progress interface of the affect `a` with the current state of `integrator`.
+"""
+function (a::DecayProgressAffect)(integrator)
+    progress = a.progress
+    isnothing(progress) && return nothing
+
+    ae, ee, _, _, _, _ = _equinoctial_to_classical(integrator.u)
+
+    perigee = ae * (1 - ee) - EARTH_EQUATORIAL_RADIUS
+    apogee  = ae * (1 + ee) - EARTH_EQUATORIAL_RADIUS
+
+    _update_decay_progress!(progress, integrator.t, perigee, apogee)
+
+    # The state was not modified, avoiding an unnecessary function re-evaluation.
+    u_modified!(integrator, false)
+
+    return nothing
+end
+
+"""
+    _decay_progress_callback(progress::Union{Nothing, DecayProgress}) -> DiscreteCallback
 
 Create the callback that updates the progress interface `progress` at every accepted step
-of the numerical integration. The callback does not modify the state, does not save
-additional points, and hence does not change the analysis result.
+of the numerical integration, or a disabled callback if `progress` is `nothing`. The
+callback type does not depend on whether the interface is enabled, so the solver
+specialization is shared by the verbose and silent paths. The callback does not modify
+the state, does not save additional points, and hence does not change the analysis
+result.
 """
-function _decay_progress_callback(progress::DecayProgress)
-    affect! = let progress = progress
-        function (integrator)
-            a, e, _, _, _, _ = _equinoctial_to_classical(integrator.u)
-
-            perigee = a * (1 - e) - EARTH_EQUATORIAL_RADIUS
-            apogee  = a * (1 + e) - EARTH_EQUATORIAL_RADIUS
-
-            _update_decay_progress!(progress, integrator.t, perigee, apogee)
-
-            # The state was not modified, avoiding an unnecessary function re-evaluation.
-            u_modified!(integrator, false)
-
-            return nothing
-        end
-    end
-
+function _decay_progress_callback(progress::Union{Nothing, DecayProgress})
     return DiscreteCallback(
-        (u, t, integrator) -> true,
-        affect!;
+        DecayProgressCondition(progress),
+        DecayProgressAffect(progress);
         save_positions = (false, false)
     )
 end

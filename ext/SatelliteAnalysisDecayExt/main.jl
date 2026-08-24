@@ -203,11 +203,14 @@ function _decay_analysis(
         ) :
         nothing
 
-    termination_cb = ContinuousCallback(_cb_altitude_condition, _cb_altitude_affect!)
-
-    cbset = isnothing(progress) ?
-        CallbackSet(termination_cb) :
-        CallbackSet(termination_cb, _decay_progress_callback(progress))
+    # The progress callback is always installed with a stable type: when `verbose` is
+    # disabled, its condition is constantly `false`. Hence, the solver specialization is
+    # shared by the verbose and silent paths, avoiding a second compilation on the first
+    # verbose call.
+    cbset = CallbackSet(
+        ContinuousCallback(_cb_altitude_condition, _cb_altitude_affect!),
+        _decay_progress_callback(progress)
+    )
 
     isnothing(progress) ||
         _start_decay_progress!(progress, ā * (1 + ē) - EARTH_EQUATORIAL_RADIUS)
