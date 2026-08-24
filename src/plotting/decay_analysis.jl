@@ -16,8 +16,10 @@ refer to **Makie.jl** documentation.
 The figure shows the evolution of the mean apogee and perigee altitudes and an information
 panel with the satellite mass, the satellite mean area, the estimated time to reenter, and
 a card with the analysis assumptions (atmospheric model and drag and SRP coefficients).
-A dashed line marks the terminate altitude used to declare the reentry, and the estimated
-reentry date is annotated next to the reentry marker.
+A dashed line marks the terminate altitude used to declare the reentry, and the reentry is
+annotated next to the reentry marker. By default, the figure shows only relative times;
+the keyword `show_dates` adds the absolute dates [UTC] to the subtitle, the information
+panel, and the reentry annotation.
 The legend is placed outside the plot, at the bottom of the column that contains the
 information panel, inside a card that matches the information panel style.
 The time to reenter is only shown if the analysis detected a reentry, _i.e._, if the mean
@@ -61,20 +63,25 @@ keyword was not passed, is omitted from the panel.
     analysis assumptions resolved from the `DataFrame` metadata written by
     [`decay_analysis`](@ref).
     (**Default**: `true`)
+- `show_dates::Bool`: If `true`, the absolute dates [UTC] are shown in the figure: the
+    automatic subtitle shows the analysis timespan, the information panel shows the
+    estimated reentry date below the time to reenter, and the reentry annotation shows the
+    estimated reentry date. Otherwise, the analysis is treated as relative and no dates
+    are shown.
+    (**Default**: `false`)
 - `show_f107::Bool`: If `true`, the 10.7 cm solar flux index in the column `f107` of `df`
     is plotted [sfu] using a twin y-axis placed at the right side of the figure. The line
     is rendered with transparency below the other plot elements, and the twin y-axis ticks
     use canonical values aligned with the grid of the main axis.
     (**Default**: `false`)
-- `show_reentry_callout::Bool`: If `true` and the analysis detected a reentry, the
-    estimated reentry date [UTC] is annotated in the plot next to the reentry marker.
+- `show_reentry_callout::Bool`: If `true` and the analysis detected a reentry, an
+    annotation is added in the plot next to the reentry marker. It shows the estimated
+    reentry date [UTC] when `show_dates` is `true` and the text "Reentry" otherwise.
     (**Default**: `true`)
-- `show_reentry_date::Bool`: If `true`, the estimated reentry date [UTC] is shown in the
-    information panel below the time to reenter. Otherwise, only the timespan is shown.
-    (**Default**: `false`)
-- `subtitle::Union{Nothing, String, Symbol}`: Subtitle rendered below the plot title. If it
-    is `:auto`, the subtitle shows the analysis timespan [UTC]. If it is `nothing`, no
-    subtitle is added to the figure. Any other `Symbol` raises an `ArgumentError`.
+- `subtitle::Union{Nothing, String, Symbol}`: Subtitle rendered below the plot title. If
+    it is `:auto`, the subtitle shows the analysis timespan [UTC] when `show_dates` is
+    `true`; otherwise, no subtitle is added. If it is `nothing`, no subtitle is added to
+    the figure. Any other `Symbol` raises an `ArgumentError`.
     (**Default**: `:auto`)
 - `terminate_altitude::Union{Nothing, Number}`: Mean perigee altitude [m] that terminates
     the decay analysis, used to detect if a reentry happened. If it is `nothing`, the value

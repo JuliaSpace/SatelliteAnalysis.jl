@@ -180,8 +180,10 @@ df_high[end, :date]
 If the user loads the package [Makie.jl](https://docs.makie.org/stable/), an extension is
 loaded and adds the possibility to plot the decay analysis using the function
 [`plot_decay_analysis`](@ref). The figure shows the evolution of the mean apogee and
-perigee altitudes, a dashed line marking the terminate altitude, an annotation with the
-estimated reentry date, and a subtitle with the analysis timespan. The information panel
+perigee altitudes, a dashed line marking the terminate altitude, and an annotation marking
+the reentry. The keyword `show_dates` adds the absolute dates [UTC] to the figure: the
+analysis timespan in the subtitle and the estimated reentry date in the information panel
+and in the reentry annotation. The information panel
 shows the satellite mass, the mean area, the time to reenter, and a card with the analysis
 assumptions (atmospheric model and drag and SRP coefficients), all resolved from the
 `DataFrame` metadata. The keyword `show_f107`
@@ -192,7 +194,12 @@ using CairoMakie
 
 CairoMakie.activate!(type = "png", px_per_unit = 2) # hide
 
-fig, ax = plot_decay_analysis(df; mission_name = "My Mission", show_f107 = true)
+fig, ax = plot_decay_analysis(
+    df;
+    mission_name = "My Mission",
+    show_dates   = true,
+    show_f107    = true
+)
 
 fig
 ```

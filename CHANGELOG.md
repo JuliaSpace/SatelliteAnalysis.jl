@@ -22,8 +22,8 @@ Version 0.4.0
   **Makie.jl** is loaded, that plots the mean apogee and perigee altitude evolution
   computed by `decay_analysis` together with an information panel showing the satellite
   mass, the satellite mean area, and the estimated time to reenter. Keywords allow adding
-  a mission name above the title, showing the estimated reentry date, and plotting the
-  F10.7 index using a twin y-axis. To support it, `decay_analysis` now records the
+  a mission name above the title, showing the absolute dates, and plotting the F10.7
+  index using a twin y-axis. To support it, `decay_analysis` now records the
   metadata `Satellite Mass`, `Satellite Mean Area`, and `Terminate Altitude` in the output
   `DataFrame`.
 - ![Feature][badge-feature] We added the keyword `atmospheric_model` to `decay_analysis`,
@@ -35,10 +35,12 @@ Version 0.4.0
 - ![Feature][badge-feature] We highly improved the `plot_decay_analysis` output for
   reports: the information panel now shows a card with the analysis assumptions
   (atmospheric model and drag and SRP coefficients), a
-  dashed line marks the terminate altitude, the estimated reentry date is annotated next
-  to the reentry marker, a subtitle shows the analysis timespan, and the axis labels use
-  human-readable unit names. The new keywords `title`, `subtitle`, `show_assumptions`,
-  `show_reentry_callout`, `fontscale`, `mono_ticklabels`, `panel_width`, `xlims`, and
+  dashed line marks the terminate altitude, the reentry is annotated next to the reentry
+  marker, the keyword `show_dates` adds the absolute dates (the analysis timespan in the
+  subtitle and the estimated reentry date in the panel and in the annotation), and the
+  axis labels use human-readable unit names. The new keywords `title`, `subtitle`,
+  `show_assumptions`, `show_dates`, `show_reentry_callout`, `fontscale`,
+  `mono_ticklabels`, `panel_width`, `xlims`, and
   `ylims` control the figure. To support it, `decay_analysis` now records the metadata
   `Atmospheric Model`, `Drag Coefficient`, `F10.7 Source`, and `SRP Coefficient` in the
   output `DataFrame`.

@@ -17,9 +17,9 @@ function SatelliteAnalysis.plot_decay_analysis(
     satellite_mass::Union{Nothing, Number}      = nothing,
     satellite_mean_area::Union{Nothing, Number} = nothing,
     show_assumptions::Bool = true,
+    show_dates::Bool = false,
     show_f107::Bool = false,
     show_reentry_callout::Bool = true,
-    show_reentry_date::Bool = false,
     subtitle::Union{Nothing, String, Symbol} = :auto,
     terminate_altitude::Union{Nothing, Number}  = nothing,
     theme::Symbol = :light,
@@ -128,7 +128,7 @@ function SatelliteAnalysis.plot_decay_analysis(
         if reentered
             value_lines = [_format_duration(last(df.date) - first(df.date))]
 
-            if show_reentry_date
+            if show_dates
                 reentry_epoch = Dates.format(last(df.date), dateformat"yyyy-mm-dd HH:MM")
                 push!(value_lines, reentry_epoch * " UTC")
             end
@@ -205,11 +205,15 @@ function SatelliteAnalysis.plot_decay_analysis(
 
         main_axis_background = show_f107 ? (; backgroundcolor = :transparent) : (;)
 
-        # The automatic subtitle shows the analysis timespan.
-        subtitle_str = subtitle isa Symbol ?
-            Dates.format(first(df.date), dateformat"yyyy-mm-dd") * " → " *
-                Dates.format(last(df.date), dateformat"yyyy-mm-dd") * " UTC" :
+        # The automatic subtitle shows the analysis timespan when the dates are enabled.
+        subtitle_str = if subtitle isa Symbol
+            show_dates ?
+                Dates.format(first(df.date), dateformat"yyyy-mm-dd") * " → " *
+                    Dates.format(last(df.date), dateformat"yyyy-mm-dd") * " UTC" :
+                nothing
+        else
             subtitle
+        end
 
         subtitle_attrs = isnothing(subtitle_str) ? (;) : (;
             subtitle      = subtitle_str,
@@ -266,8 +270,9 @@ function SatelliteAnalysis.plot_decay_analysis(
             push!(legend_labels, "Reentry")
 
             if show_reentry_callout
-                callout_text = "Reentry: " *
-                    Dates.format(last(df.date), dateformat"yyyy-mm-dd")
+                callout_text = show_dates ?
+                    "Reentry: " * Dates.format(last(df.date), dateformat"yyyy-mm-dd") :
+                    "Reentry"
 
                 # The pixel offset anchors the annotation next to the marker regardless of
                 # the axis limits.

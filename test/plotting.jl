@@ -77,8 +77,13 @@ end
     @test fig isa Figure
     @test ax.subtitle[] == ""
 
-    # The automatic subtitle must show the analysis timespan.
+    # The automatic subtitle must show the analysis timespan only when the dates are
+    # enabled.
     fig, ax = plot_decay_analysis(df)
+
+    @test ax.subtitle[] == ""
+
+    fig, ax = plot_decay_analysis(df; show_dates = true)
 
     @test ax.subtitle[] == "2024-01-01 → 2024-02-06 UTC"
 
@@ -108,12 +113,12 @@ end
     @test fig isa Figure
     @test ax isa Axis
 
-    # Optional decorations: mission name, reentry date, and F10.7 twin y-axis.
+    # Optional decorations: mission name, absolute dates, and F10.7 twin y-axis.
     fig, ax = plot_decay_analysis(
         df;
-        mission_name      = "Amazonia-1",
-        show_f107         = true,
-        show_reentry_date = true
+        mission_name = "Amazonia-1",
+        show_dates   = true,
+        show_f107    = true
     )
 
     @test fig isa Figure
