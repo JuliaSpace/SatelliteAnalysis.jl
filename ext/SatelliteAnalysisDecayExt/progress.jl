@@ -16,6 +16,9 @@ const _PROGRESS_PANEL_LINES = 6
 # Partial block characters used to smooth the progress bar, ordered by fill fraction.
 const _PROGRESS_PARTIAL_BLOCKS = ("", "▏", "▎", "▍", "▌", "▋", "▊", "▉")
 
+# Minimum wall time [s] between two panel redraws not caused by a progress advance.
+const _PROGRESS_REDRAW_PERIOD = 0.02
+
 """
     mutable struct DecayProgress
 
@@ -31,7 +34,8 @@ Store the state of the progress interface shown during the decay analysis.
 - `terminate_altitude::Float64`: Mean perigee altitude [m] that terminates the analysis.
 - `start_wall::Float64`: Wall clock [s] at the beginning of the analysis.
 - `last_draw_wall::Float64`: Wall clock [s] of the last panel redraw, used for throttling.
-- `last_decile::Int`: Last progress decile printed by the plain fallback.
+- `last_percent::Int`: Last progress percentage rendered, used to force a redraw whenever
+    the progress advances.
 - `drawn::Bool`: If `true`, the panel is currently drawn in the terminal.
 """
 mutable struct DecayProgress
@@ -42,7 +46,7 @@ mutable struct DecayProgress
     terminate_altitude::Float64
     start_wall::Float64
     last_draw_wall::Float64
-    last_decile::Int
+    last_percent::Int
     drawn::Bool
 end
 
@@ -135,9 +139,10 @@ end
     _update_decay_progress!(progress::DecayProgress, t::Number, perigee::Number, apogee::Number) -> Nothing
 
 Update the progress interface `progress` at the model time `t` [s] with the current mean
-perigee and apogee altitudes [m]. In ANSI mode, the panel redraws are throttled to at most
-10 per second of wall time. Otherwise, a plain line is printed when the progress crosses a
-multiple of 10%.
+perigee and apogee altitudes [m]. In ANSI mode, the panel is redrawn whenever the progress
+advances by at least one percentage point, and otherwise at most 50 times per second of
+wall time. In the plain fallback, a line is printed when the progress crosses a multiple
+of 5%.
 """
 function _update_decay_progress!(
     progress::DecayProgress,
@@ -149,9 +154,14 @@ function _update_decay_progress!(
 
     if progress.ansi
         now = time()
+        pct = floor(Int, fraction * 100)
 
-        (progress.drawn && (fraction < 1) && (now - progress.last_draw_wall < 0.1)) &&
-            return nothing
+        redraw = !progress.drawn ||
+            (fraction >= 1) ||
+            (pct > progress.last_percent) ||
+            (now - progress.last_draw_wall >= _PROGRESS_REDRAW_PERIOD)
+
+        redraw || return nothing
 
         _draw_decay_progress_panel(
             progress,
@@ -163,16 +173,17 @@ function _update_decay_progress!(
         )
 
         progress.last_draw_wall = now
+        progress.last_percent   = pct
         progress.drawn          = true
     else
-        decile = floor(Int, fraction * 10)
-        (decile <= progress.last_decile) && return nothing
+        pct = 5 * floor(Int, fraction * 20)
+        (pct <= progress.last_percent) && return nothing
 
-        progress.last_decile = decile
+        progress.last_percent = pct
 
         println(
             progress.io,
-            "Decay analysis: $(10decile)% (perigee ",
+            "Decay analysis: $(pct)% (perigee ",
             _format_progress_altitude(perigee),
             ", model time ",
             _format_progress_span(t),
