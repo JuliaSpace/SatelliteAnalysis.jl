@@ -26,6 +26,10 @@ Version 0.4.0
   F10.7 index using a twin y-axis. To support it, `decay_analysis` now records the
   metadata `Satellite Mass`, `Satellite Mean Area`, and `Terminate Altitude` in the output
   `DataFrame`.
+- ![Feature][badge-feature] We added the keyword `atmospheric_model` to `decay_analysis`,
+  allowing the user to select the atmospheric density model used by the drag computation.
+  By default, the analysis uses the NRLMSISE-00 model with a constant geomagnetic index
+  Ap = 9, as in STELA.
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were
@@ -38,12 +42,11 @@ Version 0.4.0
   (about 20x) by tuning the default integrator configuration for lifetime estimation and
   reducing the cost of the right-hand side. The integrator can now be configured through
   the keywords `solver`, `reltol`, and `abstol`.
-- ![Enhancement][badge-enhancement] The keywords `Ap` and `F107` in `decay_analysis` now
-  accept either a constant value or a function of time with the signature
-  `(jd_utc::Number) -> Number`, allowing time-varying space index profiles. By default,
-  `Ap` uses the constant value 12, a typical long-term average of the geomagnetic
-  activity, and `F107` uses the predicted F10.7 provided by **SpaceIndices.jl** (space
-  index `F10predicted`), whose space index set is initialized automatically on first use.
+- ![Enhancement][badge-enhancement] The keyword `F107` in `decay_analysis` now accepts
+  either a constant value or a function of time with the signature
+  `(jd_utc::Number) -> Number`, allowing time-varying solar flux profiles. By default, it
+  uses the predicted F10.7 provided by **SpaceIndices.jl** (space index `F10predicted`),
+  whose space index set is initialized automatically on first use.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to

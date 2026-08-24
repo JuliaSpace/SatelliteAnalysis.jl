@@ -94,8 +94,7 @@ julia> df = decay_analysis(
            orb;
            satellite_mass = 100.0,
            satellite_mean_area = 1.0,
-           F107 = 140,
-           Ap = 15
+           F107 = 140
        );
 
 julia> fig, ax = plot_decay_analysis(df);

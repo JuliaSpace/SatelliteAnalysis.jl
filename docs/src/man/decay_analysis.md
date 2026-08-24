@@ -27,8 +27,8 @@ propagation time reaches `tf`.
 
 The model averages the following perturbations over one orbit: Earth gravity zonal harmonics
 (including a closed-form J₂² correction), third-body attraction of the Sun and the Moon,
-atmospheric drag using the NRLMSISE-00 model, and solar radiation pressure gated by the
-Earth shadow.
+atmospheric drag using a configurable atmospheric model (NRLMSISE-00 by default), and solar
+radiation pressure gated by the Earth shadow.
 
 !!! warning
 
@@ -43,6 +43,16 @@ The following keywords are available:
 - `satellite_mass::Number`: Satellite mass [kg]. This keyword is required.
 - `satellite_mean_area::Number`: Mean cross-sectional area [m²] used for both the
   atmospheric drag and the solar radiation pressure. This keyword is required.
+- `atmospheric_model::Function`: Function that returns the atmospheric density [kg/m³] at a
+  given location and time considering a specific F10.7 index. The function must have the
+  signature `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) ->
+  Number` where `jd_utc` is the Julian date in UTC and `lat`, `lon`, and `alt` are the
+  geodetic latitude [rad], longitude [rad], and altitude [m] of the point where the density
+  is evaluated, and `F107` is the 10.7 cm solar flux index [sfu] at that instant. The latter
+  must be considered as the daily value and also the 81-day centered average. By default,
+  the system uses an internal wrapper for the NRLMSISE-00 model provided by
+  **AtmosphericModels.jl** with a constant geomagnetic index Ap = 9, as in STELA.
+  (**Default**: `_decay_analysis__nrlmsise00`)
 - `gravity_model::Union{AbstractGravityModel, Nothing}`: Gravity model used to compute the
   Earth gravitational perturbation. If it is `nothing`, the system fetches and loads the
   EGM2008 model.
@@ -52,12 +62,6 @@ The following keywords are available:
   (**Default**: 17)
 - `abstol::Number`: Absolute tolerance of the numerical integration.
   (**Default**: 1e-6)
-- `Ap::Union{Function, Nothing, Number}`: Geomagnetic index [-]. It can be a constant value
-  or a function of time (in Julian days) that returns the geomagnetic index at that
-  instant: `(jd_utc::Number) -> Number`. If it is `nothing`, the system uses the constant
-  value 12, a typical long-term average of the geomagnetic activity that is suitable for
-  decay lifetime estimation.
-  (**Default**: `nothing`)
 - `C_d::Number`: Drag coefficient [-].
   (**Default**: 2.2)
 - `C_r::Number`: Solar radiation pressure coefficient [-].
@@ -100,7 +104,6 @@ with the columns:
 - `date`: Date and time of each point [UTC] encoded using `DateTime`.
 - `time`: Elapsed time of each point since the beginning of the analysis [`time_unit`].
 - `f107`: 10.7 cm solar flux index used by the dynamics at each point [sfu].
-- `ap`: Geomagnetic index used by the dynamics at each point [-].
 - `mean_elements`: Mean Keplerian elements encoded using `KeplerianElements` [SI], where
   the epoch is the point date [UTC].
 - `apogee_altitude`: Mean apogee altitude [`distance_unit`].
@@ -137,8 +140,8 @@ orb = KeplerianElements(
 
 Now, we can use the function `decay_analysis` to obtain the orbit evolution until the
 reentry. Notice that we only need to provide the satellite mass and mean area: the space
-indices default to the predicted F10.7 and to a constant geomagnetic index of 12, and the
-system fetches the EGM2008 gravity model automatically:
+index defaults to the predicted F10.7, and the system fetches the EGM2008 gravity model
+automatically:
 
 ```@repl decay_analysis
 df = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0)
@@ -150,16 +153,15 @@ The estimated decay epoch is the date of the last point:
 df[end, :date]
 ```
 
-We can also provide constant space indices, which is useful, for example, to analyze
-worst-case scenarios with high solar activity:
+We can also provide a constant F10.7, which is useful, for example, to analyze worst-case
+scenarios with high solar activity:
 
 ```@repl decay_analysis
 df_high = decay_analysis(
     orb;
     satellite_mass = 100.0,
     satellite_mean_area = 1.0,
-    F107 = 250,
-    Ap = 30
+    F107 = 250
 )
 
 df_high[end, :date]

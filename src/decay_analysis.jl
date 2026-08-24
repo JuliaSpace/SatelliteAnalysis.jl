@@ -50,7 +50,7 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     evaluated, and `F107` is the 10.7 cm solar flux index [sfu] at that instant. The latter
     must be considered as the daily value and also the 81-day centered average. By default,
     the system uses an internal wrapper for the NRLMSISE-00 model provided by
-    **AtmosphericModels.jl**.
+    **AtmosphericModels.jl** with a constant geomagnetic index Ap = 9, as in STELA.
     (**Default**: `_decay_analysis__nrlmsise00`)
 - `gravity_model::Union{AbstractGravityModel, Nothing}`: Gravity model used to compute the
     Earth gravitational perturbation. If it is `nothing`, the system fetches and loads the
@@ -104,7 +104,6 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     - `time`: Elapsed time of each point since the beginning of the analysis
         [`time_unit`].
     - `f107`: 10.7 cm solar flux index used by the dynamics at each point [sfu].
-    - `ap`: Geomagnetic index used by the dynamics at each point [-].
     - `mean_elements`: Mean Keplerian elements encoded using `KeplerianElements` [SI],
         where the epoch is the point date [UTC].
     - `apogee_altitude`: Mean apogee altitude [`distance_unit`].
@@ -145,16 +144,15 @@ julia> df = decay_analysis(
            orb;
            satellite_mass = 100.0,
            satellite_mean_area = 1.0,
-           F107 = 140,
-           Ap = 15
+           F107 = 140
        );
 
 julia> df[end, :date]  # ..................................... Estimation of the decay epoch
-2024-02-01T07:12:53.537
+2024-02-02T18:56:08.476
 ```
 
-If the keywords `F107` and `Ap` are omitted, the analysis uses the predicted F10.7 and a
-constant geomagnetic index of 12, requiring only the satellite properties:
+If the keyword `F107` is omitted, the analysis uses the predicted F10.7, requiring only the
+satellite properties:
 
 ```julia-repl
 julia> df = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0);
