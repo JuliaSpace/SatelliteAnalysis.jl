@@ -108,13 +108,9 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
     # Quadrature in f ∈ [0, 2π) [rad].
     for k in 0:(N - 1)
         f̄k = 2π * k / N
-        M̄k = mod(true_to_mean_anomaly(ē, f̄k), 2π)
 
-        # Obtain osculating elements.
-        a, e, i, Ω, ω, M = _mean_to_osculating_elements(ā, ē, ī, Ω̄, ω̄, M̄k, orbp)
-
-        # Position and velocity in TOD.
-        rk_tod, vk_tod = _coe_to_rv(a, e, i, Ω, ω, M)
+        # Position and velocity of the osculating orbit in TOD.
+        rk_tod, vk_tod = _mean_to_osculating_rv(ā, ē, ī, Ω̄, ω̄, f̄k, orbp)
         rk² = dot(rk_tod, rk_tod)
         rk  = √rk²
 

@@ -94,7 +94,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
         f̄k = mean_to_true_anomaly(ē, M̄k)
 
         # Position and velocity from mean orbital elements.
-        rk_tod, vk_tod = _coe_to_rv(ā, ē, ī, Ω̄, ω̄, M̄k)
+        rk_tod, vk_tod = _coe_to_rv(ā, ē, ī, Ω̄, ω̄, f̄k)
         rk = norm(rk_tod)
 
         rk_pef = D_pef_tod * rk_tod

@@ -57,7 +57,7 @@ end
         i::T,
         Ω::T,
         ω::T,
-        M::T
+        f::T
     ) where T <: Number -> SVector{3, T}, SVector{3, T}
 
 Compute position and velocity vectors from Classical Orbital Elements:
@@ -67,15 +67,14 @@ Compute position and velocity vectors from Classical Orbital Elements:
 - `i::T`: Inclination [rad].
 - `Ω::T`: Right Ascension of Ascending Node [rad].
 - `ω::T`: Argument of Perigee [rad].
-- `M::T`: Mean Anomaly [rad].
+- `f::T`: True Anomaly [rad].
 
 # Returns
 
 - `SVector{3, T}`: Position vector in ECI frame [m].
 - `SVector{3, T}`: Velocity vector in ECI frame [m/s].
 """
-function _coe_to_rv(a::T, e::T, i::T, Ω::T, ω::T, M::T) where T <: Number
-    f  = mean_to_true_anomaly(e, M)
+function _coe_to_rv(a::T, e::T, i::T, Ω::T, ω::T, f::T) where T <: Number
     ke = KeplerianElements(0.0, a, e, i, Ω, ω, f)
 
     return kepler_to_rv(ke)
@@ -218,39 +217,35 @@ function _equinoctial_to_classical(
 end
 
 """
-    _mean_to_osculating_elements(
+    _mean_to_osculating_rv(
         a::T,
         e::T,
         i::T,
         Ω::T,
         ω::T,
-        M::T,
+        f::T,
         orbp::OrbitPropagatorJ2Osculating
-    ) where T <: Number -> NTuple{6, T}
+    ) where T <: Number -> SVector{3, T}, SVector{3, T}
 
-Convert the mean classical elements `[a, e, i, Ω, ω, M]` to osculating elements under the J2
-perturbation model **[1]** using the pre-allocated J2 osculating propagator `orbp`, which is
-re-initialized in place.
+Compute the osculating position and velocity vectors from the mean classical elements
+`[a, e, i, Ω, ω, f]` under the J2 perturbation model **[1]** using the pre-allocated J2
+osculating propagator `orbp`, which is re-initialized in place.
 
 # Arguments
 
-- `a::T`: Semi-major axis [m].
-- `e::T`: Eccentricity (0 ≤ e < 1) [-].
-- `i::T`: Inclination [rad].
-- `Ω::T`: Right ascension of ascending node [rad].
-- `ω::T`: Argument of perigee [rad].
-- `M::T`: Mean anomaly [rad].
+- `a::T`: Mean semi-major axis [m].
+- `e::T`: Mean eccentricity (0 ≤ e < 1) [-].
+- `i::T`: Mean inclination [rad].
+- `Ω::T`: Mean right ascension of ascending node [rad].
+- `ω::T`: Mean argument of perigee [rad].
+- `f::T`: Mean true anomaly [rad].
 - `orbp::OrbitPropagatorJ2Osculating`: Pre-allocated J2 osculating propagator. It is
     re-initialized in place, avoiding one propagator allocation per call.
 
 # Returns
 
-- `T`: Osculating semi-major axis [m].
-- `T`: Osculating eccentricity [-].
-- `T`: Osculating inclination [rad].
-- `T`: Osculating right ascension of ascending node [rad].
-- `T`: Osculating argument of perigee [rad].
-- `T`: Osculating mean anomaly [rad].
+- `SVector{3, T}`: Osculating position vector [m] in the frame of the input elements.
+- `SVector{3, T}`: Osculating velocity vector [m/s] in the frame of the input elements.
 
 # Extended help
 
@@ -259,42 +254,39 @@ re-initialized in place.
 - **[1]** Vallado, D. A. (2013). *Fundamentals of Astrodynamics and Applications*. 4th ed.
     Microcosm Press, Hawthorne, CA.
 """
-function _mean_to_osculating_elements(
+function _mean_to_osculating_rv(
     a::T,
     e::T,
     i::T,
     Ω::T,
     ω::T,
-    M::T,
+    f::T,
     orbp::OrbitPropagatorJ2Osculating
 ) where T <: Number
-    # Normalize.
-    a, e, i, Ω, ω, M = _normalize_classical_elements(a, e, i, Ω, ω, M)
+    # Normalize. The true anomaly is normalized like the other angular elements.
+    a, e, i, Ω, ω, f = _normalize_classical_elements(a, e, i, Ω, ω, f)
     e = max(e, T(1e-6))
     i = max(i, T(1e-6))
+
+    orb_tod = KeplerianElements(0.0, a, e, i, Ω, ω, f)
 
     # Convert to osculating. The J2 osculating conversion is not total: for unphysical
     # states evaluated by the integrator in trial stages (mainly with loose tolerances),
     # the short-period corrections can push the osculating eccentricity outside [0, 1),
     # which throws inside the propagator. In this case, fall back to the mean elements so
     # the right-hand side remains finite and the step error control can act.
-    ap, ep, ip, Ωp, ωp, Mp = try
-        orb_tod = KeplerianElements(0.0, a, e, i, Ω, ω, mean_to_true_anomaly(e, M))
+    r_tod, v_tod = try
         Propagators.init!(orbp, orb_tod)
-        r_tod, v_tod = Propagators.propagate!(orbp, 0.0)
-        ke           = rv_to_kepler(r_tod, v_tod)
-
-        ke.a, ke.e, ke.i, ke.Ω, ke.ω, true_to_mean_anomaly(ke.e, ke.f)
+        Propagators.propagate!(orbp, 0.0)
     catch err
         # The propagator and the element conversions throw `ArgumentError` or
         # `DomainError` for those unphysical states. Any other exception is a genuine
         # error and must propagate.
         err isa Union{ArgumentError, DomainError} || rethrow()
-        a, e, i, Ω, ω, M
+        kepler_to_rv(orb_tod)
     end
 
-    # Return new state.
-    return ap, ep, ip, Ωp, ωp, Mp
+    return r_tod, v_tod
 end
 
 """
