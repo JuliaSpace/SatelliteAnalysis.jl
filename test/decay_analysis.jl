@@ -34,7 +34,6 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         F107                = 140.0,
-        Ap                  = 15.0,
         return_solution     = true
     )
 
@@ -45,7 +44,6 @@ end
         "date",
         "time",
         "f107",
-        "ap",
         "mean_elements",
         "apogee_altitude",
         "perigee_altitude",
@@ -54,7 +52,6 @@ end
     @test eltype(df.date)             == DateTime
     @test eltype(df.time)             == Float64
     @test eltype(df.f107)             == Float64
-    @test eltype(df.ap)               == Float64
     @test eltype(df.mean_elements)    == KeplerianElements{Float64, Float64}
     @test eltype(df.apogee_altitude)  == Float64
     @test eltype(df.perigee_altitude) == Float64
@@ -69,7 +66,6 @@ end
     @test colmetadata(df, :date,             "Unit") == :UTC
     @test colmetadata(df, :time,             "Unit") == :y
     @test colmetadata(df, :f107,             "Unit") == :sfu
-    @test colmetadata(df, :ap,               "Unit") == :dimensionless
     @test colmetadata(df, :mean_elements,    "Unit") == :SI
     @test colmetadata(df, :apogee_altitude,  "Unit") == :km
     @test colmetadata(df, :perigee_altitude, "Unit") == :km
@@ -83,9 +79,8 @@ end
     @test df[begin, :time] == 0.0
     @test df[end,   :time] ≈ (datetime2julian(df[end, :date]) - jd₀) / 365.25 atol = 1e-8
 
-    # The space indices provided by the user must be recorded in the output.
+    # The space index provided by the user must be recorded in the output.
     @test all(df.f107 .== 140.0)
-    @test all(df.ap   .== 15.0)
 
     # The mean element epochs must match the point dates, and the apogee must be above the
     # perigee.
@@ -97,7 +92,7 @@ end
 
     # Regression test for the estimated lifetime.
     lifetime = datetime2julian(df[end, :date]) - jd₀
-    @test lifetime ≈ 31.300620 rtol = 1e-3
+    @test lifetime ≈ 32.788987 rtol = 1e-3
 
     # The previous, tighter integrator configuration must remain reachable through the
     # keywords and reproduce its reference lifetime.
@@ -107,7 +102,6 @@ end
         satellite_mean_area           = 1.0,
         gravity_model                 = gm,
         F107                          = 140.0,
-        Ap                            = 15.0,
         solver                        = Tsit5(),
         reltol                        = 1e-8,
         abstol                        = 1e-8,
@@ -115,7 +109,7 @@ end
     )
 
     lifetime_tight = datetime2julian(df_tight[end, :date]) - jd₀
-    @test lifetime_tight ≈ 31.328780 rtol = 1e-4
+    @test lifetime_tight ≈ 32.837123 rtol = 1e-4
     @test lifetime ≈ lifetime_tight rtol = 2e-3
 
     # == Keyword terminate_altitude ========================================================
@@ -126,7 +120,6 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         F107                = 140.0,
-        Ap                  = 15.0,
         terminate_altitude  = 200e3
     )
 
@@ -143,7 +136,6 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         F107                = 140.0,
-        Ap                  = 15.0,
         distance_unit       = :m,
         time_unit           = :s
     )
@@ -162,7 +154,6 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         F107                = 140.0,
-        Ap                  = 15.0,
         time_unit           = :d
     )
 
@@ -176,7 +167,6 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         F107                = 140.0,
-        Ap                  = 15.0,
         distance_unit       = :unknown,
         time_unit           = :unknown
     )
@@ -210,9 +200,6 @@ end
         gravity_model       = gm
     )
 
-    # The default geomagnetic index is the constant 12.
-    @test all(df.ap .== 12.0)
-
     # The default F10.7 is the prediction from SpaceIndices.jl. Its remote coefficient
     # file is refitted over time, so we only check the values are physically plausible.
     @test all(isfinite, df.f107)
@@ -233,6 +220,70 @@ end
     @test df₂[end, :date] == df[end, :date]
 end
 
+@testset "Custom Atmospheric Model" begin
+    jd₀ = date_to_jd(2024, 1, 1)
+
+    orb = KeplerianElements(
+        jd₀,
+        EARTH_EQUATORIAL_RADIUS + 300e3,
+        0.001,
+        98.0    |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90.0    |> deg2rad,
+        0.0
+    )
+
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+
+    # Record the arguments passed to the atmospheric model to check the callback contract.
+    jds   = Float64[]
+    lats  = Float64[]
+    lons  = Float64[]
+    hs    = Float64[]
+    f107s = Float64[]
+
+    dense_model = (jd_utc, lat, lon, h, F107) -> begin
+        push!(jds,   jd_utc)
+        push!(lats,  lat)
+        push!(lons,  lon)
+        push!(hs,    h)
+        push!(f107s, F107)
+        return 5.0e-11
+    end
+
+    df_dense = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        F107                = 140.0,
+        atmospheric_model   = dense_model
+    )
+
+    @test df_dense[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
+
+    # The model must receive the Julian date, the geodetic latitude, longitude, and
+    # altitude, and the F10.7 index selected by the user.
+    @test all(jds .>= jd₀ - 1e-6)
+    @test all(abs.(lats) .<= π / 2)
+    @test all(abs.(lons) .<= π)
+    @test all(0 .<= hs .<= 500e3)
+    @test all(f107s .== 140.0)
+
+    # A thinner atmosphere must yield a longer lifetime.
+    df_thin = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        F107                = 140.0,
+        atmospheric_model   = (jd_utc, lat, lon, h, F107) -> 2.0e-11
+    )
+
+    @test df_thin[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
+    @test df_dense[end, :date] < df_thin[end, :date]
+end
+
 @testset "Validation Against a Cowell Reference" begin
     # Propagate the full osculating dynamics (Cowell formulation) using the same force
     # model implementations of the extension, and compare the mean elements after seven
@@ -243,7 +294,6 @@ end
 
     duration = 7 * 86400.0
     F107     = 140.0
-    Ap       = 15.0
     mass     = 100.0
     area     = 1.0
     C_d      = 2.2
@@ -292,9 +342,9 @@ end
             params.gm, r_pef, jd_utc; max_degree = 7, max_order = 0
         )
 
-        # Atmospheric drag using the same routine and space indices.
+        # Atmospheric drag using the same routine, atmospheric model, and space index.
         a_drag_pef = ext._atmospheric_drag_acceleration(
-            jd_utc, r_pef, v_pef, area, mass, Ap, C_d, F107
+            ext._decay_analysis__nrlmsise00, jd_utc, r_pef, v_pef, area, mass, C_d, F107
         )
 
         # Third-body point masses using the same routine.
@@ -343,7 +393,6 @@ end
         C_d                           = C_d,
         C_r                           = C_r,
         F107                          = F107,
-        Ap                            = Ap,
         tf                            = duration,
         solver                        = Tsit5(),
         reltol                        = 1e-8,
