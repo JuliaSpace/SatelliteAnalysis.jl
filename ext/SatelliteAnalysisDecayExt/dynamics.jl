@@ -137,7 +137,12 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
         ī,
         Ω̄,
         ω̄,
+        p̄,
+        h̄,
+        n̄,
+        η̄,
         rsun_tod,
+        D_pef_tod,
         params
     )
 

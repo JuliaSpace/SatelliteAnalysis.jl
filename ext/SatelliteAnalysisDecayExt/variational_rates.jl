@@ -12,7 +12,12 @@
         ī::T,
         Ω̄::T,
         ω̄::T,
+        p̄::T,
+        h̄::T,
+        n̄::T,
+        η̄::T,
         rsun_tod::SVector{3, T},
+        D_pef_tod::StaticMatrix{3, 3, T},
         params::NamedTuple
     ) where T<:Number -> SVector{6, T}, SVector{6, T}
 
@@ -20,6 +25,9 @@ Compute averaged Gauss variation rates due to atmospheric drag and solar radiati
 **[1]**. This routine calculates the averaged rates of change of the orbital elements under
 atmospheric drag using quadrature equally spaced in true anomaly and temporal weighting
 (`r²/h`).
+
+The mean elements and the auxiliaries passed to this function must already be clamped to
+the physically meaningful region and derived consistently, as done by `_dynamics`.
 
 # Arguments
 
@@ -29,13 +37,18 @@ atmospheric drag using quadrature equally spaced in true anomaly and temporal we
 - `ī::T`: Mean inclination [rad].
 - `Ω̄::T`: Mean right ascension of ascending node [rad].
 - `ω̄::T`: Mean argument of perigee [rad].
+- `p̄::T`: Mean semi-latus rectum [m].
+- `h̄::T`: Mean specific angular momentum [m²/s].
+- `n̄::T`: Mean motion [rad/s].
+- `η̄::T`: Mean eccentricity factor `√(1 - ē²)` [-].
 - `rsun_tod::SVector{3, T}`: Sun position vector [m] in TOD frame.
+- `D_pef_tod::StaticMatrix{3, 3, T}`: DCM that rotates vectors from the TOD frame to the
+    PEF frame at `jd_utc`.
 - `params::NamedTuple`: Named tuple containing environment parameters:
-    - `atmospheric_model::Function`: Function to compute the atmospheric density [kg/m³] at
-        a given location and time considering a specific F10.7 index. It must have the
-        signature
+    - `atmospheric_model::Any`: Callable object that computes the atmospheric density
+        [kg/m³] at a given location and time considering a specific F10.7 index. It must
+        have the signature
         `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) -> Number`.
-    - `gm::AbstractGravityModel`: Gravity model for Earth.
     - `num_sampling_points_per_orbit::Int`: Number of quadrature points for averaging.
     - `satellite_mass::Number`: Spacecraft mass [kg].
     - `satellite_mean_area::Number`: Effective cross-sectional area [m²].
@@ -43,8 +56,8 @@ atmospheric drag using quadrature equally spaced in true anomaly and temporal we
         used for the mean-to-osculating conversion.
     - `C_d::Number`: Drag coefficient [-].
     - `C_r::Number`: Reflectivity coefficient [-].
-    - `F107::Function`: A function to retrieve the solar flux index [sfu]. It must have the
-        signature `F107(jd_utc::Number) -> Number`.
+    - `F107::Any`: Callable object that retrieves the solar flux index [sfu]. It must have
+        the signature `F107(jd_utc::Number) -> Number`.
 
 # Returns
 
@@ -63,14 +76,18 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
     ī::T,
     Ω̄::T,
     ω̄::T,
+    p̄::T,
+    h̄::T,
+    n̄::T,
+    η̄::T,
     rsun_tod::SVector{3, T},
+    D_pef_tod::StaticMatrix{3, 3, T},
     params::NamedTuple
 ) where T<:Number
     atmospheric_model = params.atmospheric_model
     C_d               = params.C_d
     C_r               = params.C_r
     N                 = params.num_sampling_points_per_orbit
-    gm                = params.gm
     mass              = params.satellite_mass
     mean_area         = params.satellite_mean_area
     orbp              = params.j2osc_prop
@@ -79,25 +96,10 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
     # avoiding one interpolation per sampling point.
     F107 = Float64(params.F107(jd_utc))
 
-    μ = GravityModels.gravity_constant(gm)
-
-    # Auxiliaries with mean elements. See `_dynamics!` for the rationale of the clamps.
-    ā  = max(ā, T(0.9) * T(EARTH_EQUATORIAL_RADIUS))
-    ē  = clamp(ē, T(1e-6), max(T(1e-6), 1 - T(EARTH_EQUATORIAL_RADIUS) / ā))
-    ī  = max(ī, T(1e-6))
-    ē² = ē^2
-    η̄² = 1 - ē²
-    p̄  = ā * η̄²
-    h̄  = √(μ * p̄)
-    n̄  = √(μ / ā^3)
-    η̄  = √η̄²
-
-    # The rotation between TOD and PEF is constant within one evaluation. Hoisting it out
-    # of the quadrature loop avoids one frame reduction per sampling point. The PEF frame
-    # rotates with the Earth, so the frame angular velocity must be accounted for when
-    # converting velocity vectors.
-    D_tod_pef = r_ecef_to_eci(PEF(), TOD(), jd_utc)
-    D_pef_tod = D_tod_pef'
+    # The rotation between TOD and PEF is computed once per right-hand-side evaluation in
+    # `_dynamics` and shared with this routine. The PEF frame rotates with the Earth, so
+    # the frame angular velocity must be accounted for when converting velocity vectors.
+    D_tod_pef = D_pef_tod'
     ω_pef     = @SVector T[0, 0, EARTH_ANGULAR_SPEED]
 
     # Initialization.
