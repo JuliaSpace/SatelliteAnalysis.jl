@@ -69,18 +69,18 @@ Version 0.4.0
   whose space index set is initialized automatically on first use.
 - ![Enhancement][badge-enhancement] We highly reduced the allocations of `decay_analysis`
   (about 95%) by reusing the Legendre buffers of the atmospheric and gravity models, using
-  a static state vector in the numerical integration, caching the default EGM2008 gravity
-  model, removing redundant conversions and dead code from the averaging loops, and
-  forcing the specialization on the model callbacks.
+  a static state vector in the numerical integration, caching the default gravity model,
+  removing redundant conversions and dead code from the averaging loops, and forcing the
+  specialization on the model callbacks.
 - ![Enhancement][badge-enhancement] We highly reduced the compilation time at the first
   execution of `decay_analysis`: the extension now runs a precompilation workload
   covering the whole analysis pipeline, and the progress callback type no longer depends
   on the keyword `verbose`, sharing the solver specialization between the verbose and
-  silent paths. The remaining first-call cost is dominated by loading the default EGM2008
+  silent paths. The remaining first-call cost is dominated by loading the default EGM96
   gravity model.
 - ![Bugfix][badge-bugfix] The decay analysis passed the Julian date to the gravity model
   where it expects elapsed seconds from the J2000.0 epoch. The error was harmless for the
-  default EGM2008 model, whose coefficients are static, but it would produce wrong results
+  default EGM96 model, whose coefficients are static, but it would produce wrong results
   for ICGEM models with time-variable coefficients.
 - ![Bugfix][badge-bugfix] The metadata `Description` of the `decay_analysis` output now
   propagates through DataFrame transformations, and the reported mean eccentricity is no

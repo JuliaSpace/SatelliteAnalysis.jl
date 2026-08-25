@@ -62,7 +62,7 @@ The following keywords are available:
   (**Default**: `nothing`)
 - `gravity_model::Union{AbstractGravityModel, Nothing}`: Gravity model used to compute the
   Earth gravitational perturbation. If it is `nothing`, the system fetches and loads the
-  EGM2008 model.
+  EGM96 model.
   (**Default**: `nothing`)
 - `num_sampling_points_per_orbit::Int`: Number of sampling points used to average the
   perturbations over one orbit.
@@ -157,7 +157,7 @@ orb = KeplerianElements(
 
 Now, we can use the function `decay_analysis` to obtain the orbit evolution until the
 reentry. Notice that we only need to provide the satellite mass and mean area: the space
-index defaults to the predicted F10.7, and the system fetches the EGM2008 gravity model
+index defaults to the predicted F10.7, and the system fetches the EGM96 gravity model
 automatically:
 
 ```@repl decay_analysis
