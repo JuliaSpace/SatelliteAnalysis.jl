@@ -110,7 +110,7 @@ keyword was not passed, is omitted from the panel.
     `nothing`, the limits are computed automatically.
     (**Default**: `nothing`)
 - `size::Tuple`: Size of the figure.
-    (**Default**: `(1280, 720)`)
+    (**Default**: `(1344, 756)`)
 
 All other `kwargs...` are passed to the function `Figure`.
 

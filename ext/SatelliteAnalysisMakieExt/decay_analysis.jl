@@ -30,7 +30,9 @@ function SatelliteAnalysis.plot_decay_analysis(
     title::String = "Orbital Decay Analysis",
     xlims::Union{Nothing, Tuple} = nothing,
     ylims::Union{Nothing, Tuple} = nothing,
-    size = (1280, 720),
+    # The default size keeps the 16:9 aspect while providing enough axis height for the
+    # side column to fit all the cards and the full legend within the plot frame.
+    size = (1344, 756),
     kwargs...
 )
     # == Input Validation ==================================================================
