@@ -10,6 +10,10 @@
 
 function SatelliteAnalysis.plot_decay_analysis(
     df::DataFrame;
+    # The getters accept any callable object, hence they are not annotated with
+    # `::Function`.
+    f107_avg_getter = si -> si.f107_avg,
+    f107_getter = si -> si.f107,
     fontscale::Real = 1,
     mission_name::Union{Nothing, String}        = nothing,
     mono_ticklabels::Bool = false,
@@ -33,7 +37,7 @@ function SatelliteAnalysis.plot_decay_analysis(
 
     required_columns = (:time, :date, :apogee_altitude, :perigee_altitude)
 
-    for c in (show_f107 ? (required_columns..., :f107) : required_columns)
+    for c in (show_f107 ? (required_columns..., :space_indices) : required_columns)
         hasproperty(df, c) || throw(
             ArgumentError(
                 "The input `DataFrame` must have the column `$c`. It should be obtained " *
@@ -43,6 +47,38 @@ function SatelliteAnalysis.plot_decay_analysis(
     end
 
     isempty(df) && throw(ArgumentError("The input `DataFrame` is empty."))
+
+    # == F10.7 Series ======================================================================
+
+    f107_daily = nothing
+    f107_avg   = nothing
+
+    if show_f107
+        isnothing(f107_getter) && isnothing(f107_avg_getter) && throw(
+            ArgumentError(
+                "At least one of the keywords `f107_getter` and `f107_avg_getter` must " *
+                "not be `nothing` when `show_f107` is `true`."
+            )
+        )
+
+        # Extract the F10.7 series eagerly so that a getter mismatch raises a clear error
+        # before the figure is assembled.
+        try
+            isnothing(f107_getter) ||
+                (f107_daily = Float64.(f107_getter.(df.space_indices)))
+            isnothing(f107_avg_getter) ||
+                (f107_avg = Float64.(f107_avg_getter.(df.space_indices)))
+        catch
+            throw(
+                ArgumentError(
+                    "The F10.7 getters could not extract the values from the column " *
+                    "`space_indices`. Pass the keywords `f107_getter` and " *
+                    "`f107_avg_getter` matching the named tuple returned by the space " *
+                    "indices source used in the analysis."
+                )
+            )
+        end
+    end
 
     (subtitle isa Symbol && subtitle != :auto) && throw(
         ArgumentError("The keyword `subtitle` must be a `String`, `nothing`, or `:auto`.")
@@ -175,11 +211,12 @@ function SatelliteAnalysis.plot_decay_analysis(
 
         # == F10.7 Twin Y Axis =============================================================
 
-        # The twin axis must be created before the main axis so that the F10.7 line is
+        # The twin axis must be created before the main axis so that the F10.7 lines are
         # rendered below all the main axis elements. Hence, it keeps the default axis
         # background, whereas the main axis background is made transparent.
-        ax_f107   = nothing
-        f107_line = nothing
+        ax_f107     = nothing
+        f107_lines  = Any[]
+        f107_labels = String[]
 
         if show_f107
             ax_f107 = Axis(
@@ -192,13 +229,34 @@ function SatelliteAnalysis.plot_decay_analysis(
 
             hidexdecorations!(ax_f107)
 
-            f107_line = lines!(
-                ax_f107,
-                df.time,
-                df.f107;
-                color     = (f107_color, 0.5),
-                linewidth = 1.5,
-            )
+            if !isnothing(f107_daily)
+                push!(
+                    f107_lines,
+                    lines!(
+                        ax_f107,
+                        df.time,
+                        f107_daily;
+                        color     = (f107_color, 0.35),
+                        linewidth = 1.0,
+                    )
+                )
+                push!(f107_labels, "F10.7 (daily)")
+            end
+
+            if !isnothing(f107_avg)
+                push!(
+                    f107_lines,
+                    lines!(
+                        ax_f107,
+                        df.time,
+                        f107_avg;
+                        color     = (f107_color, 0.9),
+                        linestyle = :dash,
+                        linewidth = 1.5,
+                    )
+                )
+                push!(f107_labels, "F10.7 (81-day avg.)")
+            end
         end
 
         # == Main Axis =====================================================================
@@ -296,14 +354,16 @@ function SatelliteAnalysis.plot_decay_analysis(
         !isnothing(ylims) && ylims!(ax, ylims...)
 
         if show_f107
-            push!(legend_plots, f107_line)
-            push!(legend_labels, "F10.7")
+            append!(legend_plots, f107_lines)
+            append!(legend_labels, f107_labels)
 
             linkxaxes!(ax, ax_f107)
 
             # Align the twin axis ticks with the main axis grid using canonical values,
             # keeping them aligned if the main axis limits or ticks change.
-            f107_min, f107_max = extrema(df.f107)
+            f107_min, f107_max = extrema(
+                Iterators.flatten(x for x in (f107_daily, f107_avg) if !isnothing(x))
+            )
 
             onany(ax.finallimits, ax.yaxis.tickvalues) do main_limits, main_tickvalues
                 _align_twin_yticks!(ax_f107, main_limits, main_tickvalues, f107_min, f107_max)

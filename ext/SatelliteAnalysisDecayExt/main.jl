@@ -4,10 +4,10 @@
 #
 ############################################################################################
 
-# Flag indicating whether the space index set required by the default `F107` keyword was
-# already initialized in this session, avoiding re-fetching and re-parsing the remote file
-# at every call. A benign race that initializes the set twice is acceptable.
-const _PREDICTED_F107_INITIALIZED = Ref(false)
+# Flag indicating whether the space index sets required by the default `space_indices`
+# keyword were already initialized in this session, avoiding re-fetching and re-parsing the
+# remote files at every call. A benign race that initializes the sets twice is acceptable.
+const _SPACE_INDICES_INITIALIZED = Ref(false)
 
 # Cache of the default gravity model (EGM96), avoiding re-fetching and re-parsing the ICGEM
 # file at every call. A benign race that loads the model twice is acceptable.
@@ -18,8 +18,8 @@ function SatelliteAnalysis.decay_analysis(
     # Required keywords.
     satellite_mass::Number,
     satellite_mean_area::Number,
-    # Optional keywords. The keywords `atmospheric_model` and `F107` accept any callable
-    # object, hence they are not annotated with `::Function`.
+    # Optional keywords. The keywords `atmospheric_model` and `space_indices` accept any
+    # callable object, hence they are not annotated with `::Function`.
     atmospheric_model = nothing,
     atmospheric_model_name::Union{Nothing, String} = nothing,
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
@@ -28,7 +28,7 @@ function SatelliteAnalysis.decay_analysis(
     C_d::Number = 2.2,
     C_r::Number = 1.25,
     distance_unit::Symbol = :km,
-    F107 = nothing,
+    space_indices = nothing,
     reltol::Number = 1e-6,
     return_solution::Bool = false,
     solver = VCABM(),
@@ -54,9 +54,9 @@ function SatelliteAnalysis.decay_analysis(
         Nrlmsise00AtmosphericModel() :
         atmospheric_model
 
-    # Descriptions of the atmospheric model and the F10.7 source, recorded as metadata in
-    # the output so that, for example, `plot_decay_analysis` can show the assumptions. The
-    # name provided by the user has precedence over the derived one.
+    # Descriptions of the atmospheric model and the space indices source, recorded as
+    # metadata in the output so that, for example, `plot_decay_analysis` can show the
+    # assumptions. The name provided by the user has precedence over the derived one.
     atmospheric_model_name′ = if !isnothing(atmospheric_model_name)
         atmospheric_model_name
     elseif isnothing(atmospheric_model)
@@ -67,41 +67,42 @@ function SatelliteAnalysis.decay_analysis(
         "Custom (" * String(nameof(typeof(atmospheric_model))) * ")"
     end
 
-    f107_source = isnothing(F107) ? "Predicted" :
-        F107 isa Number ? "Constant ($(F107) sfu)" : "User function"
+    space_indices_source = isnothing(space_indices) ? "Default (Obs. + Pred.)" :
+        space_indices isa NamedTuple ? "Constant $(space_indices)" : "User function"
 
-    F107′ = if isnothing(F107)
+    space_indices′ = if isnothing(space_indices)
         # Notice that if the user calls `SpaceIndices.destroy()` after this initialization,
         # `space_index` raises a clear error asking to initialize the space indices again.
-        if !_PREDICTED_F107_INITIALIZED[]
+        if !_SPACE_INDICES_INITIALIZED[]
+            SpaceIndices.init(SpaceIndices.Celestrak)
             SpaceIndices.init(SpaceIndices.SatelliteToolboxSpaceIndexSets)
-            _PREDICTED_F107_INITIALIZED[] = true
+            _SPACE_INDICES_INITIALIZED[] = true
         end
 
-        jd -> space_index(Val(:F10predicted), jd)
-    elseif F107 isa Number
-        _ -> Float64(F107)
+        _decay_analysis__default_space_indices
+    elseif space_indices isa NamedTuple
+        _ -> space_indices
     else
-        F107
+        space_indices
     end
 
     # The keyword `gravity_model` is abstractly typed and the callables in
-    # `atmospheric_model` and `F107′` have call-site dependent types. This function
-    # barrier ensures they are concretely typed inside the numerical integration, avoiding
-    # dynamic dispatch at every right-hand-side evaluation. The callables are passed as
-    # positional arguments since keyword arguments cannot bind the type parameters that
-    # force the specialization.
+    # `atmospheric_model` and `space_indices′` have call-site dependent types. This
+    # function barrier ensures they are concretely typed inside the numerical integration,
+    # avoiding dynamic dispatch at every right-hand-side evaluation. The callables are
+    # passed as positional arguments since keyword arguments cannot bind the type
+    # parameters that force the specialization.
     return _decay_analysis(
         orb,
         gm,
         atmospheric_model′,
-        F107′;
+        space_indices′;
         satellite_mass                = satellite_mass,
         satellite_mean_area           = satellite_mean_area,
         num_sampling_points_per_orbit = num_sampling_points_per_orbit,
         abstol                        = abstol,
         atmospheric_model_name        = atmospheric_model_name′,
-        f107_source                   = f107_source,
+        space_indices_source          = space_indices_source,
         C_d                           = C_d,
         C_r                           = C_r,
         distance_unit                 = distance_unit,
@@ -123,13 +124,13 @@ function _decay_analysis(
     orb::KeplerianElements,
     gm::AbstractGravityModel,
     atmospheric_model::AM,
-    F107::FF;
+    space_indices::SF;
     satellite_mass::Number,
     satellite_mean_area::Number,
     num_sampling_points_per_orbit::Int,
     abstol::Number,
     atmospheric_model_name::String,
-    f107_source::String,
+    space_indices_source::String,
     C_d::Number,
     C_r::Number,
     distance_unit::Symbol,
@@ -140,7 +141,7 @@ function _decay_analysis(
     tf::Number,
     time_unit::Symbol,
     verbose::Bool,
-) where {AM, FF}
+) where {AM, SF}
     M = true_to_mean_anomaly(orb.e, orb.f)
     ā, ē, ī, Ω̄, ω̄, M̄ = _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M)
 
@@ -181,7 +182,7 @@ function _decay_analysis(
         atmospheric_model             = atmospheric_model,
         C_d                           = C_d,
         C_r                           = C_r,
-        F107                          = F107,
+        space_indices                 = space_indices,
         gm                            = gm,
         μ                             = μ,
         Re                            = Re,
@@ -248,7 +249,6 @@ function _decay_analysis(
 
     date             = Vector{DateTime}(undef, num_points)
     time             = Vector{Float64}(undef, num_points)
-    f107             = Vector{Float64}(undef, num_points)
     mean_elements    = Vector{KeplerianElements{Float64, Float64}}(undef, num_points)
     apogee_altitude  = Vector{Float64}(undef, num_points)
     perigee_altitude = Vector{Float64}(undef, num_points)
@@ -261,9 +261,6 @@ function _decay_analysis(
         date[k] = julian2datetime(jdₖ)
         time[k] = sol.t[k]
 
-        # Record the space indices used by the dynamics at each instant.
-        f107[k] = F107(jdₖ)
-
         mean_elements[k] = KeplerianElements(
             jdₖ, aₖ, eₖ, iₖ, Ωₖ, ωₖ, mean_to_true_anomaly(eₖ, Mₖ)
         )
@@ -271,6 +268,10 @@ function _decay_analysis(
         apogee_altitude[k]  = aₖ * (1 + eₖ) - EARTH_EQUATORIAL_RADIUS
         perigee_altitude[k] = aₖ * (1 - eₖ) - EARTH_EQUATORIAL_RADIUS
     end
+
+    # Record the space indices used by the dynamics at each instant. A comprehension is
+    # used so that the column eltype is the concrete named tuple type of the source.
+    space_indices_column = [space_indices(orb.t + tₖ / 86400) for tₖ in sol.t]
 
     # Convert the time and altitude columns to the selected units.
     if time_unit == :m
@@ -296,7 +297,7 @@ function _decay_analysis(
     df = DataFrame(;
         date             = date,
         time             = time,
-        f107             = f107,
+        space_indices    = space_indices_column,
         mean_elements    = mean_elements,
         apogee_altitude  = apogee_altitude,
         perigee_altitude = perigee_altitude,
@@ -310,17 +311,18 @@ function _decay_analysis(
         style = :note
     )
 
-    metadata!(df, "Atmospheric Model",   atmospheric_model_name; style = :note)
-    metadata!(df, "Drag Coefficient",    C_d;                    style = :note)
-    metadata!(df, "F10.7 Source",        f107_source;            style = :note)
-    metadata!(df, "Satellite Mass",      satellite_mass;         style = :note)
-    metadata!(df, "Satellite Mean Area", satellite_mean_area;    style = :note)
-    metadata!(df, "SRP Coefficient",     C_r;                    style = :note)
-    metadata!(df, "Terminate Altitude",  terminate_altitude;     style = :note)
+    metadata!(df, "Atmospheric Model",    atmospheric_model_name; style = :note)
+    metadata!(df, "Drag Coefficient",     C_d;                    style = :note)
+    metadata!(df, "Satellite Mass",       satellite_mass;         style = :note)
+    metadata!(df, "Satellite Mean Area",  satellite_mean_area;    style = :note)
+    metadata!(df, "Space Indices Source", space_indices_source;   style = :note)
+    metadata!(df, "SRP Coefficient",      C_r;                    style = :note)
+    metadata!(df, "Terminate Altitude",   terminate_altitude;     style = :note)
 
+    # Notice that the column `space_indices` has no `Unit` metadata since its fields have
+    # heterogeneous units.
     colmetadata!(df, :date,             "Unit", :UTC)
     colmetadata!(df, :time,             "Unit", time_unit)
-    colmetadata!(df, :f107,             "Unit", :sfu)
     colmetadata!(df, :mean_elements,    "Unit", :SI)
     colmetadata!(df, :apogee_altitude,  "Unit", distance_unit)
     colmetadata!(df, :perigee_altitude, "Unit", distance_unit)
@@ -331,42 +333,36 @@ function _decay_analysis(
 end
 
 """
-    struct Nrlmsise00AtmosphericModel
+    _decay_analysis__default_space_indices(jd_utc::Number) -> NamedTuple
 
-Default atmospheric model of the decay analysis, wrapping the NRLMSISE-00 model provided
-by **AtmosphericModels.jl** with a constant geomagnetic index Ap = 9, as in STELA.
+Default space indices computed at the Julian Day [UTC] `jd_utc` used by the decay analysis
+when the user does not provide a named tuple or a callable. It returns a named tuple with
+the fields:
 
-# Fields
-
-- `P::Matrix{Float64}`: Pre-allocated buffer for the Legendre matrix used by the model,
-    avoiding one matrix allocation per density evaluation. Since it is mutated at every
-    evaluation, an instance must not be shared across concurrent computations.
+- `f107`: Observed daily 10.7 cm solar flux [sfu], falling back to the predicted F10.7
+    outside the observed timespan.
+- `f107_avg`: Observed last-81-day average of the 10.7 cm solar flux [sfu], falling back to
+    the predicted F10.7 outside the observed timespan.
+- `ap`: Observed daily geomagnetic index [-], falling back to 9, as in STELA, outside the
+    observed timespan. Notice that the influence of Ap on the atmospheric density is much
+    smaller than that of F10.7, and the geomagnetic index is not known in advance for a
+    decay analysis.
 """
-struct Nrlmsise00AtmosphericModel
-    P::Matrix{Float64}
+function _decay_analysis__default_space_indices(jd_utc::Number)
+    jd₀, jd₁ = SpaceIndices.timespan(Val(:F10obs))
+    f107 = jd₀ <= jd_utc <= jd₁ ?
+        space_index(Val(:F10obs), jd_utc) :
+        space_index(Val(:F10predicted), jd_utc)
 
-    Nrlmsise00AtmosphericModel() = new(Matrix{Float64}(undef, 8, 4))
-end
+    jd₀, jd₁ = SpaceIndices.timespan(Val(:F10obs_avg_last81))
+    f107_avg = jd₀ <= jd_utc <= jd₁ ?
+        space_index(Val(:F10obs_avg_last81), jd_utc) :
+        space_index(Val(:F10predicted), jd_utc)
 
-"""
-    (m::Nrlmsise00AtmosphericModel)(jd_utc::Number, lat::Number, lon::Number, h::Number, F107::Number) -> Float64
+    jd₀, jd₁ = SpaceIndices.timespan(Val(:Ap_daily))
+    ap = jd₀ <= jd_utc <= jd₁ ? space_index(Val(:Ap_daily), jd_utc) : 9.0
 
-Compute the atmospheric density [kg/m³] using the NRLMSISE-00 model at the Julian date
-`jd_utc` [UTC], geodetic latitude `lat` [rad], longitude `lon` [rad], and altitude `h` [m],
-considering the 10.7 cm solar flux index `F107` [sfu] as both the daily value and the
-81-day centered average.
-"""
-function (m::Nrlmsise00AtmosphericModel)(
-    jd_utc::Number, lat::Number, lon::Number, h::Number, F107::Number
-)
-    # We use the default Ap value of 9 as in STELA. Notice that the influence of Ap on the
-    # atmospheric density is much smaller than that of F10.7, and the geomagnetic index is
-    # not known in advance for a decay analysis.
-    Ap    = 9
-    atmos = AtmosphericModels.nrlmsise00(jd_utc, h, lat, lon, F107, F107, Ap; P = m.P)
-    ρ     = atmos.total_density
-
-    return ρ
+    return (f107 = f107, f107_avg = f107_avg, ap = ap)
 end
 
 function _cb_altitude_condition(u, t, integrator)

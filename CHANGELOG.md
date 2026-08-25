@@ -22,16 +22,18 @@ Version 0.4.0
   **Makie.jl** is loaded, that plots the mean apogee and perigee altitude evolution
   computed by `decay_analysis` together with an information panel showing the satellite
   mass, the satellite mean area, and the estimated time to reenter. Keywords allow adding
-  a mission name above the title, showing the absolute dates, and plotting the F10.7
-  index using a twin y-axis. To support it, `decay_analysis` now records the
-  metadata `Satellite Mass`, `Satellite Mean Area`, and `Terminate Altitude` in the output
-  `DataFrame`.
+  a mission name above the title, showing the absolute dates, and plotting the daily and
+  the 81-day average F10.7 indices using a twin y-axis, extracted from the column
+  `space_indices` through the keywords `f107_getter` and `f107_avg_getter`. To support it,
+  `decay_analysis` now records the metadata `Satellite Mass`, `Satellite Mean Area`, and
+  `Terminate Altitude` in the output `DataFrame`.
 - ![Feature][badge-feature] We added the keyword `atmospheric_model` to `decay_analysis`,
   allowing the user to select the atmospheric density model used by the drag computation.
-  It accepts any callable object, including callable structures carrying their own state.
-  By default, the analysis uses the NRLMSISE-00 model with a constant geomagnetic index
-  Ap = 9, as in STELA. The keyword `atmospheric_model_name` overrides the model name
-  recorded in the output metadata.
+  It accepts any callable object, including callable structures carrying their own state,
+  receiving the named tuple with the space indices provided by the keyword
+  `space_indices`. By default, the analysis uses the NRLMSISE-00 model, which consumes the
+  daily F10.7, the 81-day average F10.7, and the daily Ap. The keyword
+  `atmospheric_model_name` overrides the model name recorded in the output metadata.
 - ![Feature][badge-feature] We added the keyword `verbose` to `decay_analysis`. When
   enabled, a progress interface is shown in `stderr` during the numerical integration: in
   interactive terminals, a live panel with a progress bar, the current perigee and apogee
@@ -48,8 +50,8 @@ Version 0.4.0
   `show_assumptions`, `show_dates`, `show_reentry_callout`, `fontscale`,
   `mono_ticklabels`, `panel_width`, `xlims`, and
   `ylims` control the figure. To support it, `decay_analysis` now records the metadata
-  `Atmospheric Model`, `Drag Coefficient`, `F10.7 Source`, and `SRP Coefficient` in the
-  output `DataFrame`.
+  `Atmospheric Model`, `Drag Coefficient`, `Space Indices Source`, and `SRP Coefficient`
+  in the output `DataFrame`.
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were
@@ -62,11 +64,17 @@ Version 0.4.0
   (about 20x) by tuning the default integrator configuration for lifetime estimation and
   reducing the cost of the right-hand side. The integrator can now be configured through
   the keywords `solver`, `reltol`, and `abstol`.
-- ![Enhancement][badge-enhancement] The keyword `F107` in `decay_analysis` now accepts
-  either a constant value or a function of time with the signature
-  `(jd_utc::Number) -> Number`, allowing time-varying solar flux profiles. By default, it
-  uses the predicted F10.7 provided by **SpaceIndices.jl** (space index `F10predicted`),
-  whose space index set is initialized automatically on first use.
+- ![Enhancement][badge-enhancement] The keyword `space_indices` in `decay_analysis`
+  provides the space indices required by the atmospheric model as a named tuple. It
+  accepts either a constant `NamedTuple` or a function of time with the signature
+  `(jd_utc::Number) -> NamedTuple`, allowing time-varying space index profiles, and the
+  named tuple is passed to the atmospheric model and recorded in the column
+  `space_indices` of the output `DataFrame`. By default, it provides the observed daily
+  F10.7 (space index `F10obs`), the observed last-81-day average F10.7 (space index
+  `F10obs_avg_last81`), and the observed daily geomagnetic index (space index `Ap_daily`)
+  from **SpaceIndices.jl**, falling back to the predicted F10.7 (space index
+  `F10predicted`) and to Ap = 9, as in STELA, outside the observed timespans. The required
+  space index sets are initialized automatically on first use.
 - ![Enhancement][badge-enhancement] We highly reduced the allocations of `decay_analysis`
   (about 95%) by reusing the Legendre buffers of the atmospheric and gravity models, using
   a static state vector in the numerical integration, caching the default gravity model,

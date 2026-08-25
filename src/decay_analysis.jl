@@ -42,15 +42,17 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
 - `satellite_mean_area::Number`: Mean cross-sectional area [m²] used for both the
     atmospheric drag and the solar radiation pressure. This keyword is required.
 - `atmospheric_model::Any`: Callable object (a function or a callable structure) that
-    returns the atmospheric density [kg/m³] at a given location and time considering a
-    specific F10.7 index. It must have the signature
-    `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) -> Number`
-    where `jd_utc` is the Julian date in UTC and `lat`, `lon`, and `alt` are the geodetic
+    returns the atmospheric density [kg/m³] at a given location and time considering a set
+    of space indices. It must have the signature
+    `(jd_utc::Number, lat::Number, lon::Number, alt::Number, space_indices::NamedTuple) -> Number`
+    where `jd_utc` is the Julian date in UTC, `lat`, `lon`, and `alt` are the geodetic
     latitude [rad], longitude [rad], and altitude [m] of the point where the density is
-    evaluated, and `F107` is the 10.7 cm solar flux index [sfu] at that instant. The latter
-    must be considered as the daily value and also the 81-day centered average. If it is
-    `nothing`, the system uses an internal wrapper for the NRLMSISE-00 model provided by
-    **AtmosphericModels.jl** with a constant geomagnetic index Ap = 9, as in STELA.
+    evaluated, and `space_indices` is the named tuple with the space indices at that
+    instant provided by the keyword `space_indices`. If it is `nothing`, the system uses an
+    internal wrapper for the NRLMSISE-00 model provided by **AtmosphericModels.jl**, which
+    requires the fields `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day average
+    of the 10.7 cm solar flux) [sfu], and `ap` (daily geomagnetic index) [-] in the named
+    tuple.
     (**Default**: `nothing`)
 - `atmospheric_model_name::Union{Nothing, String}`: Name of the atmospheric model recorded
     in the metadata `Atmospheric Model` of the output `DataFrame` and shown, for example,
@@ -74,14 +76,19 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
 - `distance_unit::Symbol`: Unit of the altitude columns in the output `DataFrame`. It can
     be `:m` for meters or `:km` for kilometers.
     (**Default**: `:km`)
-- `F107::Any`: 10.7 cm solar flux index [sfu]. It can be a constant value or a callable
-    object of time (in Julian days) that returns the solar flux index at that instant:
-    `(jd_utc::Number) -> Number`. If it is `nothing`, the system uses the
-    predicted F10.7 provided by **SpaceIndices.jl** (space index `F10predicted`), a harmonic
-    model fitted to the observed data that captures the mean solar cycle behavior. In this
-    case, the required space index set is initialized automatically, downloading the
-    coefficient file on first use. Notice that this prediction is intended for long-term
-    analyses and must not be used as a short-term forecast of the solar activity.
+- `space_indices::Any`: Space indices required by the atmospheric model. It can be a
+    constant `NamedTuple` used for all instants or a callable object of time (in Julian
+    days) that returns the named tuple with the space indices at that instant:
+    `(jd_utc::Number) -> NamedTuple`. If it is `nothing`, the system provides the named
+    tuple `(f107 = ..., f107_avg = ..., ap = ...)` required by the default atmospheric
+    model using the data in **SpaceIndices.jl**: the observed daily F10.7 (space index
+    `F10obs`), the observed last-81-day average F10.7 (space index `F10obs_avg_last81`),
+    and the observed daily geomagnetic index (space index `Ap_daily`). Outside the observed
+    timespans, the F10.7 values fall back to the predicted F10.7 (space index
+    `F10predicted`), which is a harmonic model fitted to the observed data that captures
+    the mean solar cycle behavior, and the geomagnetic index falls back to Ap = 9, as in
+    STELA. In this case, the required space index sets are initialized automatically,
+    downloading the data files on first use.
     (**Default**: `nothing`)
 - `reltol::Number`: Relative tolerance of the numerical integration.
     (**Default**: 1e-6)
@@ -119,7 +126,10 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     - `date`: Date and time of each point [UTC] encoded using `DateTime`.
     - `time`: Elapsed time of each point since the beginning of the analysis
         [`time_unit`].
-    - `f107`: 10.7 cm solar flux index used by the dynamics at each point [sfu].
+    - `space_indices`: Named tuple with the space indices used by the dynamics at each
+        point. This column has no unit metadata since its fields have heterogeneous units.
+        The default source provides the fields `f107` [sfu], `f107_avg` [sfu], and
+        `ap` [-].
     - `mean_elements`: Mean Keplerian elements encoded using `KeplerianElements` [SI],
         where the epoch is the point date [UTC].
     - `apogee_altitude`: Mean apogee altitude [`distance_unit`].
@@ -129,9 +139,10 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     function [`plot_decay_analysis`](@ref):
     - `Atmospheric Model`: Name of the atmospheric model used by the drag computation.
     - `Drag Coefficient`: Drag coefficient [-].
-    - `F10.7 Source`: Description of the F10.7 source used by the dynamics.
     - `Satellite Mass`: Satellite mass [kg].
     - `Satellite Mean Area`: Mean cross-sectional area [m²].
+    - `Space Indices Source`: Description of the space indices source used by the
+        dynamics.
     - `SRP Coefficient`: Solar radiation pressure coefficient [-].
     - `Terminate Altitude`: Mean perigee altitude that terminates the analysis [m].
     If the keyword `return_solution` is `true`, the function returns a tuple with the
@@ -164,15 +175,15 @@ julia> df = decay_analysis(
            orb;
            satellite_mass = 100.0,
            satellite_mean_area = 1.0,
-           F107 = 140
+           space_indices = (f107 = 140.0, f107_avg = 140.0, ap = 9.0)
        );
 
 julia> df[end, :date]  # ..................................... Estimation of the decay epoch
 2024-02-02T18:56:08.476
 ```
 
-If the keyword `F107` is omitted, the analysis uses the predicted F10.7, requiring only the
-satellite properties:
+If the keyword `space_indices` is omitted, the analysis uses the observed and predicted
+indices provided by **SpaceIndices.jl**, requiring only the satellite properties:
 
 ```julia-repl
 julia> df = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0);

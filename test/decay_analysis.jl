@@ -14,7 +14,8 @@
 end
 
 @testset "Function decay_analysis" begin
-    jd₀ = date_to_jd(2024, 1, 1)
+    jd₀      = date_to_jd(2024, 1, 1)
+    si_const = (f107 = 140.0, f107_avg = 140.0, ap = 9.0)
 
     orb = KeplerianElements(
         jd₀,
@@ -33,7 +34,7 @@ end
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
         gravity_model       = gm,
-        F107                = 140.0,
+        space_indices       = si_const,
         return_solution     = true
     )
 
@@ -43,7 +44,7 @@ end
     @test names(df) == [
         "date",
         "time",
-        "f107",
+        "space_indices",
         "mean_elements",
         "apogee_altitude",
         "perigee_altitude",
@@ -51,7 +52,7 @@ end
 
     @test eltype(df.date)             == DateTime
     @test eltype(df.time)             == Float64
-    @test eltype(df.f107)             == Float64
+    @test eltype(df.space_indices)    == typeof(si_const)
     @test eltype(df.mean_elements)    == KeplerianElements{Float64, Float64}
     @test eltype(df.apogee_altitude)  == Float64
     @test eltype(df.perigee_altitude) == Float64
@@ -59,13 +60,13 @@ end
     @test metadata(df, "Description") ==
         "Mean orbital element evolution during the orbital decay."
 
-    @test metadata(df, "Atmospheric Model")   == "NRLMSISE-00"
-    @test metadata(df, "Drag Coefficient")    == 2.2
-    @test metadata(df, "F10.7 Source")        == "Constant (140.0 sfu)"
-    @test metadata(df, "Satellite Mass")      == 100.0
-    @test metadata(df, "Satellite Mean Area") == 1.0
-    @test metadata(df, "SRP Coefficient")     == 1.25
-    @test metadata(df, "Terminate Altitude")  == 120e3
+    @test metadata(df, "Atmospheric Model")    == "NRLMSISE-00"
+    @test metadata(df, "Drag Coefficient")     == 2.2
+    @test metadata(df, "Satellite Mass")       == 100.0
+    @test metadata(df, "Satellite Mean Area")  == 1.0
+    @test metadata(df, "Space Indices Source") == "Constant $(si_const)"
+    @test metadata(df, "SRP Coefficient")      == 1.25
+    @test metadata(df, "Terminate Altitude")   == 120e3
 
     # All the table-level metadata must use the style `:note` to propagate through
     # DataFrame transformations.
@@ -75,10 +76,13 @@ end
 
     @test colmetadata(df, :date,             "Unit") == :UTC
     @test colmetadata(df, :time,             "Unit") == :y
-    @test colmetadata(df, :f107,             "Unit") == :sfu
     @test colmetadata(df, :mean_elements,    "Unit") == :SI
     @test colmetadata(df, :apogee_altitude,  "Unit") == :km
     @test colmetadata(df, :perigee_altitude, "Unit") == :km
+
+    # The column `space_indices` must not have unit metadata since its fields have
+    # heterogeneous units.
+    @test colmetadata(df, :space_indices, "Unit", nothing) === nothing
 
     # == Values ============================================================================
 
@@ -89,8 +93,8 @@ end
     @test df[begin, :time] == 0.0
     @test df[end,   :time] ≈ (datetime2julian(df[end, :date]) - jd₀) / 365.25 atol = 1e-8
 
-    # The space index provided by the user must be recorded in the output.
-    @test all(df.f107 .== 140.0)
+    # The space indices provided by the user must be recorded in the output.
+    @test all(==(si_const), df.space_indices)
 
     # The mean element epochs must match the point dates, and the apogee must be above the
     # perigee.
@@ -111,7 +115,7 @@ end
         satellite_mass                = 100.0,
         satellite_mean_area           = 1.0,
         gravity_model                 = gm,
-        F107                          = 140.0,
+        space_indices                 = si_const,
         solver                        = Tsit5(),
         reltol                        = 1e-8,
         abstol                        = 1e-8,
@@ -129,7 +133,7 @@ end
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
         gravity_model       = gm,
-        F107                = 140.0,
+        space_indices       = si_const,
         terminate_altitude  = 200e3
     )
 
@@ -145,7 +149,7 @@ end
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
         gravity_model       = gm,
-        F107                = 140.0,
+        space_indices       = si_const,
         distance_unit       = :m,
         time_unit           = :s
     )
@@ -163,7 +167,7 @@ end
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
         gravity_model       = gm,
-        F107                = 140.0,
+        space_indices       = si_const,
         time_unit           = :d
     )
 
@@ -176,7 +180,7 @@ end
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
         gravity_model       = gm,
-        F107                = 140.0,
+        space_indices       = si_const,
         distance_unit       = :unknown,
         time_unit           = :unknown
     )
@@ -210,17 +214,26 @@ end
         gravity_model       = gm
     )
 
-    # The default F10.7 is the prediction from SpaceIndices.jl. Its remote coefficient
-    # file is refitted over time, so we only check the values are physically plausible.
-    @test all(isfinite, df.f107)
-    @test all(60.0 .< df.f107 .< 400.0)
-    @test metadata(df, "F10.7 Source") == "Predicted"
+    # The default space indices come from the observed and predicted data provided by
+    # SpaceIndices.jl. The remote files are updated over time, so we only check the values
+    # are physically plausible.
+    f107s     = getproperty.(df.space_indices, :f107)
+    f107_avgs = getproperty.(df.space_indices, :f107_avg)
+    aps       = getproperty.(df.space_indices, :ap)
+
+    @test all(isfinite, f107s)
+    @test all(isfinite, f107_avgs)
+    @test all(isfinite, aps)
+    @test all(60.0 .< f107s .< 400.0)
+    @test all(60.0 .< f107_avgs .< 400.0)
+    @test all(0.0 .<= aps .< 400.0)
+    @test metadata(df, "Space Indices Source") == "Default (Obs. + Pred.)"
 
     # The analysis must run until the termination altitude.
     @test df[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
 
     # A second call must succeed, exercising the initialization guard of the space index
-    # set used by the default F10.7.
+    # sets used by the default space indices.
     df₂ = decay_analysis(
         orb;
         satellite_mass      = 100.0,
@@ -255,19 +268,21 @@ end
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
 
-    # Record the arguments passed to the atmospheric model to check the callback contract.
-    jds   = Float64[]
-    lats  = Float64[]
-    lons  = Float64[]
-    hs    = Float64[]
-    f107s = Float64[]
+    si_const = (f107 = 140.0, f107_avg = 140.0, ap = 9.0)
 
-    dense_model = (jd_utc, lat, lon, h, F107) -> begin
-        push!(jds,   jd_utc)
-        push!(lats,  lat)
-        push!(lons,  lon)
-        push!(hs,    h)
-        push!(f107s, F107)
+    # Record the arguments passed to the atmospheric model to check the callback contract.
+    jds  = Float64[]
+    lats = Float64[]
+    lons = Float64[]
+    hs   = Float64[]
+    sis  = typeof(si_const)[]
+
+    dense_model = (jd_utc, lat, lon, h, si) -> begin
+        push!(jds,  jd_utc)
+        push!(lats, lat)
+        push!(lons, lon)
+        push!(hs,   h)
+        push!(sis,  si)
         return 5.0e-11
     end
 
@@ -276,7 +291,7 @@ end
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
         gravity_model       = gm,
-        F107                = 140.0,
+        space_indices       = si_const,
         atmospheric_model   = dense_model
     )
 
@@ -286,12 +301,12 @@ end
     @test startswith(metadata(df_dense, "Atmospheric Model"), "Custom (")
 
     # The model must receive the Julian date, the geodetic latitude, longitude, and
-    # altitude, and the F10.7 index selected by the user.
+    # altitude, and the space indices selected by the user.
     @test all(jds .>= jd₀ - 1e-6)
     @test all(abs.(lats) .<= π / 2)
     @test all(abs.(lons) .<= π)
     @test all(0 .<= hs .<= 500e3)
-    @test all(f107s .== 140.0)
+    @test all(==(si_const), sis)
 
     # A thinner atmosphere must yield a longer lifetime. The keyword
     # `atmospheric_model_name` must override the derived model name in the metadata.
@@ -300,8 +315,8 @@ end
         satellite_mass         = 100.0,
         satellite_mean_area    = 1.0,
         gravity_model          = gm,
-        F107                   = 140.0,
-        atmospheric_model      = (jd_utc, lat, lon, h, F107) -> 2.0e-11,
+        space_indices          = si_const,
+        atmospheric_model      = (jd_utc, lat, lon, h, si) -> 2.0e-11,
         atmospheric_model_name = "Uniform (2e-11)"
     )
 
@@ -325,7 +340,8 @@ end
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
 
-    dense_model = (jd_utc, lat, lon, h, F107) -> 5.0e-11
+    si_const    = (f107 = 140.0, f107_avg = 140.0, ap = 9.0)
+    dense_model = (jd_utc, lat, lon, h, si) -> 5.0e-11
 
     # == Plain Fallback and Result Invariance ==============================================
 
@@ -339,7 +355,7 @@ end
                 satellite_mass      = 100.0,
                 satellite_mean_area = 1.0,
                 gravity_model       = gm,
-                F107                = 140.0,
+                space_indices       = si_const,
                 atmospheric_model   = dense_model,
                 verbose             = true
             )
@@ -359,7 +375,7 @@ end
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
         gravity_model       = gm,
-        F107                = 140.0,
+        space_indices       = si_const,
         atmospheric_model   = dense_model
     )
 
@@ -412,7 +428,7 @@ end
     ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
 
     duration = 7 * 86400.0
-    F107     = 140.0
+    si       = (f107 = 140.0, f107_avg = 140.0, ap = 9.0)
     mass     = 100.0
     area     = 1.0
     C_d      = 2.2
@@ -465,9 +481,9 @@ end
             params.gm, r_pef, (jd_utc - JD_J2000) * 86400; max_degree = 7, max_order = 0
         )
 
-        # Atmospheric drag using the same routine, atmospheric model, and space index.
+        # Atmospheric drag using the same routine, atmospheric model, and space indices.
         a_drag_pef = ext._atmospheric_drag_acceleration(
-            atm_model, jd_utc, r_pef, v_pef, area, mass, C_d, F107
+            atm_model, jd_utc, r_pef, v_pef, area, mass, C_d, si
         )
 
         # Third-body point masses using the same routine.
@@ -515,7 +531,7 @@ end
         gravity_model                 = gm,
         C_d                           = C_d,
         C_r                           = C_r,
-        F107                          = F107,
+        space_indices                 = si,
         tf                            = duration,
         solver                        = Tsit5(),
         reltol                        = 1e-8,

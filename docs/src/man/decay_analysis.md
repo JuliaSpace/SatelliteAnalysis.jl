@@ -44,15 +44,17 @@ The following keywords are available:
 - `satellite_mean_area::Number`: Mean cross-sectional area [m²] used for both the
   atmospheric drag and the solar radiation pressure. This keyword is required.
 - `atmospheric_model::Any`: Callable object (a function or a callable structure) that
-  returns the atmospheric density [kg/m³] at a given location and time considering a
-  specific F10.7 index. It must have the signature
-  `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) -> Number`
-  where `jd_utc` is the Julian date in UTC and `lat`, `lon`, and `alt` are the
+  returns the atmospheric density [kg/m³] at a given location and time considering a set of
+  space indices. It must have the signature
+  `(jd_utc::Number, lat::Number, lon::Number, alt::Number, space_indices::NamedTuple) -> Number`
+  where `jd_utc` is the Julian date in UTC, `lat`, `lon`, and `alt` are the
   geodetic latitude [rad], longitude [rad], and altitude [m] of the point where the density
-  is evaluated, and `F107` is the 10.7 cm solar flux index [sfu] at that instant. The latter
-  must be considered as the daily value and also the 81-day centered average. If it is
-  `nothing`, the system uses an internal wrapper for the NRLMSISE-00 model provided by
-  **AtmosphericModels.jl** with a constant geomagnetic index Ap = 9, as in STELA.
+  is evaluated, and `space_indices` is the named tuple with the space indices at that
+  instant provided by the keyword `space_indices`. If it is `nothing`, the system uses an
+  internal wrapper for the NRLMSISE-00 model provided by **AtmosphericModels.jl**, which
+  requires the fields `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day average
+  of the 10.7 cm solar flux) [sfu], and `ap` (daily geomagnetic index) [-] in the named
+  tuple.
   (**Default**: `nothing`)
 - `atmospheric_model_name::Union{Nothing, String}`: Name of the atmospheric model recorded
   in the metadata `Atmospheric Model` of the output `DataFrame` and shown, for example, by
@@ -76,14 +78,20 @@ The following keywords are available:
 - `distance_unit::Symbol`: Unit of the altitude columns in the output `DataFrame`. It can
   be `:m` for meters or `:km` for kilometers.
   (**Default**: `:km`)
-- `F107::Any`: 10.7 cm solar flux index [sfu]. It can be a constant value or a callable
-  object of time (in Julian days) that returns the solar flux index at that instant:
-  `(jd_utc::Number) -> Number`. If it is `nothing`, the system uses the
-  predicted F10.7 provided by **SpaceIndices.jl** (space index `F10predicted`), a harmonic
-  model fitted to the observed data that captures the mean solar cycle behavior. In this
-  case, the required space index set is initialized automatically, downloading the
-  coefficient file on first use. Notice that this prediction is intended for long-term
-  analyses and must not be used as a short-term forecast of the solar activity.
+- `space_indices::Any`: Space indices required by the atmospheric model. It can be a
+  constant `NamedTuple` used for all instants or a callable object of time (in Julian days)
+  that returns the named tuple with the space indices at that instant:
+  `(jd_utc::Number) -> NamedTuple`. If it is `nothing`, the system provides the named tuple
+  `(f107 = ..., f107_avg = ..., ap = ...)` required by the default atmospheric model using
+  the data in **SpaceIndices.jl**: the observed daily F10.7 (space index `F10obs`), the
+  observed last-81-day average F10.7 (space index `F10obs_avg_last81`), and the observed
+  daily geomagnetic index (space index `Ap_daily`). Outside the observed timespans, the
+  F10.7 values fall back to the predicted F10.7 (space index `F10predicted`), which is a
+  harmonic model fitted to the observed data that captures the mean solar cycle behavior,
+  and the geomagnetic index falls back to Ap = 9, as in STELA. In this case, the required
+  space index sets are initialized automatically, downloading the data files on first use.
+  Notice that the F10.7 prediction is intended for long-term analyses and must not be used
+  as a short-term forecast of the solar activity.
   (**Default**: `nothing`)
 - `reltol::Number`: Relative tolerance of the numerical integration.
   (**Default**: 1e-6)
@@ -119,7 +127,9 @@ with the columns:
 
 - `date`: Date and time of each point [UTC] encoded using `DateTime`.
 - `time`: Elapsed time of each point since the beginning of the analysis [`time_unit`].
-- `f107`: 10.7 cm solar flux index used by the dynamics at each point [sfu].
+- `space_indices`: Named tuple with the space indices used by the dynamics at each point.
+  This column has no unit metadata since its fields have heterogeneous units. The default
+  source provides the fields `f107` [sfu], `f107_avg` [sfu], and `ap` [-].
 - `mean_elements`: Mean Keplerian elements encoded using `KeplerianElements` [SI], where
   the epoch is the point date [UTC].
 - `apogee_altitude`: Mean apogee altitude [`distance_unit`].
@@ -128,8 +138,8 @@ with the columns:
 The unit of each column is stored in the `DataFrame` using metadata. The `DataFrame` also
 stores the table-level metadata `Satellite Mass` [kg], `Satellite Mean Area` [m²],
 `Terminate Altitude` [m], `Drag Coefficient` [-], `SRP Coefficient` [-],
-`Atmospheric Model`, and `F10.7 Source`, which are used, for example, by the function
-[`plot_decay_analysis`](@ref).
+`Atmospheric Model`, and `Space Indices Source`, which are used, for example, by the
+function [`plot_decay_analysis`](@ref).
 
 The satellite lifetime can be obtained from the last row of the returned `DataFrame`: if
 the perigee altitude reached `terminate_altitude` before `tf`, the last `date` is the decay
@@ -157,8 +167,8 @@ orb = KeplerianElements(
 
 Now, we can use the function `decay_analysis` to obtain the orbit evolution until the
 reentry. Notice that we only need to provide the satellite mass and mean area: the space
-index defaults to the predicted F10.7, and the system fetches the EGM96 gravity model
-automatically:
+indices default to the observed and predicted values provided by **SpaceIndices.jl**, and
+the system fetches the EGM96 gravity model automatically:
 
 ```@repl decay_analysis
 df = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0)
@@ -170,15 +180,15 @@ The estimated decay epoch is the date of the last point:
 df[end, :date]
 ```
 
-We can also provide a constant F10.7, which is useful, for example, to analyze worst-case
-scenarios with high solar activity:
+We can also provide constant space indices, which is useful, for example, to analyze
+worst-case scenarios with high solar activity:
 
 ```@repl decay_analysis
 df_high = decay_analysis(
     orb;
     satellite_mass = 100.0,
     satellite_mean_area = 1.0,
-    F107 = 250
+    space_indices = (f107 = 250.0, f107_avg = 250.0, ap = 9.0)
 )
 
 df_high[end, :date]
@@ -196,7 +206,10 @@ and in the reentry annotation. The information panel
 shows the satellite mass, the mean area, the time to reenter, and a card with the analysis
 assumptions (atmospheric model and drag and SRP coefficients), all resolved from the
 `DataFrame` metadata. The keyword `show_f107`
-also plots the 10.7 cm solar flux index used by the dynamics using a twin y-axis:
+also plots the daily and the 81-day average 10.7 cm solar flux indices used by the dynamics
+using a twin y-axis. The values are extracted from the column `space_indices` using the
+keywords `f107_getter` and `f107_avg_getter`, whose defaults match the named tuple provided
+by the default space indices source; passing `nothing` to a getter omits the related curve:
 
 ```@example decay_analysis
 using CairoMakie

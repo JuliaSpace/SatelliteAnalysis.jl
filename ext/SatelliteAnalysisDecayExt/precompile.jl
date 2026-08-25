@@ -90,7 +90,7 @@
             satellite_mass      = 100.0,
             satellite_mean_area = 1.0,
             gravity_model       = gm,
-            F107                = 140.0,
+            space_indices       = (f107 = 140.0, f107_avg = 140.0, ap = 9.0),
             tf                  = 86400.0
         )
 

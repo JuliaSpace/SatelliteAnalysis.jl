@@ -44,9 +44,9 @@ the physically meaningful region and derived consistently, as done by `_dynamics
     PEF frame at `jd_utc`.
 - `params::NamedTuple`: Named tuple containing environment parameters:
     - `atmospheric_model::Any`: Callable object that computes the atmospheric density
-        [kg/m³] at a given location and time considering a specific F10.7 index. It must
+        [kg/m³] at a given location and time considering a set of space indices. It must
         have the signature
-        `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) -> Number`.
+        `(jd_utc::Number, lat::Number, lon::Number, alt::Number, space_indices::NamedTuple) -> Number`.
     - `num_sampling_points_per_orbit::Int`: Number of quadrature points for averaging.
     - `satellite_mass::Number`: Spacecraft mass [kg].
     - `satellite_mean_area::Number`: Effective cross-sectional area [m²].
@@ -54,8 +54,9 @@ the physically meaningful region and derived consistently, as done by `_dynamics
         used for the mean-to-osculating conversion.
     - `C_d::Number`: Drag coefficient [-].
     - `C_r::Number`: Reflectivity coefficient [-].
-    - `F107::Any`: Callable object that retrieves the solar flux index [sfu]. It must have
-        the signature `F107(jd_utc::Number) -> Number`.
+    - `space_indices::Any`: Callable object that retrieves the space indices required by
+        the atmospheric model. It must have the signature
+        `space_indices(jd_utc::Number) -> NamedTuple`.
 
 # Returns
 
@@ -91,7 +92,7 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
 
     # Resolve the space indices once per evaluation since `jd_utc` is constant here,
     # avoiding one interpolation per sampling point.
-    F107 = Float64(params.F107(jd_utc))
+    space_indices = params.space_indices(jd_utc)
 
     # The rotation between TOD and PEF is computed once per right-hand-side evaluation in
     # `_dynamics` and shared with this routine. The PEF frame rotates with the Earth, so
@@ -129,7 +130,7 @@ function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
             mean_area,
             mass,
             C_d,
-            F107
+            space_indices
         )
 
         # Drag acceleration in TOD.

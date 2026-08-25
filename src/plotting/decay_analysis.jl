@@ -39,6 +39,15 @@ keyword was not passed, is omitted from the panel.
 
 # Keywords
 
+- `f107_avg_getter::Any`: Callable object that extracts the 81-day average of the 10.7 cm
+    solar flux [sfu] from an element of the column `space_indices` of `df`, used when the
+    keyword `show_f107` is `true`. If it is `nothing`, the 81-day average curve is omitted
+    from the plot.
+    (**Default**: `si -> si.f107_avg`)
+- `f107_getter::Any`: Callable object that extracts the daily 10.7 cm solar flux [sfu]
+    from an element of the column `space_indices` of `df`, used when the keyword
+    `show_f107` is `true`. If it is `nothing`, the daily curve is omitted from the plot.
+    (**Default**: `si -> si.f107`)
 - `fontscale::Real`: Factor to uniformly scale every font size of the figure, useful when
     rendering at a size other than the default.
     (**Default**: 1)
@@ -69,10 +78,12 @@ keyword was not passed, is omitted from the panel.
     estimated reentry date. Otherwise, the analysis is treated as relative and no dates
     are shown.
     (**Default**: `false`)
-- `show_f107::Bool`: If `true`, the 10.7 cm solar flux index in the column `f107` of `df`
-    is plotted [sfu] using a twin y-axis placed at the right side of the figure. The line
-    is rendered with transparency below the other plot elements, and the twin y-axis ticks
-    use canonical values aligned with the grid of the main axis.
+- `show_f107::Bool`: If `true`, the daily and the 81-day average 10.7 cm solar flux
+    indices, extracted from the column `space_indices` of `df` using the keywords
+    `f107_getter` and `f107_avg_getter`, are plotted [sfu] using a twin y-axis placed at
+    the right side of the figure. The lines are rendered with transparency below the other
+    plot elements, and the twin y-axis ticks use canonical values aligned with the grid of
+    the main axis.
     (**Default**: `false`)
 - `show_reentry_callout::Bool`: If `true` and the analysis detected a reentry, an
     annotation is added in the plot next to the reentry marker. It shows the estimated
@@ -112,7 +123,10 @@ To export the figure in high resolution for reports, use
 
 - `ArgumentError`: If `df` does not have the columns `time`, `date`, `apogee_altitude`, and
     `perigee_altitude`, or if the keyword `show_f107` is `true` and `df` does not have the
-    column `f107`.
+    column `space_indices`.
+- `ArgumentError`: If the keyword `show_f107` is `true` and both `f107_getter` and
+    `f107_avg_getter` are `nothing`, or if the getters cannot extract the values from the
+    column `space_indices`.
 - `ArgumentError`: If the theme variant in `theme` is not `:dark` or `:light`.
 - `ArgumentError`: If the keyword `subtitle` is a `Symbol` other than `:auto`.
 
@@ -137,7 +151,7 @@ julia> df = decay_analysis(
            orb;
            satellite_mass = 100.0,
            satellite_mean_area = 1.0,
-           F107 = 140
+           space_indices = (f107 = 140.0, f107_avg = 140.0, ap = 9.0)
        );
 
 julia> fig, ax = plot_decay_analysis(df);

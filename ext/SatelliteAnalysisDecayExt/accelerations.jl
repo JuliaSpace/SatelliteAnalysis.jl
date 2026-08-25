@@ -13,7 +13,7 @@
         area::Number,
         mass::Number,
         Cd::Number,
-        F107::Number
+        space_indices::NamedTuple
     ) where T <: Number -> SVector{3, T}
 
 Compute the acceleration [m/s²] due to atmospheric drag in the ECEF frame using the
@@ -22,20 +22,20 @@ atmospheric model `am`.
 # Arguments
 
 - `atmospheric_model::Any`: Callable object that returns the atmospheric density [kg/m³] at
-    a given location and time considering a specific F10.7 index. It must have the
+    a given location and time considering a set of space indices. It must have the
     signature
-    `(jd_utc::Number, lat::Number, lon::Number, alt::Number, F107::Number) -> Number`
-    where `jd_utc` is the Julian date in UTC and `lat`, `lon`, and `alt` are the geodetic
+    `(jd_utc::Number, lat::Number, lon::Number, alt::Number, space_indices::NamedTuple) -> Number`
+    where `jd_utc` is the Julian date in UTC, `lat`, `lon`, and `alt` are the geodetic
     latitude [rad], longitude [rad], and altitude [m] of the point where the density is
-    evaluated, and `F107` is the 10.7 cm solar flux index [sfu] at that instant. The latter
-    must be considered as the daily value and also the 81-day centered average.
+    evaluated, and `space_indices` is a named tuple with the space indices at that instant.
 - `jd_utc::Number`: Julian date [UTC] in which the atmospheric drag will be computed.
 - `r_ecef::AbstractVector{T}`: Satellite position vector [m] in ECEF frame.
 - `v_ecef::AbstractVector{T}`: Satellite velocity vector [m/s] in ECEF frame.
 - `area::Number`: Effective cross-sectional area [m²] exposed to atmosphere.
 - `mass::Number`: Spacecraft mass [kg].
 - `Cd::Number`: Drag coefficient [-].
-- `F107::Number`: Solar flux index [sfu].
+- `space_indices::NamedTuple`: Named tuple with the space indices required by the
+    atmospheric model.
 
 # Returns
 
@@ -49,7 +49,7 @@ function _atmospheric_drag_acceleration(
     area::Number,
     mass::Number,
     Cd::Number,
-    F107::Number
+    space_indices::NamedTuple
 ) where T <: Number
 
     lat, lon, h = ecef_to_geodetic(r_ecef)
@@ -58,7 +58,7 @@ function _atmospheric_drag_acceleration(
     # unphysical states near the decay end. Clamp it to keep the atmospheric model valid so
     # that the error control can reject the step.
     h = max(h, zero(h))
-    ρ = atmospheric_model(jd_utc, lat, lon, h, F107)
+    ρ = atmospheric_model(jd_utc, lat, lon, h, space_indices)
 
     a_drag_ecef = -(1 // 2) * T(Cd) * (T(area) / T(mass)) * T(ρ) * norm(v_ecef) .* v_ecef
 

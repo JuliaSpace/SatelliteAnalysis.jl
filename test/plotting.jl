@@ -19,25 +19,27 @@ end
     # requiring the numerical integration.
     time             = collect(range(0, 0.1; length = 20))
     date             = julian2datetime.(date_to_jd(2024, 1, 1) .+ 365.25 .* time)
-    f107             = collect(range(140.0, 180.0; length = 20))
+    space_indices    = [
+        (f107 = f, f107_avg = f - 10.0, ap = 9.0) for f in range(140.0, 180.0; length = 20)
+    ]
     perigee_altitude = collect(range(300.0, 120.0; length = 20))
     apogee_altitude  = perigee_altitude .+ 10
 
     df = DataFrame(;
         date             = date,
         time             = time,
-        f107             = f107,
+        space_indices    = space_indices,
         apogee_altitude  = apogee_altitude,
         perigee_altitude = perigee_altitude,
     )
 
-    metadata!(df, "Atmospheric Model",   "NRLMSISE-00";        style = :note)
-    metadata!(df, "Drag Coefficient",    2.2;                  style = :note)
-    metadata!(df, "F10.7 Source",        "Constant (140 sfu)"; style = :note)
-    metadata!(df, "Satellite Mass",      100.0;                style = :note)
-    metadata!(df, "Satellite Mean Area", 1.0;                  style = :note)
-    metadata!(df, "SRP Coefficient",     1.25;                 style = :note)
-    metadata!(df, "Terminate Altitude",  120e3;                style = :note)
+    metadata!(df, "Atmospheric Model",    "NRLMSISE-00";  style = :note)
+    metadata!(df, "Drag Coefficient",     2.2;            style = :note)
+    metadata!(df, "Satellite Mass",       100.0;          style = :note)
+    metadata!(df, "Satellite Mean Area",  1.0;            style = :note)
+    metadata!(df, "Space Indices Source", "User function"; style = :note)
+    metadata!(df, "SRP Coefficient",      1.25;           style = :note)
+    metadata!(df, "Terminate Altitude",   120e3;          style = :note)
 
     colmetadata!(df, :time,             "Unit", :y;  style = :note)
     colmetadata!(df, :apogee_altitude,  "Unit", :km; style = :note)
@@ -113,13 +115,41 @@ end
     @test fig isa Figure
     @test ax isa Axis
 
-    # Optional decorations: mission name, absolute dates, and F10.7 twin y-axis.
+    # Optional decorations: mission name, absolute dates, and F10.7 twin y-axis with the
+    # default getters.
     fig, ax = plot_decay_analysis(
         df;
         mission_name = "Amazonia-1",
         show_dates   = true,
         show_f107    = true
     )
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # Custom getters must support space indices with different field names.
+    df_custom = copy(df)
+    df_custom.space_indices = [
+        (daily = f, mean81 = f - 10.0) for f in range(140.0, 180.0; length = 20)
+    ]
+
+    fig, ax = plot_decay_analysis(
+        df_custom;
+        show_f107       = true,
+        f107_getter     = si -> si.daily,
+        f107_avg_getter = si -> si.mean81
+    )
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    # Passing `nothing` to a getter must omit the related curve.
+    fig, ax = plot_decay_analysis(df; show_f107 = true, f107_avg_getter = nothing)
+
+    @test fig isa Figure
+    @test ax isa Axis
+
+    fig, ax = plot_decay_analysis(df; show_f107 = true, f107_getter = nothing)
 
     @test fig isa Figure
     @test ax isa Axis
@@ -177,8 +207,23 @@ end
     @test_throws ArgumentError plot_decay_analysis(DataFrame(; a = [1]))
     @test_throws ArgumentError plot_decay_analysis(empty!(copy(df)))
 
-    # The keyword `show_f107` requires the column `f107`.
+    # The keyword `show_f107` requires the column `space_indices`.
     @test_throws ArgumentError plot_decay_analysis(df_no_metadata; show_f107 = true)
+
+    # At least one getter must be provided when `show_f107` is `true`.
+    @test_throws ArgumentError plot_decay_analysis(
+        df;
+        show_f107       = true,
+        f107_getter     = nothing,
+        f107_avg_getter = nothing
+    )
+
+    # A getter that does not match the space indices must raise a clear error.
+    @test_throws ArgumentError plot_decay_analysis(
+        df;
+        show_f107   = true,
+        f107_getter = si -> si.not_a_field
+    )
 
     # The keyword `subtitle` only accepts the symbol `:auto`.
     @test_throws ArgumentError plot_decay_analysis(df; subtitle = :date)
