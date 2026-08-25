@@ -10,7 +10,9 @@
 Default atmospheric model of the decay analysis, wrapping the NRLMSISE-00 model provided
 by **AtmosphericModels.jl**. It consumes the space indices `f107` (daily 10.7 cm solar
 flux) [sfu], `f107_avg` (81-day average of the 10.7 cm solar flux) [sfu], and `ap` (daily
-geomagnetic index) [-] from the named tuple passed to the callable.
+geomagnetic index) [-] from the named tuple passed to the callable. The NRLMSISE-00
+documentation requires the observed flux, at the actual Earth-Sun distance, instead of the
+flux adjusted to 1 AU.
 
 # Fields
 
@@ -67,7 +69,8 @@ Atmospheric model of the decay analysis wrapping the Jacchia 1977 model provided
 [`@decay_analysis__jacchia77`](@ref SatelliteAnalysis.@decay_analysis__jacchia77). It
 consumes the space indices `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day
 average of the 10.7 cm solar flux) [sfu], and `kp` (daily geomagnetic index Kp) [-] from
-the named tuple passed to the callable.
+the named tuple passed to the callable. The Jacchia models were derived using the flux
+adjusted to 1 AU, so both F10.7 indices must belong to the adjusted class.
 """
 struct Jacchia77AtmosphericModel end
 
@@ -120,7 +123,8 @@ by **AtmosphericModels.jl**, selected by the macro
 [`@decay_analysis__jr1971`](@ref SatelliteAnalysis.@decay_analysis__jr1971). It consumes
 the space indices `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day average of
 the 10.7 cm solar flux) [sfu], and `kp` (daily geomagnetic index Kp) [-] from the named
-tuple passed to the callable.
+tuple passed to the callable. The Jacchia models were derived using the flux adjusted to
+1 AU, so both F10.7 indices must belong to the adjusted class.
 """
 struct Jr1971AtmosphericModel end
 

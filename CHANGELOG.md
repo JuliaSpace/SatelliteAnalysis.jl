@@ -45,9 +45,10 @@ Version 0.4.0
   `atmospheric_model_name`, and `space_indices` in the keyword section of the call, and
   keywords passed after the macro override the ones it provides. The models consume the
   space indices `f107`, `f107_avg`, and `kp`, and the default source selected by the
-  macros provides the observed values (space indices `F10obs`, `F10obs_avg_last81`, and
-  `Kp_daily`), falling back to the predicted F10.7 and to Kp = 7 / 3 (equivalent to
-  Ap = 9, as in STELA) outside the observed timespans.
+  macros provides the F10.7 values adjusted to 1 AU, as required by the Jacchia models,
+  and the observed Kp (space indices `F10adj`, `F10adj_avg_center81`, and `Kp_daily`),
+  falling back to the predicted F10.7 and to Kp = 7 / 3 (equivalent to Ap = 9, as in
+  STELA) outside the available timespans.
 - ![Feature][badge-feature] We added the keyword `verbose` to `decay_analysis`. When
   enabled, a progress interface is shown in `stderr` during the numerical integration: in
   interactive terminals, a live panel with a progress bar, the current perigee and apogee
@@ -84,10 +85,12 @@ Version 0.4.0
   `(jd_utc::Number) -> NamedTuple`, allowing time-varying space index profiles, and the
   named tuple is passed to the atmospheric model and recorded in the column
   `space_indices` of the output `DataFrame`. By default, it provides the observed daily
-  F10.7 (space index `F10obs`), the observed last-81-day average F10.7 (space index
-  `F10obs_avg_last81`), and the observed daily geomagnetic index (space index `Ap_daily`)
-  from **SpaceIndices.jl**, falling back to the predicted F10.7 (space index
-  `F10predicted`) and to Ap = 9, as in STELA, outside the observed timespans. The required
+  F10.7 of the previous day (space index `F10obs`), as prescribed by the NRLMSISE-00
+  documentation, the observed centered 81-day average F10.7 (space index
+  `F10obs_avg_center81`), and the observed daily geomagnetic index (space index
+  `Ap_daily`) from **SpaceIndices.jl**, falling back to the predicted observed F10.7
+  (space index `F10obs_predicted`) and to Ap = 9, as in STELA, outside the observed
+  timespans. The required
   space index sets are initialized automatically on first use.
 - ![Enhancement][badge-enhancement] We highly reduced the allocations of `decay_analysis`
   (about 95%) by reusing the Legendre buffers of the atmospheric and gravity models, using

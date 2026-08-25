@@ -291,6 +291,29 @@ end
 
     ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
     @test !isnothing(ext._DEFAULT_GRAVITY_MODEL[])
+
+    # The default F10.7 source must return the requested space index inside its timespan
+    # (the observed centered 81-day average for NRLMSISE-00 and the adjusted one for the
+    # Jacchia models), falling back to the matching predicted F10.7 outside it.
+    for (index, predicted) in (
+        (Val(:F10obs_avg_center81), Val(:F10obs_predicted)),
+        (Val(:F10adj_avg_center81), Val(:F10adj_predicted)),
+    )
+        jd_avg₀, jd_avg₁ = SpaceIndices.timespan(index)
+        jd_mid = (jd_avg₀ + jd_avg₁) / 2
+
+        @test ext._default_f107(jd_mid, index, predicted) == space_index(index, jd_mid)
+        @test ext._default_f107(jd_avg₁ + 366, index, predicted) ==
+            space_index(predicted, jd_avg₁ + 366)
+    end
+
+    # The NRLMSISE-00 default source must provide the observed daily F10.7 of the
+    # previous day, as prescribed by the model documentation.
+    jd_obs₀, jd_obs₁ = SpaceIndices.timespan(Val(:F10obs))
+    jd_day = (jd_obs₀ + jd_obs₁) / 2
+
+    @test ext._decay_analysis__default_space_indices(jd_day).f107 ==
+        space_index(Val(:F10obs), jd_day - 1)
 end
 
 @testset "Custom Atmospheric Model" begin
@@ -414,7 +437,7 @@ end
     )
 
     @test metadata(df_default, "Atmospheric Model")    == "Jacchia 1977"
-    @test metadata(df_default, "Space Indices Source") == "Default (Obs. + Pred.)"
+    @test metadata(df_default, "Space Indices Source") == "Default (Adj. + Pred.)"
 
     f107s     = getproperty.(df_default.space_indices, :f107)
     f107_avgs = getproperty.(df_default.space_indices, :f107_avg)
@@ -485,7 +508,7 @@ end
     )
 
     @test metadata(df_default, "Atmospheric Model")    == "Jacchia-Roberts 1971"
-    @test metadata(df_default, "Space Indices Source") == "Default (Obs. + Pred.)"
+    @test metadata(df_default, "Space Indices Source") == "Default (Adj. + Pred.)"
 
     kps = getproperty.(df_default.space_indices, :kp)
     @test all(isfinite, kps)

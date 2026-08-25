@@ -94,12 +94,14 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     days) that returns the named tuple with the space indices at that instant:
     `(jd_utc::Number) -> NamedTuple`. If it is `nothing`, the system provides the named
     tuple `(f107 = ..., f107_avg = ..., ap = ...)` required by the default atmospheric
-    model using the data in **SpaceIndices.jl**: the observed daily F10.7 (space index
-    `F10obs`), the observed last-81-day average F10.7 (space index `F10obs_avg_last81`),
-    and the observed daily geomagnetic index (space index `Ap_daily`). Outside the observed
-    timespans, the F10.7 values fall back to the predicted F10.7 (space index
-    `F10predicted`), which is a harmonic model fitted to the observed data that captures
-    the mean solar cycle behavior, and the geomagnetic index falls back to Ap = 9, as in
+    model using the data in **SpaceIndices.jl**: the observed daily F10.7 of the previous
+    day (space index `F10obs`), as prescribed by the NRLMSISE-00 documentation, the
+    observed centered 81-day average F10.7 (space index `F10obs_avg_center81`), and the
+    observed daily geomagnetic index (space index
+    `Ap_daily`). Outside the observed timespans, the F10.7 values fall back to the
+    predicted observed F10.7 (space index `F10obs_predicted`), which is a harmonic model
+    fitted to the observed data that captures the mean solar cycle behavior, and the
+    geomagnetic index falls back to Ap = 9, as in
     STELA. In this case, the required space index sets are initialized automatically,
     downloading the data files on first use.
     (**Default**: `nothing`)
@@ -226,11 +228,14 @@ decay_analysis(
 The Jacchia 1977 model consumes the space indices `f107` (daily 10.7 cm solar flux) [sfu],
 `f107_avg` (81-day average of the 10.7 cm solar flux) [sfu], and `kp` (daily geomagnetic
 index Kp) [-] from the named tuple provided by the keyword `space_indices`. The macro also
-selects a default space indices source with these fields: the observed daily F10.7 (space
-index `F10obs`), the observed last-81-day average F10.7 (space index `F10obs_avg_last81`),
-and the observed daily Kp (space index `Kp_daily`), falling back to the predicted F10.7
-(space index `F10predicted`) and to Kp = 7 / 3 (equivalent to Ap = 9, as in STELA) outside
-the observed timespans.
+selects a default space indices source with these fields: the daily F10.7 adjusted to
+1 AU (space index `F10adj`), the centered 81-day average of the adjusted F10.7 (space
+index `F10adj_avg_center81`), and the observed daily Kp (space index `Kp_daily`), falling
+back to the predicted adjusted F10.7 (space index `F10adj_predicted`) and to Kp = 7 / 3
+(equivalent to Ap = 9, as in STELA) outside the available timespans. The adjusted flux is
+used because
+the Jacchia models were derived using the flux normalized to 1 AU, unlike NRLMSISE-00,
+which uses the observed flux at the actual Earth-Sun distance.
 
 Keywords passed **after** the macro override the ones it provides. For example, the
 following call uses the Jacchia 1977 model with constant space indices:
@@ -306,11 +311,14 @@ density evaluation.
 The model consumes the space indices `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg`
 (81-day average of the 10.7 cm solar flux) [sfu], and `kp` (daily geomagnetic index Kp)
 [-] from the named tuple provided by the keyword `space_indices`. The macro also selects a
-default space indices source with these fields: the observed daily F10.7 (space index
-`F10obs`), the observed last-81-day average F10.7 (space index `F10obs_avg_last81`), and
-the observed daily Kp (space index `Kp_daily`), falling back to the predicted F10.7 (space
-index `F10predicted`) and to Kp = 7 / 3 (equivalent to Ap = 9, as in STELA) outside the
-observed timespans.
+default space indices source with these fields: the daily F10.7 adjusted to 1 AU (space
+index `F10adj`), the centered 81-day average of the adjusted F10.7 (space index
+`F10adj_avg_center81`), and the observed daily Kp (space index `Kp_daily`), falling back
+to the predicted adjusted F10.7 (space index `F10adj_predicted`) and to Kp = 7 / 3
+(equivalent to Ap = 9, as in STELA) outside the available timespans. The adjusted flux is
+used because the Jacchia models were derived using the flux normalized to 1 AU, unlike
+NRLMSISE-00,
+which uses the observed flux at the actual Earth-Sun distance.
 
 Keywords passed **after** the macro override the ones it provides. For example, the
 following call uses the Jacchia-Roberts 1971 model with constant space indices:

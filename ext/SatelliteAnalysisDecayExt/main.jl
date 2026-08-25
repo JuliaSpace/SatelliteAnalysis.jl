@@ -99,8 +99,15 @@ function SatelliteAnalysis.decay_analysis(
         (space_indices′ === _decay_analysis__default_space_indices) ||
         (space_indices′ === _decay_analysis__default_space_indices_kp)
 
-    space_indices_source = is_default_space_indices ? "Default (Obs. + Pred.)" :
-        space_indices isa NamedTuple ? "Constant $(space_indices)" : "User function"
+    space_indices_source = if space_indices′ === _decay_analysis__default_space_indices
+        "Default (Obs. + Pred.)"
+    elseif space_indices′ === _decay_analysis__default_space_indices_kp
+        "Default (Adj. + Pred.)"
+    elseif space_indices isa NamedTuple
+        "Constant $(space_indices)"
+    else
+        "User function"
+    end
 
     # The default space index functions require the remote data sets provided by
     # SpaceIndices.jl. Notice that if the user calls `SpaceIndices.destroy()` after this
@@ -387,10 +394,13 @@ Default space indices computed at the Julian Day [UTC] `jd_utc` used by the deca
 when the user does not provide a named tuple or a callable. It returns a named tuple with
 the fields:
 
-- `f107`: Observed daily 10.7 cm solar flux [sfu], falling back to the predicted F10.7
-    outside the observed timespan.
-- `f107_avg`: Observed last-81-day average of the 10.7 cm solar flux [sfu], falling back to
-    the predicted F10.7 outside the observed timespan.
+- `f107`: Observed daily 10.7 cm solar flux of the previous day [sfu], falling back to
+    the predicted F10.7 outside the observed timespan. The NRLMSISE-00 documentation
+    requires the observed flux (measured at the actual Earth-Sun distance) instead of the
+    flux adjusted to 1 AU, and prescribes the value of the previous day for the daily
+    index.
+- `f107_avg`: Observed centered 81-day average of the 10.7 cm solar flux [sfu], falling
+    back to the predicted F10.7 outside the observed timespan.
 - `ap`: Observed daily geomagnetic index [-], falling back to 9, as in STELA, outside the
     observed timespan. Notice that the influence of Ap on the atmospheric density is much
     smaller than that of F10.7, and the geomagnetic index is not known in advance for a
@@ -400,9 +410,10 @@ function _decay_analysis__default_space_indices(jd_utc::Number)
     jd₀, jd₁ = SpaceIndices.timespan(Val(:Ap_daily))
     ap = jd₀ <= jd_utc <= jd₁ ? space_index(Val(:Ap_daily), jd_utc) : 9.0
 
+    # The NRLMSISE-00 documentation prescribes the daily F10.7 of the previous day.
     return (
-        f107     = _default_daily_f107(jd_utc),
-        f107_avg = _default_avg_f107(jd_utc),
+        f107     = _default_f107(jd_utc - 1, Val(:F10obs), Val(:F10obs_predicted)),
+        f107_avg = _default_f107(jd_utc, Val(:F10obs_avg_center81), Val(:F10obs_predicted)),
         ap       = ap
     )
 end
@@ -415,10 +426,12 @@ with the atmospheric models that require the geomagnetic index Kp (Jacchia 1977 
 Jacchia-Roberts 1971), selected by the macros `@decay_analysis__jacchia77` and
 `@decay_analysis__jr1971`. It returns a named tuple with the fields:
 
-- `f107`: Observed daily 10.7 cm solar flux [sfu], falling back to the predicted F10.7
-    outside the observed timespan.
-- `f107_avg`: Observed last-81-day average of the 10.7 cm solar flux [sfu], falling back to
-    the predicted F10.7 outside the observed timespan.
+- `f107`: Daily 10.7 cm solar flux adjusted to 1 AU [sfu], falling back to the predicted
+    F10.7 outside the adjusted flux timespan. The adjusted flux is used because the
+    Jacchia models were derived using the flux normalized to 1 AU, unlike NRLMSISE-00,
+    which uses the observed flux at the actual Earth-Sun distance.
+- `f107_avg`: Centered 81-day average of the 10.7 cm solar flux adjusted to 1 AU [sfu],
+    falling back to the predicted F10.7 outside the adjusted flux timespan.
 - `kp`: Observed daily geomagnetic index Kp [-], falling back to 7 / 3 (equivalent to
     Ap = 9, as in STELA) outside the observed timespan. Notice that the influence of the
     geomagnetic index on the atmospheric density is much smaller than that of F10.7, and
@@ -429,30 +442,27 @@ function _decay_analysis__default_space_indices_kp(jd_utc::Number)
     kp = jd₀ <= jd_utc <= jd₁ ? space_index(Val(:Kp_daily), jd_utc) : 7 / 3
 
     return (
-        f107     = _default_daily_f107(jd_utc),
-        f107_avg = _default_avg_f107(jd_utc),
+        f107     = _default_f107(jd_utc, Val(:F10adj), Val(:F10adj_predicted)),
+        f107_avg = _default_f107(jd_utc, Val(:F10adj_avg_center81), Val(:F10adj_predicted)),
         kp       = kp
     )
 end
 
-# Observed daily F10.7 [sfu] at the Julian Day [UTC] `jd_utc`, falling back to the
-# predicted F10.7 outside the observed timespan.
-function _default_daily_f107(jd_utc::Number)
-    jd₀, jd₁ = SpaceIndices.timespan(Val(:F10obs))
+# F10.7 [sfu] from the space index `index` at the Julian Day [UTC] `jd_utc`, falling back
+# to the space index `predicted` outside the `index` timespan. The default sources use
+# the observed indices (`F10obs`, `F10obs_avg_center81`, and `F10obs_predicted`) for
+# NRLMSISE-00, whose documentation requires the flux at the actual Earth-Sun distance,
+# and the adjusted indices (`F10adj`, `F10adj_avg_center81`, and `F10adj_predicted`) for
+# the Jacchia models, which were derived using the flux normalized to 1 AU. Both use a
+# centered 81-day average, the convention shared by the supported atmospheric models (the
+# Jacchia 1977 report uses a centered Gaussian-weighted mean, which the centered 81-day
+# average approximates).
+function _default_f107(jd_utc::Number, index::Val, predicted::Val)
+    jd₀, jd₁ = SpaceIndices.timespan(index)
 
-    jd₀ <= jd_utc <= jd₁ && return space_index(Val(:F10obs), jd_utc)
+    jd₀ <= jd_utc <= jd₁ && return space_index(index, jd_utc)
 
-    return space_index(Val(:F10predicted), jd_utc)
-end
-
-# Observed last-81-day average F10.7 [sfu] at the Julian Day [UTC] `jd_utc`, falling back
-# to the predicted F10.7 outside the observed timespan.
-function _default_avg_f107(jd_utc::Number)
-    jd₀, jd₁ = SpaceIndices.timespan(Val(:F10obs_avg_last81))
-
-    jd₀ <= jd_utc <= jd₁ && return space_index(Val(:F10obs_avg_last81), jd_utc)
-
-    return space_index(Val(:F10predicted), jd_utc)
+    return space_index(predicted, jd_utc)
 end
 
 function _cb_altitude_condition(u, t, integrator)
