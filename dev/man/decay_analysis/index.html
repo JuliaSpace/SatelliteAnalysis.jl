@@ -14,9 +14,7 @@
 <span class="sgr1">     Inclination : </span>  98.0   °
 <span class="sgr1">            RAAN : </span>  77.684 °
 <span class="sgr1"> Arg. of Perigee : </span>  90.0   °
-<span class="sgr1">    True Anomaly : </span>   0.0   °</code></pre><p>Now, we can use the function <code>decay_analysis</code> to obtain the orbit evolution until the reentry. Notice that we only need to provide the satellite mass and mean area: the space index defaults to the predicted F10.7, and the system fetches the EGM2008 gravity model automatically:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; df = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0)</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr36"><span class="sgr1">[ Info: </span></span>Downloading the ICGEM file &#39;EGM2008.gfc&#39; from &#39;https://icgem.gfz-potsdam.de/getmodel/gfc/c50128797a9cb62e936337c890e4425f03f0461d7329b09a8cc8561504465340/EGM2008.gfc&#39;...
-<span class="sgr36"><span class="sgr1">[ Info: </span></span>Downloading the file &#39;f107_prediction_coefficients.csv&#39; from &#39;https://raw.githubusercontent.com/JuliaSpace/SatelliteToolboxSpaceIndexSets/refs/heads/main/files/f107_prediction_coefficients.csv&#39;...
-<span class="sgr1">32×6 DataFrame</span>
+<span class="sgr1">    True Anomaly : </span>   0.0   °</code></pre><p>Now, we can use the function <code>decay_analysis</code> to obtain the orbit evolution until the reentry. Notice that we only need to provide the satellite mass and mean area: the space index defaults to the predicted F10.7, and the system fetches the EGM2008 gravity model automatically:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; df = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0)</code><code class="nohighlight hljs ansi" style="display:block;"><span class="sgr1">32×6 DataFrame</span>
 <span class="sgr1"> Row </span>│<span class="sgr1"> date                     time         f107     mean_elements           </span> ⋯
 <span class="sgr1">     </span>│<span class="sgr90"> DateTime                 Float64      Float64  KeplerianEle…           </span> ⋯
 ─────┼──────────────────────────────────────────────────────────────────────────
@@ -25,18 +23,18 @@
    3 │ 2024-01-01T01:24:42.846  0.000161066  183.972  KeplerianElements{Float6
    4 │ 2024-01-01T02:30:23.839  0.000285948  183.974  KeplerianElements{Float6
    5 │ 2024-01-01T04:05:43.715  0.0004672    183.976  KeplerianElements{Float6 ⋯
-   6 │ 2024-01-01T15:40:02.053  0.00178727   183.996  KeplerianElements{Float6
-   7 │ 2024-01-02T02:04:54.557  0.00297534   184.013  KeplerianElements{Float6
-   8 │ 2024-01-02T14:01:35.098  0.00433794   184.033  KeplerianElements{Float6
+   6 │ 2024-01-01T15:40:02.061  0.00178727   183.996  KeplerianElements{Float6
+   7 │ 2024-01-02T02:04:54.572  0.00297534   184.013  KeplerianElements{Float6
+   8 │ 2024-01-02T14:01:35.120  0.00433794   184.033  KeplerianElements{Float6
   ⋮  │            ⋮                  ⋮          ⋮                     ⋮        ⋱
-  26 │ 2024-01-22T20:44:57.686  0.0598619    184.775  KeplerianElements{Float6 ⋯
-  27 │ 2024-01-23T06:20:20.938  0.0609559    184.788  KeplerianElements{Float6
-  28 │ 2024-01-23T13:20:59.792  0.0617556    184.798  KeplerianElements{Float6
-  29 │ 2024-01-23T16:59:55.281  0.0621719    184.803  KeplerianElements{Float6
-  30 │ 2024-01-23T18:59:25.363  0.0623991    184.805  KeplerianElements{Float6 ⋯
-  31 │ 2024-01-23T19:56:04.692  0.0625068    184.807  KeplerianElements{Float6
-  32 │ 2024-01-23T19:56:04.692  0.0625068    184.807  KeplerianElements{Float6
-<span class="sgr36">                                                   3 columns and 17 rows omitted</span></code></pre><p>The estimated decay epoch is the date of the last point:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; df[end, :date]</code><code class="nohighlight hljs ansi" style="display:block;">2024-01-23T19:56:04.692</code></pre><p>We can also provide a constant F10.7, which is useful, for example, to analyze worst-case scenarios with high solar activity:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; df_high = decay_analysis(
+  26 │ 2024-01-22T20:45:00.367  0.059862     184.775  KeplerianElements{Float6 ⋯
+  27 │ 2024-01-23T06:20:23.042  0.0609559    184.788  KeplerianElements{Float6
+  28 │ 2024-01-23T13:21:01.435  0.0617557    184.798  KeplerianElements{Float6
+  29 │ 2024-01-23T16:59:56.654  0.0621719    184.803  KeplerianElements{Float6
+  30 │ 2024-01-23T18:59:26.559  0.0623991    184.805  KeplerianElements{Float6 ⋯
+  31 │ 2024-01-23T19:56:05.620  0.0625068    184.807  KeplerianElements{Float6
+  32 │ 2024-01-23T19:56:05.620  0.0625068    184.807  KeplerianElements{Float6
+<span class="sgr36">                                                   3 columns and 17 rows omitted</span></code></pre><p>The estimated decay epoch is the date of the last point:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; df[end, :date]</code><code class="nohighlight hljs ansi" style="display:block;">2024-01-23T19:56:05.620</code></pre><p>We can also provide a constant F10.7, which is useful, for example, to analyze worst-case scenarios with high solar activity:</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; df_high = decay_analysis(
            orb;
            satellite_mass = 100.0,
            satellite_mean_area = 1.0,
@@ -49,19 +47,19 @@
    2 │ 2024-01-01T00:31:27.655  5.98162e-5     250.0  KeplerianElements{Float6
    3 │ 2024-01-01T01:00:48.330  0.000115609    250.0  KeplerianElements{Float6
    4 │ 2024-01-01T01:47:40.225  0.000204712    250.0  KeplerianElements{Float6
-   5 │ 2024-01-01T02:55:04.280  0.000332861    250.0  KeplerianElements{Float6 ⋯
-   6 │ 2024-01-01T13:16:25.068  0.00151422     250.0  KeplerianElements{Float6
-   7 │ 2024-01-01T22:35:37.778  0.00257744     250.0  KeplerianElements{Float6
-   8 │ 2024-01-02T08:54:40.592  0.00375442     250.0  KeplerianElements{Float6
+   5 │ 2024-01-01T02:55:04.279  0.000332861    250.0  KeplerianElements{Float6 ⋯
+   6 │ 2024-01-01T13:16:25.079  0.00151422     250.0  KeplerianElements{Float6
+   7 │ 2024-01-01T22:35:37.800  0.00257744     250.0  KeplerianElements{Float6
+   8 │ 2024-01-02T08:54:40.612  0.00375442     250.0  KeplerianElements{Float6
   ⋮  │            ⋮                  ⋮          ⋮                     ⋮        ⋱
-  25 │ 2024-01-15T15:33:27.136  0.0401047      250.0  KeplerianElements{Float6 ⋯
-  26 │ 2024-01-15T23:59:20.438  0.0410665      250.0  KeplerianElements{Float6
-  27 │ 2024-01-16T04:22:57.877  0.0415677      250.0  KeplerianElements{Float6
-  28 │ 2024-01-16T06:54:09.071  0.0418552      250.0  KeplerianElements{Float6
-  29 │ 2024-01-16T08:14:32.896  0.042008       250.0  KeplerianElements{Float6 ⋯
-  30 │ 2024-01-16T08:34:39.799  0.0420463      250.0  KeplerianElements{Float6
-  31 │ 2024-01-16T08:34:39.799  0.0420463      250.0  KeplerianElements{Float6
-<span class="sgr36">                                                   3 columns and 16 rows omitted</span></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; df_high[end, :date]</code><code class="nohighlight hljs ansi" style="display:block;">2024-01-16T08:34:39.799</code></pre><h2 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h2><p>If the user loads the package <a href="https://docs.makie.org/stable/">Makie.jl</a>, an extension is loaded and adds the possibility to plot the decay analysis using the function <a href="../../lib/library/#SatelliteAnalysis.plot_decay_analysis-Tuple{Any}"><code>plot_decay_analysis</code></a>. The figure shows the evolution of the mean apogee and perigee altitudes, a dashed line marking the terminate altitude, and an annotation marking the reentry. The keyword <code>show_dates</code> adds the absolute dates [UTC] to the figure: the analysis timespan in the subtitle and the estimated reentry date in the information panel and in the reentry annotation. The information panel shows the satellite mass, the mean area, the time to reenter, and a card with the analysis assumptions (atmospheric model and drag and SRP coefficients), all resolved from the <code>DataFrame</code> metadata. The keyword <code>show_f107</code> also plots the 10.7 cm solar flux index used by the dynamics using a twin y-axis:</p><pre><code class="language-julia hljs">using CairoMakie
+  25 │ 2024-01-15T15:33:26.543  0.0401047      250.0  KeplerianElements{Float6 ⋯
+  26 │ 2024-01-15T23:59:20.324  0.0410665      250.0  KeplerianElements{Float6
+  27 │ 2024-01-16T04:22:58.057  0.0415677      250.0  KeplerianElements{Float6
+  28 │ 2024-01-16T06:54:09.442  0.0418552      250.0  KeplerianElements{Float6
+  29 │ 2024-01-16T08:14:33.404  0.0420081      250.0  KeplerianElements{Float6 ⋯
+  30 │ 2024-01-16T08:34:40.429  0.0420463      250.0  KeplerianElements{Float6
+  31 │ 2024-01-16T08:34:40.429  0.0420463      250.0  KeplerianElements{Float6
+<span class="sgr36">                                                   3 columns and 16 rows omitted</span></code><br/><code class="language-julia-repl hljs" style="display:block;">julia&gt; df_high[end, :date]</code><code class="nohighlight hljs ansi" style="display:block;">2024-01-16T08:34:40.429</code></pre><h2 id="Plotting"><a class="docs-heading-anchor" href="#Plotting">Plotting</a><a id="Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Plotting" title="Permalink"></a></h2><p>If the user loads the package <a href="https://docs.makie.org/stable/">Makie.jl</a>, an extension is loaded and adds the possibility to plot the decay analysis using the function <a href="../../lib/library/#SatelliteAnalysis.plot_decay_analysis-Tuple{Any}"><code>plot_decay_analysis</code></a>. The figure shows the evolution of the mean apogee and perigee altitudes, a dashed line marking the terminate altitude, and an annotation marking the reentry. The keyword <code>show_dates</code> adds the absolute dates [UTC] to the figure: the analysis timespan in the subtitle and the estimated reentry date in the information panel and in the reentry annotation. The information panel shows the satellite mass, the mean area, the time to reenter, and a card with the analysis assumptions (atmospheric model and drag and SRP coefficients), all resolved from the <code>DataFrame</code> metadata. The keyword <code>show_f107</code> also plots the 10.7 cm solar flux index used by the dynamics using a twin y-axis:</p><pre><code class="language-julia hljs">using CairoMakie
 
 
 fig, ax = plot_decay_analysis(
@@ -71,4 +69,4 @@ fig, ax = plot_decay_analysis(
     show_f107    = true
 )
 
-fig</code></pre><img src="3add142e.png" alt="Example block output"/><p>To export the figure in high resolution for reports, use:</p><pre><code class="language-julia hljs">save(&quot;decay_analysis.png&quot;, fig; px_per_unit = 2)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../beta_angle/">« Beta Angle</a><a class="docs-footer-nextpage" href="../eclipse_time/">Eclipse Time »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 24 August 2026 20:06">Monday 24 August 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+fig</code></pre><img src="f9010faf.png" alt="Example block output"/><p>To export the figure in high resolution for reports, use:</p><pre><code class="language-julia hljs">save(&quot;decay_analysis.png&quot;, fig; px_per_unit = 2)</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../beta_angle/">« Beta Angle</a><a class="docs-footer-nextpage" href="../eclipse_time/">Eclipse Time »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 25 August 2026 12:28">Tuesday 25 August 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
