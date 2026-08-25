@@ -67,23 +67,29 @@ function SatelliteAnalysis.decay_analysis(
         "Custom (" * String(nameof(typeof(atmospheric_model))) * ")"
     end
 
-    space_indices_source = isnothing(space_indices) ? "Default (Obs. + Pred.)" :
-        space_indices isa NamedTuple ? "Constant $(space_indices)" : "User function"
-
     space_indices′ = if isnothing(space_indices)
-        # Notice that if the user calls `SpaceIndices.destroy()` after this initialization,
-        # `space_index` raises a clear error asking to initialize the space indices again.
-        if !_SPACE_INDICES_INITIALIZED[]
-            SpaceIndices.init(SpaceIndices.Celestrak)
-            SpaceIndices.init(SpaceIndices.SatelliteToolboxSpaceIndexSets)
-            _SPACE_INDICES_INITIALIZED[] = true
-        end
-
         _decay_analysis__default_space_indices
     elseif space_indices isa NamedTuple
         _ -> space_indices
     else
         space_indices
+    end
+
+    is_default_space_indices =
+        (space_indices′ === _decay_analysis__default_space_indices) ||
+        (space_indices′ === _decay_analysis__default_space_indices_kp)
+
+    space_indices_source = is_default_space_indices ? "Default (Obs. + Pred.)" :
+        space_indices isa NamedTuple ? "Constant $(space_indices)" : "User function"
+
+    # The default space index functions require the remote data sets provided by
+    # SpaceIndices.jl. Notice that if the user calls `SpaceIndices.destroy()` after this
+    # initialization, `space_index` raises a clear error asking to initialize the space
+    # indices again.
+    if is_default_space_indices && !_SPACE_INDICES_INITIALIZED[]
+        SpaceIndices.init(SpaceIndices.Celestrak)
+        SpaceIndices.init(SpaceIndices.SatelliteToolboxSpaceIndexSets)
+        _SPACE_INDICES_INITIALIZED[] = true
     end
 
     # The keyword `gravity_model` is abstractly typed and the callables in
@@ -113,6 +119,26 @@ function SatelliteAnalysis.decay_analysis(
         tf                            = tf,
         time_unit                     = time_unit,
         verbose                       = verbose
+    )
+end
+
+# Setups selected by the macros `@decay_analysis__jacchia77` and `@decay_analysis__jr1971`:
+# the atmospheric model wrapper and the default space indices source of each model. The
+# `Nothing` argument overrides the `::Any` fallback in the main package with a more
+# specific method instead of overwriting it, which is forbidden during precompilation.
+function SatelliteAnalysis._decay_analysis__jacchia77_setup(::Nothing)
+    return (
+        atmospheric_model      = Jacchia77AtmosphericModel(),
+        atmospheric_model_name = "Jacchia 1977",
+        space_indices          = _decay_analysis__default_space_indices_kp,
+    )
+end
+
+function SatelliteAnalysis._decay_analysis__jr1971_setup(::Nothing)
+    return (
+        atmospheric_model      = Jr1971AtmosphericModel(),
+        atmospheric_model_name = "Jacchia-Roberts 1971",
+        space_indices          = _decay_analysis__default_space_indices_kp,
     )
 end
 
@@ -349,20 +375,62 @@ the fields:
     decay analysis.
 """
 function _decay_analysis__default_space_indices(jd_utc::Number)
-    jd₀, jd₁ = SpaceIndices.timespan(Val(:F10obs))
-    f107 = jd₀ <= jd_utc <= jd₁ ?
-        space_index(Val(:F10obs), jd_utc) :
-        space_index(Val(:F10predicted), jd_utc)
-
-    jd₀, jd₁ = SpaceIndices.timespan(Val(:F10obs_avg_last81))
-    f107_avg = jd₀ <= jd_utc <= jd₁ ?
-        space_index(Val(:F10obs_avg_last81), jd_utc) :
-        space_index(Val(:F10predicted), jd_utc)
-
     jd₀, jd₁ = SpaceIndices.timespan(Val(:Ap_daily))
     ap = jd₀ <= jd_utc <= jd₁ ? space_index(Val(:Ap_daily), jd_utc) : 9.0
 
-    return (f107 = f107, f107_avg = f107_avg, ap = ap)
+    return (
+        f107     = _default_daily_f107(jd_utc),
+        f107_avg = _default_avg_f107(jd_utc),
+        ap       = ap
+    )
+end
+
+"""
+    _decay_analysis__default_space_indices_kp(jd_utc::Number) -> NamedTuple
+
+Default space indices computed at the Julian Day [UTC] `jd_utc` used by the decay analysis
+with the atmospheric models that require the geomagnetic index Kp (Jacchia 1977 and
+Jacchia-Roberts 1971), selected by the macros `@decay_analysis__jacchia77` and
+`@decay_analysis__jr1971`. It returns a named tuple with the fields:
+
+- `f107`: Observed daily 10.7 cm solar flux [sfu], falling back to the predicted F10.7
+    outside the observed timespan.
+- `f107_avg`: Observed last-81-day average of the 10.7 cm solar flux [sfu], falling back to
+    the predicted F10.7 outside the observed timespan.
+- `kp`: Observed daily geomagnetic index Kp [-], falling back to 7 / 3 (equivalent to
+    Ap = 9, as in STELA) outside the observed timespan. Notice that the influence of the
+    geomagnetic index on the atmospheric density is much smaller than that of F10.7, and
+    it is not known in advance for a decay analysis.
+"""
+function _decay_analysis__default_space_indices_kp(jd_utc::Number)
+    jd₀, jd₁ = SpaceIndices.timespan(Val(:Kp_daily))
+    kp = jd₀ <= jd_utc <= jd₁ ? space_index(Val(:Kp_daily), jd_utc) : 7 / 3
+
+    return (
+        f107     = _default_daily_f107(jd_utc),
+        f107_avg = _default_avg_f107(jd_utc),
+        kp       = kp
+    )
+end
+
+# Observed daily F10.7 [sfu] at the Julian Day [UTC] `jd_utc`, falling back to the
+# predicted F10.7 outside the observed timespan.
+function _default_daily_f107(jd_utc::Number)
+    jd₀, jd₁ = SpaceIndices.timespan(Val(:F10obs))
+
+    jd₀ <= jd_utc <= jd₁ && return space_index(Val(:F10obs), jd_utc)
+
+    return space_index(Val(:F10predicted), jd_utc)
+end
+
+# Observed last-81-day average F10.7 [sfu] at the Julian Day [UTC] `jd_utc`, falling back
+# to the predicted F10.7 outside the observed timespan.
+function _default_avg_f107(jd_utc::Number)
+    jd₀, jd₁ = SpaceIndices.timespan(Val(:F10obs_avg_last81))
+
+    jd₀ <= jd_utc <= jd₁ && return space_index(Val(:F10obs_avg_last81), jd_utc)
+
+    return space_index(Val(:F10predicted), jd_utc)
 end
 
 function _cb_altitude_condition(u, t, integrator)

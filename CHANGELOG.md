@@ -34,6 +34,16 @@ Version 0.4.0
   `space_indices`. By default, the analysis uses the NRLMSISE-00 model, which consumes the
   daily F10.7, the 81-day average F10.7, and the daily Ap. The keyword
   `atmospheric_model_name` overrides the model name recorded in the output metadata.
+- ![Feature][badge-feature] We added the macros `@decay_analysis__jacchia77` and
+  `@decay_analysis__jr1971` that provide keyword sets for `decay_analysis` selecting the
+  Jacchia 1977 and the Jacchia-Roberts 1971 atmospheric models instead of the default
+  NRLMSISE-00. Each macro expands to the keywords `atmospheric_model`,
+  `atmospheric_model_name`, and `space_indices` in the keyword section of the call, and
+  keywords passed after the macro override the ones it provides. The models consume the
+  space indices `f107`, `f107_avg`, and `kp`, and the default source selected by the
+  macros provides the observed values (space indices `F10obs`, `F10obs_avg_last81`, and
+  `Kp_daily`), falling back to the predicted F10.7 and to Kp = 7 / 3 (equivalent to
+  Ap = 9, as in STELA) outside the observed timespans.
 - ![Feature][badge-feature] We added the keyword `verbose` to `decay_analysis`. When
   enabled, a progress interface is shown in `stderr` during the numerical integration: in
   interactive terminals, a live panel with a progress bar, the current perigee and apogee

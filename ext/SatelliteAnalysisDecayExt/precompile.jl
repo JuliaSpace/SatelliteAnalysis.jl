@@ -94,6 +94,30 @@
             tf                  = 86400.0
         )
 
+        # Compile the Jacchia 1977 and Jacchia-Roberts 1971 pipelines selected by the
+        # macros `@decay_analysis__jacchia77` and `@decay_analysis__jr1971`. The space
+        # indices provided by the macros are overridden with a constant named tuple to
+        # keep the workload network-free.
+        decay_analysis(
+            orb;
+            satellite_mass      = 100.0,
+            satellite_mean_area = 1.0,
+            gravity_model       = gm,
+            tf                  = 86400.0,
+            @decay_analysis__jacchia77,
+            space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+        )
+
+        decay_analysis(
+            orb;
+            satellite_mass      = 100.0,
+            satellite_mean_area = 1.0,
+            gravity_model       = gm,
+            tf                  = 86400.0,
+            @decay_analysis__jr1971,
+            space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+        )
+
         # Compile the progress interface rendering.
         buf      = IOBuffer()
         progress = DecayProgress(buf, 86400.0, 300e3, 120e3; ansi = true)

@@ -325,6 +325,140 @@ end
     @test metadata(df_thin, "Atmospheric Model") == "Uniform (2e-11)"
 end
 
+@testset "Jacchia 1977 Atmospheric Model" begin
+    jd₀ = date_to_jd(2024, 1, 1)
+
+    orb = KeplerianElements(
+        jd₀,
+        EARTH_EQUATORIAL_RADIUS + 300e3,
+        0.001,
+        98.0    |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90.0    |> deg2rad,
+        0.0
+    )
+
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
+
+    si_const = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+
+    # The macro must select the Jacchia 1977 model. The space indices it provides are
+    # overridden with a constant named tuple, exercising the rightmost-keyword precedence.
+    df = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        @decay_analysis__jacchia77,
+        space_indices       = si_const
+    )
+
+    @test metadata(df, "Atmospheric Model")    == "Jacchia 1977"
+    @test metadata(df, "Space Indices Source") == "Constant $(si_const)"
+    @test eltype(df.space_indices) == typeof(si_const)
+    @test all(==(si_const), df.space_indices)
+
+    # The analysis must run until the termination altitude with a plausible lifetime.
+    @test df[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
+
+    lifetime = datetime2julian(df[end, :date]) - jd₀
+    @test 5 < lifetime < 200
+
+    # The macro without overrides must use its default space indices source.
+    df_default = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        @decay_analysis__jacchia77
+    )
+
+    @test metadata(df_default, "Atmospheric Model")    == "Jacchia 1977"
+    @test metadata(df_default, "Space Indices Source") == "Default (Obs. + Pred.)"
+
+    f107s     = getproperty.(df_default.space_indices, :f107)
+    f107_avgs = getproperty.(df_default.space_indices, :f107_avg)
+    kps       = getproperty.(df_default.space_indices, :kp)
+
+    @test all(isfinite, f107s)
+    @test all(isfinite, f107_avgs)
+    @test all(isfinite, kps)
+    @test all(60.0 .< f107s .< 400.0)
+    @test all(60.0 .< f107_avgs .< 400.0)
+    @test all(0.0 .<= kps .<= 9.0)
+
+    # The wrapper must clamp the altitude to the validity range of the model.
+    ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
+    jac = ext.Jacchia77AtmosphericModel()
+
+    @test jac(jd₀, 0.0, 0.0, 300e3, si_const) > 0
+    @test jac(jd₀, 0.0, 0.0, 50e3,   si_const) == jac(jd₀, 0.0, 0.0, 90e3,   si_const)
+    @test jac(jd₀, 0.0, 0.0, 3000e3, si_const) == jac(jd₀, 0.0, 0.0, 2000e3, si_const)
+end
+
+@testset "Jacchia-Roberts 1971 Atmospheric Model" begin
+    jd₀ = date_to_jd(2024, 1, 1)
+
+    orb = KeplerianElements(
+        jd₀,
+        EARTH_EQUATORIAL_RADIUS + 300e3,
+        0.001,
+        98.0    |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90.0    |> deg2rad,
+        0.0
+    )
+
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
+
+    si_const = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+
+    # The macro must select the Jacchia-Roberts 1971 model. The space indices it provides
+    # are overridden with a constant named tuple.
+    df = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        @decay_analysis__jr1971,
+        space_indices       = si_const
+    )
+
+    @test metadata(df, "Atmospheric Model")    == "Jacchia-Roberts 1971"
+    @test metadata(df, "Space Indices Source") == "Constant $(si_const)"
+    @test all(==(si_const), df.space_indices)
+
+    # The analysis must run until the termination altitude with a plausible lifetime.
+    @test df[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
+
+    lifetime = datetime2julian(df[end, :date]) - jd₀
+    @test 5 < lifetime < 200
+
+    # The macro without overrides must use the shared Kp-based default space indices
+    # source, which was already initialized by the previous test sets.
+    df_default = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        @decay_analysis__jr1971
+    )
+
+    @test metadata(df_default, "Atmospheric Model")    == "Jacchia-Roberts 1971"
+    @test metadata(df_default, "Space Indices Source") == "Default (Obs. + Pred.)"
+
+    kps = getproperty.(df_default.space_indices, :kp)
+    @test all(isfinite, kps)
+    @test all(0.0 .<= kps .<= 9.0)
+
+    # The wrapper must clamp the altitude to the validity range of the model.
+    ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
+    jr = ext.Jr1971AtmosphericModel()
+
+    @test jr(jd₀, 0.0, 0.0, 300e3, si_const) > 0
+    @test jr(jd₀, 0.0, 0.0, 50e3,  si_const) == jr(jd₀, 0.0, 0.0, 90e3, si_const)
+end
+
 @testset "Verbose Progress" begin
     jd₀ = date_to_jd(2024, 1, 1)
 

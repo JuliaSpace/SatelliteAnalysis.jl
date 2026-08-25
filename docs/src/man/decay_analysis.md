@@ -54,7 +54,10 @@ The following keywords are available:
   internal wrapper for the NRLMSISE-00 model provided by **AtmosphericModels.jl**, which
   requires the fields `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day average
   of the 10.7 cm solar flux) [sfu], and `ap` (daily geomagnetic index) [-] in the named
-  tuple.
+  tuple. The macros [`@decay_analysis__jacchia77`](@ref) and
+  [`@decay_analysis__jr1971`](@ref) provide keyword sets that select the Jacchia 1977 and
+  the Jacchia-Roberts 1971 models instead (see
+  [Using the Jacchia Models](@ref decay_analysis_jacchia)).
   (**Default**: `nothing`)
 - `atmospheric_model_name::Union{Nothing, String}`: Name of the atmospheric model recorded
   in the metadata `Atmospheric Model` of the output `DataFrame` and shown, for example, by
@@ -192,6 +195,65 @@ df_high = decay_analysis(
 )
 
 df_high[end, :date]
+```
+
+## [Using the Jacchia Models](@id decay_analysis_jacchia)
+
+The macros [`@decay_analysis__jacchia77`](@ref) and [`@decay_analysis__jr1971`](@ref)
+provide keyword sets that select the Jacchia 1977 and the Jacchia-Roberts 1971 atmospheric
+models provided by **AtmosphericModels.jl** instead of the default NRLMSISE-00. Each macro
+expands to the keywords `atmospheric_model`, `atmospheric_model_name`, and
+`space_indices`, hence it must be used in the keyword section of the call:
+
+```@repl decay_analysis
+df_j77 = decay_analysis(
+    orb;
+    satellite_mass = 100.0,
+    satellite_mean_area = 1.0,
+    @decay_analysis__jacchia77
+)
+
+df_j77[end, :date]
+```
+
+The Jacchia models consume the space indices `f107` (daily 10.7 cm solar flux) [sfu],
+`f107_avg` (81-day average of the 10.7 cm solar flux) [sfu], and `kp` (daily geomagnetic
+index Kp) [-]. The default space indices source selected by the macros provides the
+observed values (space indices `F10obs`, `F10obs_avg_last81`, and `Kp_daily`), falling
+back to the predicted F10.7 (space index `F10predicted`) and to Kp = 7 / 3 (equivalent to
+Ap = 9, as in STELA) outside the observed timespans. Keywords passed **after** the macro
+override the ones it provides, so we can, for example, use the Jacchia 1977 model with
+constant space indices:
+
+```@repl decay_analysis
+df_j77_high = decay_analysis(
+    orb;
+    satellite_mass = 100.0,
+    satellite_mean_area = 1.0,
+    @decay_analysis__jacchia77,
+    space_indices = (f107 = 250.0, f107_avg = 250.0, kp = 3.0)
+)
+
+df_j77_high[end, :date]
+```
+
+!!! note
+
+    The Jacchia 1977 model does not have a closed-form solution, so its equations are
+    numerically integrated at every density evaluation, making the analysis considerably
+    slower than with the default NRLMSISE-00 model. The Jacchia-Roberts 1971 model,
+    selected by [`@decay_analysis__jr1971`](@ref), is a closed-form analytic fit of the
+    Jacchia model family with speed comparable to NRLMSISE-00:
+
+```@repl decay_analysis
+df_jr71 = decay_analysis(
+    orb;
+    satellite_mass = 100.0,
+    satellite_mean_area = 1.0,
+    @decay_analysis__jr1971
+)
+
+df_jr71[end, :date]
 ```
 
 ## Plotting

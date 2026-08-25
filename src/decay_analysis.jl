@@ -4,7 +4,7 @@
 #
 ############################################################################################
 
-export decay_analysis
+export decay_analysis, @decay_analysis__jacchia77, @decay_analysis__jr1971
 
 """
     decay_analysis(orb::KeplerianElements; kwargs...) -> DataFrame
@@ -52,7 +52,9 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     internal wrapper for the NRLMSISE-00 model provided by **AtmosphericModels.jl**, which
     requires the fields `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day average
     of the 10.7 cm solar flux) [sfu], and `ap` (daily geomagnetic index) [-] in the named
-    tuple.
+    tuple. The macros [`@decay_analysis__jacchia77`](@ref) and
+    [`@decay_analysis__jr1971`](@ref) provide keyword sets that select the Jacchia 1977
+    and the Jacchia-Roberts 1971 models instead.
     (**Default**: `nothing`)
 - `atmospheric_model_name::Union{Nothing, String}`: Name of the atmospheric model recorded
     in the metadata `Atmospheric Model` of the output `DataFrame` and shown, for example,
@@ -191,4 +193,150 @@ julia> df = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.
 """
 function decay_analysis(::Any; kwargs...)
     return error("Load OrdinaryDiffEqAdamsBashforthMoulton.jl to use `decay_analysis`.")
+end
+
+"""
+    @decay_analysis__jacchia77
+
+Keyword set for [`decay_analysis`](@ref) that selects the Jacchia 1977 atmospheric model
+provided by **AtmosphericModels.jl** instead of the default NRLMSISE-00. The macro expands
+to the keywords `atmospheric_model`, `atmospheric_model_name`, and `space_indices`, hence
+it must be used in the keyword section of the call:
+
+```julia
+decay_analysis(
+    orb;
+    satellite_mass = 100.0,
+    satellite_mean_area = 1.0,
+    @decay_analysis__jacchia77
+)
+```
+
+The Jacchia 1977 model consumes the space indices `f107` (daily 10.7 cm solar flux) [sfu],
+`f107_avg` (81-day average of the 10.7 cm solar flux) [sfu], and `kp` (daily geomagnetic
+index Kp) [-] from the named tuple provided by the keyword `space_indices`. The macro also
+selects a default space indices source with these fields: the observed daily F10.7 (space
+index `F10obs`), the observed last-81-day average F10.7 (space index `F10obs_avg_last81`),
+and the observed daily Kp (space index `Kp_daily`), falling back to the predicted F10.7
+(space index `F10predicted`) and to Kp = 7 / 3 (equivalent to Ap = 9, as in STELA) outside
+the observed timespans.
+
+Keywords passed **after** the macro override the ones it provides. For example, the
+following call uses the Jacchia 1977 model with constant space indices:
+
+```julia
+decay_analysis(
+    orb;
+    satellite_mass = 100.0,
+    satellite_mean_area = 1.0,
+    @decay_analysis__jacchia77,
+    space_indices = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+)
+```
+
+!!! note
+
+    The Jacchia 1977 model does not have a closed-form solution, so its equations are
+    numerically integrated at every density evaluation, making the analysis considerably
+    slower than with the default NRLMSISE-00 model. The macro
+    [`@decay_analysis__jr1971`](@ref) selects the Jacchia-Roberts 1971 model, a
+    closed-form analytic fit of the Jacchia model family with speed comparable to
+    NRLMSISE-00.
+
+!!! warning
+
+    This macro **only works** after loading the package
+    **OrdinaryDiffEqAdamsBashforthMoulton.jl**, as described in [`decay_analysis`](@ref).
+"""
+macro decay_analysis__jacchia77()
+    # The expansion splats the named tuple returned by the setup function into the keyword
+    # section of the call, adding the keywords `atmospheric_model`,
+    # `atmospheric_model_name`, and `space_indices`.
+    return Expr(:..., :(_decay_analysis__jacchia77_setup(nothing)))
+end
+
+"""
+    _decay_analysis__jacchia77_setup(::Any) -> NamedTuple
+
+Return the named tuple with the keywords of [`decay_analysis`](@ref) that select the
+Jacchia 1977 atmospheric model, used by the macro [`@decay_analysis__jacchia77`](@ref).
+The argument is a dummy value (`nothing`) that allows the decay analysis extension to
+override this fallback with a more specific method instead of overwriting it, which is
+forbidden during precompilation.
+"""
+function _decay_analysis__jacchia77_setup(::Any)
+    return error(
+        "Load OrdinaryDiffEqAdamsBashforthMoulton.jl to use `@decay_analysis__jacchia77`."
+    )
+end
+
+"""
+    @decay_analysis__jr1971
+
+Keyword set for [`decay_analysis`](@ref) that selects the Jacchia-Roberts 1971 atmospheric
+model provided by **AtmosphericModels.jl** instead of the default NRLMSISE-00. The macro
+expands to the keywords `atmospheric_model`, `atmospheric_model_name`, and
+`space_indices`, hence it must be used in the keyword section of the call:
+
+```julia
+decay_analysis(
+    orb;
+    satellite_mass = 100.0,
+    satellite_mean_area = 1.0,
+    @decay_analysis__jr1971
+)
+```
+
+The Jacchia-Roberts 1971 model is a closed-form analytic fit of the Jacchia model family,
+with speed comparable to NRLMSISE-00, unlike the Jacchia 1977 model selected by
+[`@decay_analysis__jacchia77`](@ref), whose equations are numerically integrated at every
+density evaluation.
+
+The model consumes the space indices `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg`
+(81-day average of the 10.7 cm solar flux) [sfu], and `kp` (daily geomagnetic index Kp)
+[-] from the named tuple provided by the keyword `space_indices`. The macro also selects a
+default space indices source with these fields: the observed daily F10.7 (space index
+`F10obs`), the observed last-81-day average F10.7 (space index `F10obs_avg_last81`), and
+the observed daily Kp (space index `Kp_daily`), falling back to the predicted F10.7 (space
+index `F10predicted`) and to Kp = 7 / 3 (equivalent to Ap = 9, as in STELA) outside the
+observed timespans.
+
+Keywords passed **after** the macro override the ones it provides. For example, the
+following call uses the Jacchia-Roberts 1971 model with constant space indices:
+
+```julia
+decay_analysis(
+    orb;
+    satellite_mass = 100.0,
+    satellite_mean_area = 1.0,
+    @decay_analysis__jr1971,
+    space_indices = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+)
+```
+
+!!! warning
+
+    This macro **only works** after loading the package
+    **OrdinaryDiffEqAdamsBashforthMoulton.jl**, as described in [`decay_analysis`](@ref).
+"""
+macro decay_analysis__jr1971()
+    # The expansion splats the named tuple returned by the setup function into the keyword
+    # section of the call, adding the keywords `atmospheric_model`,
+    # `atmospheric_model_name`, and `space_indices`.
+    return Expr(:..., :(_decay_analysis__jr1971_setup(nothing)))
+end
+
+"""
+    _decay_analysis__jr1971_setup(::Any) -> NamedTuple
+
+Return the named tuple with the keywords of [`decay_analysis`](@ref) that select the
+Jacchia-Roberts 1971 atmospheric model, used by the macro
+[`@decay_analysis__jr1971`](@ref). The argument is a dummy value (`nothing`) that allows
+the decay analysis extension to override this fallback with a more specific method instead
+of overwriting it, which is forbidden during precompilation.
+"""
+function _decay_analysis__jr1971_setup(::Any)
+    return error(
+        "Load OrdinaryDiffEqAdamsBashforthMoulton.jl to use `@decay_analysis__jr1971`."
+    )
 end
