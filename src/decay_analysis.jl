@@ -60,7 +60,7 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     (**Default**: `nothing`)
 - `gravity_model::Union{AbstractGravityModel, Nothing}`: Gravity model used to compute the
     Earth gravitational perturbation. If it is `nothing`, the system fetches and loads the
-    EGM2008 model.
+    EGM96 model.
     (**Default**: `nothing`)
 - `num_sampling_points_per_orbit::Int`: Number of sampling points used to average the
     perturbations over one orbit.

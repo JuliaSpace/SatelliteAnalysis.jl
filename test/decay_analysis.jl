@@ -26,7 +26,7 @@ end
         0.0
     )
 
-    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
 
     df, sol = decay_analysis(
         orb;
@@ -201,7 +201,7 @@ end
         0.0
     )
 
-    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
 
     df = decay_analysis(
         orb;
@@ -231,7 +231,7 @@ end
     @test df₂[end, :date] == df[end, :date]
 
     # A call without an explicit gravity model must fetch, cache, and use the default
-    # EGM2008 model, matching the results obtained with the explicitly loaded model.
+    # EGM96 model, matching the results obtained with the explicitly loaded model.
     df₃ = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0)
 
     @test df₃[end, :date] == df[end, :date]
@@ -253,7 +253,7 @@ end
         0.0
     )
 
-    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
 
     # Record the arguments passed to the atmospheric model to check the callback contract.
     jds   = Float64[]
@@ -323,7 +323,7 @@ end
         0.0
     )
 
-    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
 
     dense_model = (jd_utc, lat, lon, h, F107) -> 5.0e-11
 
@@ -433,7 +433,7 @@ end
         0.0
     )
 
-    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
 
     # == Cowell Reference ==================================================================
 

@@ -9,8 +9,8 @@
 # at every call. A benign race that initializes the set twice is acceptable.
 const _PREDICTED_F107_INITIALIZED = Ref(false)
 
-# Cache of the default gravity model (EGM2008), avoiding re-fetching and re-parsing the
-# ICGEM file at every call. A benign race that loads the model twice is acceptable.
+# Cache of the default gravity model (EGM96), avoiding re-fetching and re-parsing the ICGEM
+# file at every call. A benign race that loads the model twice is acceptable.
 const _DEFAULT_GRAVITY_MODEL = Ref{Union{Nothing, AbstractGravityModel}}(nothing)
 
 function SatelliteAnalysis.decay_analysis(
@@ -40,7 +40,7 @@ function SatelliteAnalysis.decay_analysis(
     gm = if isnothing(gravity_model)
         if isnothing(_DEFAULT_GRAVITY_MODEL[])
             _DEFAULT_GRAVITY_MODEL[] =
-                GravityModels.load(IcgemFile, fetch_icgem_file(:EGM2008))
+                GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
         end
 
         _DEFAULT_GRAVITY_MODEL[]
