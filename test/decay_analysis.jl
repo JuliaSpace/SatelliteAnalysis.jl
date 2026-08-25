@@ -106,7 +106,7 @@ end
 
     # Regression test for the estimated lifetime.
     lifetime = datetime2julian(df[end, :date]) - jd₀
-    @test lifetime ≈ 32.788987 rtol = 1e-3
+    @test lifetime ≈ 26.449633 rtol = 1e-3
 
     # The previous, tighter integrator configuration must remain reachable through the
     # keywords and reproduce its reference lifetime.
@@ -123,8 +123,48 @@ end
     )
 
     lifetime_tight = datetime2julian(df_tight[end, :date]) - jd₀
-    @test lifetime_tight ≈ 32.837123 rtol = 1e-4
+    @test lifetime_tight ≈ 26.492610 rtol = 1e-4
     @test lifetime ≈ lifetime_tight rtol = 2e-3
+
+    # == Keyword input_type ================================================================
+
+    # Treating the input as osculating elements must convert them to mean elements before
+    # the propagation. Since the conversion raises the mean semi-major axis for this
+    # orbit, the lifetime must be longer than with the mean interpretation.
+    df_osc = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        space_indices       = si_const,
+        input_type          = :osculating
+    )
+
+    lifetime_osc = datetime2julian(df_osc[end, :date]) - jd₀
+    @test lifetime_osc ≈ 32.788987 rtol = 1e-3
+    @test lifetime_osc > lifetime
+
+    # The default interpretation must be `:mean`.
+    df_mean = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        space_indices       = si_const,
+        input_type          = :mean
+    )
+
+    @test df_mean[end, :date] == df[end, :date]
+
+    # An unknown symbol must raise a clear error.
+    @test_throws ArgumentError decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        space_indices       = si_const,
+        input_type          = :osc
+    )
 
     # == Keyword terminate_altitude ========================================================
 
@@ -657,7 +697,8 @@ end
 
     # Use the tight integrator configuration: this test set validates the averaging model
     # itself, so the numerical integration error must be negligible compared to the model
-    # differences being quantified.
+    # differences being quantified. The Cowell reference propagates the osculating state,
+    # hence the input elements are treated as osculating here.
     df = decay_analysis(
         orb;
         satellite_mass                = mass,
@@ -666,6 +707,7 @@ end
         C_d                           = C_d,
         C_r                           = C_r,
         space_indices                 = si,
+        input_type                    = :osculating,
         tf                            = duration,
         solver                        = Tsit5(),
         reltol                        = 1e-8,

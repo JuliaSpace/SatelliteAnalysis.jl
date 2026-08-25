@@ -20,10 +20,16 @@ We can perform the decay analysis of a satellite using the function:
 decay_analysis(orb::KeplerianElements; kwargs...) -> DataFrame
 ```
 
-It computes the orbital decay analysis of a satellite with initial osculating mean elements
-`orb` represented in the TOD reference frame, propagating the mean orbital elements with
+It computes the orbital decay analysis of a satellite with initial mean elements `orb`
+represented in the TOD reference frame, propagating the mean orbital elements with
 averaged perturbations until the mean perigee altitude reaches `terminate_altitude` or the
 propagation time reaches `tf`.
+
+By default, the input elements are treated as **mean elements** with respect to the
+averaged dynamics, following the same convention of semi-analytical tools such as STELA.
+Osculating elements, obtained, for example, from an instantaneous state vector, can be
+used by setting the keyword `input_type` to `:osculating`, in which case they are
+converted to mean elements before the propagation.
 
 The model averages the following perturbations over one orbit: Earth gravity zonal harmonics
 (including a closed-form J₂² correction), third-body attraction of the Sun and the Moon,
@@ -69,6 +75,11 @@ The following keywords are available:
   Earth gravitational perturbation. If it is `nothing`, the system fetches and loads the
   EGM96 model.
   (**Default**: `nothing`)
+- `input_type::Symbol`: How the input elements `orb` are interpreted. If it is `:mean`,
+  they are treated as mean elements with respect to the averaged dynamics. If it is
+  `:osculating`, they are treated as osculating elements and converted to mean elements
+  before the propagation. Any other symbol raises an `ArgumentError`.
+  (**Default**: `:mean`)
 - `num_sampling_points_per_orbit::Int`: Number of sampling points used to average the
   perturbations over one orbit.
   (**Default**: 17)

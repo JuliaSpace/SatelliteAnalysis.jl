@@ -7,8 +7,12 @@ Version 0.4.0
 - ![Feature][badge-feature] We added the function `decay_analysis` to estimate the orbital
   decay lifetime of a satellite considering averaged perturbations (zonal harmonics with a
   J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the
-  Earth shadow). The analysis is available when OrdinaryDiffEq.jl is loaded and returns a
-  `DataFrame` with the mean orbital element evolution. (PR [#16][gh-pr-16])
+  Earth shadow). By default, the input elements are treated as mean elements with respect
+  to the averaged dynamics, following the same convention of semi-analytical tools such as
+  STELA; the keyword `input_type` selects between `:mean` and `:osculating` input
+  elements, converting the latter to mean elements before the propagation. The analysis
+  is available when OrdinaryDiffEq.jl is loaded and returns a `DataFrame` with the mean
+  orbital element evolution. (PR [#16][gh-pr-16])
 - ![Feature][badge-feature] We added a Makie theme extension, moved from
   **SatelliteToolbox.jl**, where it was never released. Loading a Makie backend together
   with **SatelliteAnalysis.jl** provides the non-exported functions

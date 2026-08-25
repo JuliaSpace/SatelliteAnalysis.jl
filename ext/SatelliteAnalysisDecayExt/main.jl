@@ -23,6 +23,7 @@ function SatelliteAnalysis.decay_analysis(
     atmospheric_model = nothing,
     atmospheric_model_name::Union{Nothing, String} = nothing,
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
+    input_type::Symbol = :mean,
     num_sampling_points_per_orbit::Int = 17,
     abstol::Number = 1e-6,
     C_d::Number = 2.2,
@@ -37,6 +38,25 @@ function SatelliteAnalysis.decay_analysis(
     time_unit::Symbol = :y,
     verbose::Bool = false,
 )
+    input_type in (:mean, :osculating) || throw(
+        ArgumentError("The keyword `input_type` must be `:mean` or `:osculating`.")
+    )
+
+    # The propagation uses mean elements with respect to the averaged dynamics. Hence, if
+    # the input elements are osculating, they must be converted to mean elements first.
+    orb′ = if input_type == :osculating
+        M_osc = true_to_mean_anomaly(orb.e, orb.f)
+        a_mean, e_mean, i_mean, O_mean, o_mean, M_mean =
+            _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M_osc)
+
+        KeplerianElements(
+            orb.t, a_mean, e_mean, i_mean, O_mean, o_mean,
+            mean_to_true_anomaly(e_mean, M_mean)
+        )
+    else
+        orb
+    end
+
     gm = if isnothing(gravity_model)
         if isnothing(_DEFAULT_GRAVITY_MODEL[])
             _DEFAULT_GRAVITY_MODEL[] =
@@ -99,7 +119,7 @@ function SatelliteAnalysis.decay_analysis(
     # passed as positional arguments since keyword arguments cannot bind the type
     # parameters that force the specialization.
     return _decay_analysis(
-        orb,
+        orb′,
         gm,
         atmospheric_model′,
         space_indices′;
@@ -168,8 +188,10 @@ function _decay_analysis(
     time_unit::Symbol,
     verbose::Bool,
 ) where {AM, SF}
+    # The input elements are treated as mean elements with respect to the averaged
+    # dynamics, following the same convention of semi-analytical tools such as STELA.
     M = true_to_mean_anomaly(orb.e, orb.f)
-    ā, ē, ī, Ω̄, ω̄, M̄ = _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M)
+    ā, ē, ī, Ω̄, ω̄, M̄ = orb.a, orb.e, orb.i, orb.Ω, orb.ω, M
 
     # The state is a static vector with an out-of-place right-hand side, removing the
     # per-step state allocations of the numerical integration.
