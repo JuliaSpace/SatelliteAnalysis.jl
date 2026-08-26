@@ -67,6 +67,16 @@ Version 0.4.0
   `ylims` control the figure. To support it, `decay_analysis` now records the metadata
   `Atmospheric Model`, `Drag Coefficient`, `Space Indices Source`, and `SRP Coefficient`
   in the output `DataFrame`.
+- ![Feature][badge-feature] We added the macro `@decay_analysis__jacchia77_stela` that
+  provides a keyword set for `decay_analysis` selecting the STELA variant of the Jacchia
+  1977 atmospheric model, which replicates the simplified assembly used by the CNES tools
+  STELA and PATRIUS. This variant produces total densities a few percent higher on
+  average than the report formulation selected by `@decay_analysis__jacchia77`, allowing
+  the reproduction of decay analyses performed with those tools: the decay time of a
+  500 km sun-synchronous satellite computed by STELA is reproduced within about 1 %, whereas
+  the report formulation yields a decay time about 7 % longer. The macro selects the same
+  default space indices source as the other Jacchia macros and requires
+  SatelliteToolboxAtmosphericModels.jl v1.5.0 or later.
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were

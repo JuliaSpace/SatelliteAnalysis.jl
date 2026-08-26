@@ -459,6 +459,63 @@ end
     @test jac(jd₀, 0.0, 0.0, 3000e3, si_const) == jac(jd₀, 0.0, 0.0, 2000e3, si_const)
 end
 
+@testset "Jacchia 1977 STELA Variant Atmospheric Model" begin
+    jd₀ = date_to_jd(2024, 1, 1)
+
+    orb = KeplerianElements(
+        jd₀,
+        EARTH_EQUATORIAL_RADIUS + 300e3,
+        0.001,
+        98.0    |> deg2rad,
+        ltdn_to_raan(10.5, jd₀),
+        90.0    |> deg2rad,
+        0.0
+    )
+
+    gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
+
+    si_const = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+
+    # The macro must select the STELA variant of the Jacchia 1977 model. The space indices
+    # it provides are overridden with a constant named tuple.
+    df = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        @decay_analysis__jacchia77_stela,
+        space_indices       = si_const
+    )
+
+    @test metadata(df, "Atmospheric Model")    == "Jacchia 1977 (STELA variant)"
+    @test metadata(df, "Space Indices Source") == "Constant $(si_const)"
+    @test all(==(si_const), df.space_indices)
+
+    # The analysis must run until the termination altitude with a plausible lifetime.
+    @test df[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
+
+    lifetime = datetime2julian(df[end, :date]) - jd₀
+    @test 5 < lifetime < 200
+
+    # The macro must select the shared Kp-based default space indices source.
+    setup = SatelliteAnalysis._decay_analysis__jacchia77_stela_setup(nothing)
+    ext   = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
+
+    @test setup.atmospheric_model isa ext.Jacchia77StelaAtmosphericModel
+    @test setup.atmospheric_model_name == "Jacchia 1977 (STELA variant)"
+    @test setup.space_indices === ext._decay_analysis__default_space_indices_kp
+
+    # The wrapper must clamp the altitude to the validity range of the model, and the
+    # variant must differ from the report formulation.
+    stela = ext.Jacchia77StelaAtmosphericModel()
+    jac   = ext.Jacchia77AtmosphericModel()
+
+    @test stela(jd₀, 0.0, 0.0, 300e3, si_const) > 0
+    @test stela(jd₀, 0.0, 0.0, 50e3,   si_const) == stela(jd₀, 0.0, 0.0, 90e3,   si_const)
+    @test stela(jd₀, 0.0, 0.0, 3000e3, si_const) == stela(jd₀, 0.0, 0.0, 2000e3, si_const)
+    @test stela(jd₀, 0.0, 0.0, 300e3, si_const) != jac(jd₀, 0.0, 0.0, 300e3, si_const)
+end
+
 @testset "Jacchia-Roberts 1971 Atmospheric Model" begin
     jd₀ = date_to_jd(2024, 1, 1)
 

@@ -60,9 +60,10 @@ The following keywords are available:
   internal wrapper for the NRLMSISE-00 model provided by **AtmosphericModels.jl**, which
   requires the fields `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day average
   of the 10.7 cm solar flux) [sfu], and `ap` (daily geomagnetic index) [-] in the named
-  tuple. The macros [`@decay_analysis__jacchia77`](@ref) and
-  [`@decay_analysis__jr1971`](@ref) provide keyword sets that select the Jacchia 1977 and
-  the Jacchia-Roberts 1971 models instead (see
+  tuple. The macros [`@decay_analysis__jacchia77`](@ref),
+  [`@decay_analysis__jacchia77_stela`](@ref), and [`@decay_analysis__jr1971`](@ref)
+  provide keyword sets that select the Jacchia 1977 (report and STELA variants) and the
+  Jacchia-Roberts 1971 models instead (see
   [Using the Jacchia Models](@ref decay_analysis_jacchia)).
   (**Default**: `nothing`)
 - `atmospheric_model_name::Union{Nothing, String}`: Name of the atmospheric model recorded
@@ -211,11 +212,13 @@ df_high[end, :date]
 
 ## [Using the Jacchia Models](@id decay_analysis_jacchia)
 
-The macros [`@decay_analysis__jacchia77`](@ref) and [`@decay_analysis__jr1971`](@ref)
-provide keyword sets that select the Jacchia 1977 and the Jacchia-Roberts 1971 atmospheric
-models provided by **AtmosphericModels.jl** instead of the default NRLMSISE-00. Each macro
-expands to the keywords `atmospheric_model`, `atmospheric_model_name`, and
-`space_indices`, hence it must be used in the keyword section of the call:
+The macros [`@decay_analysis__jacchia77`](@ref),
+[`@decay_analysis__jacchia77_stela`](@ref), and [`@decay_analysis__jr1971`](@ref) provide
+keyword sets that select the Jacchia 1977 (report and STELA variants) and the
+Jacchia-Roberts 1971 atmospheric models provided by **AtmosphericModels.jl** instead of
+the default NRLMSISE-00. Each macro expands to the keywords `atmospheric_model`,
+`atmospheric_model_name`, and `space_indices`, hence it must be used in the keyword
+section of the call:
 
 ```@repl decay_analysis
 df_j77 = decay_analysis(
@@ -268,6 +271,25 @@ df_jr71 = decay_analysis(
 )
 
 df_jr71[end, :date]
+```
+
+The macro [`@decay_analysis__jacchia77_stela`](@ref) selects the STELA variant of the
+Jacchia 1977 model, which replicates the simplified assembly used by the CNES tools STELA
+and PATRIUS. This variant produces total densities a few percent higher on average than
+the report formulation, allowing the reproduction of decay analyses performed with those
+tools: the decay time of a 500 km sun-synchronous satellite computed by STELA is
+reproduced within about 1 %, whereas the report formulation yields a decay time about 7 %
+longer:
+
+```@repl decay_analysis
+df_j77_stela = decay_analysis(
+    orb;
+    satellite_mass = 100.0,
+    satellite_mean_area = 1.0,
+    @decay_analysis__jacchia77_stela
+)
+
+df_j77_stela[end, :date]
 ```
 
 ## Plotting

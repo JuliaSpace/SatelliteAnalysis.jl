@@ -116,6 +116,61 @@ function (::Jacchia77AtmosphericModel)(
 end
 
 """
+    struct Jacchia77StelaAtmosphericModel
+
+Atmospheric model of the decay analysis wrapping the STELA variant of the Jacchia 1977
+model provided by **AtmosphericModels.jl**, selected by the macro
+[`@decay_analysis__jacchia77_stela`](@ref SatelliteAnalysis.@decay_analysis__jacchia77_stela).
+It consumes the space indices `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day
+average of the 10.7 cm solar flux) [sfu], and `kp` (daily geomagnetic index Kp) [-] from
+the named tuple passed to the callable. The Jacchia models were derived using the flux
+adjusted to 1 AU, so both F10.7 indices must belong to the adjusted class.
+"""
+struct Jacchia77StelaAtmosphericModel end
+
+"""
+    (m::Jacchia77StelaAtmosphericModel)(
+        jd_utc::Number,
+        lat::Number,
+        lon::Number,
+        h::Number,
+        space_indices::NamedTuple
+    ) -> Float64
+
+Compute the atmospheric density [kg/m³] using the STELA variant of the Jacchia 1977 model
+at the Julian date `jd_utc` [UTC], geodetic latitude `lat` [rad], longitude `lon` [rad],
+and altitude `h` [m], considering the space indices in the named tuple `space_indices`,
+which must contain the fields:
+
+- `f107`: Daily 10.7 cm solar flux [sfu].
+- `f107_avg`: 81-day average of the 10.7 cm solar flux [sfu].
+- `kp`: Daily geomagnetic index Kp [-].
+"""
+function (::Jacchia77StelaAtmosphericModel)(
+    jd_utc::Number, lat::Number, lon::Number, h::Number, space_indices::NamedTuple
+)
+    # The Jacchia 1977 model is only valid between 90 km and 2000 km, whereas the
+    # integrator can evaluate trial states outside this range (unphysical states near the
+    # decay end or apogees above 2000 km). Hence, we clamp the altitude to keep the model
+    # valid: the analysis terminates well above 90 km and the drag is negligible above
+    # 2000 km, so the clamping does not change the result.
+    h′ = clamp(h, 90.0e3, 2000.0e3)
+
+    atmos = AtmosphericModels.jacchia1977(
+        jd_utc,
+        lat,
+        lon,
+        h′,
+        space_indices.f107,
+        space_indices.f107_avg,
+        space_indices.kp;
+        variant = Val(:stela)
+    )
+
+    return atmos.total_density
+end
+
+"""
     struct Jr1971AtmosphericModel
 
 Atmospheric model of the decay analysis wrapping the Jacchia-Roberts 1971 model provided

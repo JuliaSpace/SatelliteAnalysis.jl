@@ -149,14 +149,23 @@ function SatelliteAnalysis.decay_analysis(
     )
 end
 
-# Setups selected by the macros `@decay_analysis__jacchia77` and `@decay_analysis__jr1971`:
-# the atmospheric model wrapper and the default space indices source of each model. The
-# `Nothing` argument overrides the `::Any` fallback in the main package with a more
-# specific method instead of overwriting it, which is forbidden during precompilation.
+# Setups selected by the macros `@decay_analysis__jacchia77`,
+# `@decay_analysis__jacchia77_stela`, and `@decay_analysis__jr1971`: the atmospheric model
+# wrapper and the default space indices source of each model. The `Nothing` argument
+# overrides the `::Any` fallback in the main package with a more specific method instead
+# of overwriting it, which is forbidden during precompilation.
 function SatelliteAnalysis._decay_analysis__jacchia77_setup(::Nothing)
     return (
         atmospheric_model      = Jacchia77AtmosphericModel(),
         atmospheric_model_name = "Jacchia 1977",
+        space_indices          = _decay_analysis__default_space_indices_kp,
+    )
+end
+
+function SatelliteAnalysis._decay_analysis__jacchia77_stela_setup(::Nothing)
+    return (
+        atmospheric_model      = Jacchia77StelaAtmosphericModel(),
+        atmospheric_model_name = "Jacchia 1977 (STELA)",
         space_indices          = _decay_analysis__default_space_indices_kp,
     )
 end
