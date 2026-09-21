@@ -78,6 +78,10 @@ Those geodetic information are transformed to an ECEF vector using the function
 
 # Extended Help
 
+## Throws
+
+- `ArgumentError`: If `unit` is not `:s`, `:m`, or `:h`.
+
 ## Examples
 
 ```julia-repl
@@ -134,6 +138,10 @@ function ground_facility_accesses(
 ) where {
     T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}, R <: Function
 }
+
+    # Factor to convert the time from seconds to the selected unit. Notice that this
+    # function also validates the input.
+    time_factor = _time_unit_factor(unit)
 
     # Time vector of the analysis.
     vt = float(initial_time):float(step):float(initial_time + duration)
@@ -229,14 +237,7 @@ function ground_facility_accesses(
     # Compute the access duration and convert to the desired unit.
     vaccess_duration = Dates.value.(vaccess_end .- vaccess_beg) ./ 1000
 
-    if unit == :h
-        vaccess_duration ./= 3600
-    elseif unit == :m
-        vaccess_duration ./= 60
-    else
-        # If the symbol is not known, we must use seconds.
-        unit = :s
-    end
+    vaccess_duration .*= time_factor
 
     # Create the DataFrame and write the metadata.
     df = DataFrame(
@@ -269,6 +270,10 @@ lasts for `duration` [s].
     The unit of the column `duration` is stored in the `DataFrame` using metadata.
 
 # Extended Help
+
+## Throws
+
+- `ArgumentError`: If `unit` is not `:s`, `:m`, or `:h`.
 
 ## Examples
 
@@ -323,6 +328,10 @@ function ground_facility_gaps(
     kwargs...,
 ) where {T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}}
 
+    # Factor to convert the time from seconds to the selected unit. Notice that this
+    # function also validates the input.
+    time_factor = _time_unit_factor(unit)
+
     # Compute the beginning and the end of the analysis. Notice that we must use the same
     # function used to convert the access instants to avoid inconsistencies caused by
     # rounding.
@@ -370,14 +379,7 @@ function ground_facility_gaps(
     # Compute the access duration and convert to the desired unit.
     duration = Dates.value.(vgap_end .- vgap_beg) ./ 1000
 
-    if unit == :h
-        duration ./= 3600
-    elseif unit == :m
-        duration ./= 60
-    else
-        # If the symbol is not known, we must use seconds.
-        unit = :s
-    end
+    duration .*= time_factor
 
     # Create the DataFrame and write the metadata.
     dfg = DataFrame(:gap_beginning => vgap_beg, :gap_end       => vgap_end, :duration      => duration)

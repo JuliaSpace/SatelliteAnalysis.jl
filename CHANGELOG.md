@@ -6,6 +6,11 @@ Version 0.4.0
 
 - ![Breaking][badge-breaking] The package now requires **SatelliteToolbox.jl** v2. The
   support for the versions v0.12 and v1 was dropped.
+- ![Breaking][badge-breaking] The functions `eclipse_time_summary`,
+  `ground_facility_accesses`, `ground_facility_gaps`,
+  `design_sun_sync_ground_repeating_orbit`, and `ground_track` now throw an `ArgumentError`
+  if a symbol that selects a unit or the track type is not valid, instead of silently
+  falling back to a default value.
 - ![Feature][badge-feature] We added the function `decay_analysis` to estimate the orbital
   decay lifetime of a satellite considering averaged perturbations (zonal harmonics with a
   J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the

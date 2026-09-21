@@ -131,6 +131,18 @@
         1, 5; eccentricity = 1
     )
 
+    @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
+        1, 5; angle_unit = :unknown
+    )
+
+    @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
+        1, 5; distance_unit = :unknown
+    )
+
+    @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
+        1, 5; time_unit = :unknown
+    )
+
     # == Revolutions per Day Without a Sun-Synchronous Orbit ===============================
 
     # If there is no Sun-synchronous orbit for a number of revolutions per day, it must be

@@ -214,22 +214,24 @@ end
     @test df_d.time ≈ df.time .* 365.25
     @test colmetadata(df_d, :time, "Unit") == :d
 
-    # Unknown unit symbols must fall back to the defaults (years and kilometers).
-    df_f = decay_analysis(
+    # Unknown unit symbols must throw an error.
+    @test_throws ArgumentError decay_analysis(
         orb;
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        distance_unit       = :unknown,
-        time_unit           = :unknown
+        distance_unit       = :unknown
     )
 
-    @test df_f.time             ≈ df.time
-    @test df_f.perigee_altitude ≈ df.perigee_altitude
-    @test colmetadata(df_f, :time,             "Unit") == :y
-    @test colmetadata(df_f, :apogee_altitude,  "Unit") == :km
-    @test colmetadata(df_f, :perigee_altitude, "Unit") == :km
+    @test_throws ArgumentError decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        space_indices       = si_const,
+        time_unit           = :unknown
+    )
 end
 
 @testset "Default Space Indices" begin

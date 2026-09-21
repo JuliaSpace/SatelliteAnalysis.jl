@@ -42,6 +42,10 @@ function SatelliteAnalysis.decay_analysis(
         ArgumentError("The keyword `input_type` must be `:mean` or `:osculating`.")
     )
 
+    # Validate the units before performing the analysis.
+    _decay_analysis__time_unit_factor(time_unit)
+    SatelliteAnalysis._distance_unit_factor(distance_unit)
+
     # The propagation uses mean elements with respect to the averaged dynamics. Hence, if
     # the input elements are osculating, they must be converted to mean elements first.
     orb′ = if input_type == :osculating
@@ -340,26 +344,14 @@ function _decay_analysis(
     # used so that the column eltype is the concrete named tuple type of the source.
     space_indices_column = [space_indices(orb.t + tₖ / 86400) for tₖ in sol.t]
 
-    # Convert the time and altitude columns to the selected units.
-    if time_unit == :m
-        time ./= 60
-    elseif time_unit == :h
-        time ./= 3600
-    elseif time_unit == :d
-        time ./= 86400
-    elseif time_unit != :s
-        # Julian year, consistent with the default `tf` of 30 years. If the symbol is not
-        # known, we must use the default unit (years).
-        time ./= 365.25 * 86400
-        time_unit = :y
-    end
+    # Convert the time and altitude columns to the selected units. Notice that the year is
+    # the Julian year, consistent with the default `tf` of 30 years.
+    time_factor     = _decay_analysis__time_unit_factor(time_unit)
+    distance_factor = SatelliteAnalysis._distance_unit_factor(distance_unit)
 
-    if distance_unit != :m
-        # If the symbol is not known, we must use the default unit (kilometers).
-        apogee_altitude  ./= 1000
-        perigee_altitude ./= 1000
-        distance_unit = :km
-    end
+    time             .*= time_factor
+    apogee_altitude  .*= distance_factor
+    perigee_altitude .*= distance_factor
 
     df = DataFrame(;
         date             = date,
@@ -475,6 +467,12 @@ function _default_f107(jd_utc::Number, index::Val, predicted::Val)
     jd₀ <= jd_utc <= jd₁ && return space_index(index, jd_utc)
 
     return space_index(predicted, jd_utc)
+end
+
+# Factor to convert the time in seconds to the unit `time_unit`, which can be `:s`, `:m`,
+# `:h`, `:d`, or `:y` (Julian year). It throws an `ArgumentError` if the unit is not valid.
+function _decay_analysis__time_unit_factor(time_unit::Symbol)
+    return SatelliteAnalysis._time_unit_factor(time_unit, (:s, :m, :h, :d, :y))
 end
 
 # Element type of the gravity model workspace: the promotion between the type of the

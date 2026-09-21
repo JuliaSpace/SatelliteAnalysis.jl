@@ -73,6 +73,14 @@ This function returns a `DataFrame` with the following columns:
     (**Default** = `EARTH_EQUATORIAL_RADIUS`)
 - `we::Number`: Earth's angular speed [rad / s].
     (**Default**: `EARTH_ANGULAR_SPEED`)
+
+# Extended help
+
+## Throws
+
+- `ArgumentError`: If the repetition interval is not valid, if `eccentricity` is not in the
+    interval `[0, 1)`, or if `angle_unit`, `distance_unit`, or `time_unit` is not one of the
+    supported symbols.
 """
 function design_sun_sync_ground_repeating_orbit(
     minimum_repetition::Int,
@@ -125,18 +133,11 @@ function design_sun_sync_ground_repeating_orbit(
         adjacent_gt_angle    = Float64[],
     )
 
-    # Check the units for the values.
-    dunit   = distance_unit === :km ? 1.e-3 : 1.0
-    angunit = angle_unit === :deg ? 180.0 / π : 1.0
-    tunit   = begin
-        if time_unit == :h
-            1.0 / 3600
-        elseif time_unit == :m
-            1.0 / 60
-        else
-            1.0
-        end
-    end
+    # Obtain the factors to convert the values to the selected units. Notice that those
+    # functions also validate the inputs.
+    dunit   = _distance_unit_factor(distance_unit)
+    angunit = _angle_unit_factor(angle_unit)
+    tunit   = _time_unit_factor(time_unit)
 
     # Loop through the possible repetition times.
     for den in minimum_repetition:maximum_repetition

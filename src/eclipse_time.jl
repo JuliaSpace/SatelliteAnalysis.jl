@@ -43,6 +43,10 @@ each day.
 
 # Extended Help
 
+## Throws
+
+- `ArgumentError`: If `unit` is not `:s`, `:m`, or `:h`.
+
 ## Examples
 
 ```julia-repl
@@ -94,6 +98,10 @@ Dict{Symbol, Dict{String, Symbol}} with 3 entries:
 function eclipse_time_summary(
     orbp::OrbitPropagator; num_days::Number = 365, step::Number = -1, unit::Symbol = :s
 )
+    # Factor to convert the time from seconds to the selected unit. Notice that this
+    # function also validates the input.
+    time_factor = _time_unit_factor(unit)
+
     jd₀ = Propagators.epoch(orbp)
     dt₀ = julian2datetime(jd₀)
 
@@ -186,18 +194,9 @@ function eclipse_time_summary(
     end
 
     # Convert to the right units.
-    if unit == :h
-        sunlight_time ./= 3600
-        penumbra_time ./= 3600
-        umbra_time    ./= 3600
-    elseif unit == :m
-        sunlight_time ./= 60
-        penumbra_time ./= 60
-        umbra_time    ./= 60
-    else
-        # If the symbol is not known, we must use seconds.
-        unit = :s
-    end
+    sunlight_time .*= time_factor
+    penumbra_time .*= time_factor
+    umbra_time    .*= time_factor
 
     # Create and returns the DataFrame.
     df = DataFrame(;

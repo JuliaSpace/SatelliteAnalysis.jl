@@ -173,6 +173,11 @@ The satellite lifetime can be obtained from the last row of the returned `DataFr
 the perigee altitude reached `terminate_altitude` before `tf`, the last `date` is the decay
 epoch estimation.
 
+## Throws
+
+- `ArgumentError`: If `input_type` is not `:mean` or `:osculating`, if `distance_unit` is
+    not `:m` or `:km`, or if `time_unit` is not `:s`, `:m`, `:h`, `:d`, or `:y`.
+
 ## Examples
 
 ```julia-repl

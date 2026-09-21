@@ -72,17 +72,5 @@
 
     # == Unknown Symbol ====================================================================
 
-    df = eclipse_time_summary(orbp; num_days = 5, unit = :not_known)
-
-    @test size(df) == (5, 4)
-
-    @test sum(df.sunlight) / 5 ≈ 3974.7845507883844
-    @test sum(df.penumbra) / 5 ≈ 20.45694465948482
-    @test sum(df.umbra) / 5 ≈ 2004.756976375114
-
-    @test metadata(df, "Description") == "Eclipse time PER ORBIT computed at each day."
-
-    @test colmetadata(df, :sunlight, "Unit") == :s
-    @test colmetadata(df, :penumbra, "Unit") == :s
-    @test colmetadata(df, :umbra, "Unit") == :s
+    @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, unit = :not_known)
 end

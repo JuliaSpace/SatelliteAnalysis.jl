@@ -55,6 +55,8 @@
 
     @test isempty(gt) == true
 
+    @test_throws ArgumentError ground_track(orbp; track_types = :unknown)
+
     # == Passage Separation in Low-Inclination Orbits ======================================
 
     # If the inclination is lower than 45°, the latitude difference between the end of a

@@ -42,6 +42,10 @@ ground track.
 
 # Extended Help
 
+## Throws
+
+- `ArgumentError`: If `track_types` is not `:all`, `:ascending`, or `:descending`.
+
 ## Examples
 
 ```julia-repl
@@ -139,6 +143,12 @@ function ground_track(
 )
 
     # == Prepare the Inputs ================================================================
+
+    track_types ∉ (:all, :ascending, :descending) && throw(
+        ArgumentError(
+            "The track type `:$track_types` is not valid. Use `:all`, `:ascending`, or `:descending`.",
+        ),
+    )
 
     epoch = Propagators.epoch(orbp)
 

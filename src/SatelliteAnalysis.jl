@@ -28,6 +28,7 @@ include("./lighting_condition.jl")
 include("./sun_synchronous_orbits.jl")
 
 include("./misc/find_crossing.jl")
+include("./misc/units.jl")
 
 include("./ground_facilities/is_ground_facility_visible.jl")
 include("./ground_facilities/ground_facility_accesses_and_gaps.jl")

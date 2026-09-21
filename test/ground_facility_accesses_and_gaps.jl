@@ -130,23 +130,9 @@ end
 
     # -- Unknown Symbol --------------------------------------------------------------------
 
-    df = ground_facility_accesses(
-        orbp,
-        (0, 0, 0);
-        duration = 1 * 86400,
-        f_eci_to_ecef = gf_tod_to_pef,
-        unit = :not_know,
+    @test_throws ArgumentError ground_facility_accesses(
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :unknown
     )
-
-    @test size(df) == (2, 3)
-
-    exp_duration = getfield.(df.access_end .- df.access_beginning, :value) ./ 1000
-
-    @test df.duration[1] ≈ exp_duration[1]
-    @test df.duration[2] ≈ exp_duration[2]
-
-    @test metadata(df, "Description") == "Accesses to the ground facilities."
-    @test colmetadata(df, :duration, "Unit") == :s
 
     # == Facility Outside the Equator ======================================================
 
@@ -422,30 +408,8 @@ end
 
     # -- Unknown Symbol --------------------------------------------------------------------
 
-    df = ground_facility_gaps(
-        orbp,
-        (0, 0, 0);
-        duration = 1 * 86400,
-        f_eci_to_ecef = gf_tod_to_pef,
-        unit = :not_known,
+    @test_throws ArgumentError ground_facility_gaps(
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :unknown
     )
 
-    @test size(df) == (3, 3)
-
-    @test df.gap_beginning[1] == DateTime("2021-01-01T00:00:00.000")
-    @test df.gap_beginning[2] == DateTime("2021-01-01T10:30:02.985")
-    @test df.gap_beginning[3] == DateTime("2021-01-01T22:59:23.524")
-
-    @test df.gap_end[1] == DateTime("2021-01-01T10:20:03.163")
-    @test df.gap_end[2] == DateTime("2021-01-01T22:49:55.898")
-    @test df.gap_end[3] == DateTime("2021-01-02T00:00:00.000")
-
-    exp_duration = getfield.(df.gap_end .- df.gap_beginning, :value) ./ 1000
-
-    @test df.duration[1] ≈ exp_duration[1]
-    @test df.duration[2] ≈ exp_duration[2]
-    @test df.duration[3] ≈ exp_duration[3]
-
-    @test metadata(df, "Description") == "Gaps to the ground facilities."
-    @test colmetadata(df, :duration, "Unit") == :s
 end
