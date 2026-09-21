@@ -38,6 +38,14 @@
     @test colmetadata(df, :penumbra, "Unit") == :s
     @test colmetadata(df, :umbra, "Unit") == :s
 
+    # All the metadata must use the style `:note` to propagate through DataFrame
+    # transformations.
+    @test all(k -> metadata(df, k; style = true)[2] == :note, metadatakeys(df))
+    @test all(
+        colmetadata(df, col, k; style = true)[2] == :note for
+        (col, keys) in colmetadatakeys(df) for k in keys
+    )
+
     # == Minutes ===========================================================================
 
     df = eclipse_time_summary(orbp; num_days = 5, unit = :m)

@@ -246,8 +246,9 @@ function ground_facility_accesses(
         :duration         => vaccess_duration,
     )
 
-    metadata!(df, "Description", "Accesses to the ground facilities.")
-    colmetadata!(df, :duration, "Unit", unit)
+    # The style `:note` makes the metadata propagate through DataFrame transformations.
+    metadata!(df, "Description", "Accesses to the ground facilities."; style = :note)
+    colmetadata!(df, :duration, "Unit", unit; style = :note)
 
     return df
 end
@@ -384,8 +385,9 @@ function ground_facility_gaps(
     # Create the DataFrame and write the metadata.
     dfg = DataFrame(:gap_beginning => vgap_beg, :gap_end       => vgap_end, :duration      => duration)
 
-    metadata!(dfg, "Description", "Gaps to the ground facilities.")
-    colmetadata!(dfg, :duration, "Unit", unit)
+    # The style `:note` makes the metadata propagate through DataFrame transformations.
+    metadata!(dfg, "Description", "Gaps to the ground facilities."; style = :note)
+    colmetadata!(dfg, :duration, "Unit", unit; style = :note)
 
     return dfg
 end

@@ -380,11 +380,11 @@ function _decay_analysis(
 
     # Notice that the column `space_indices` has no `Unit` metadata since its fields have
     # heterogeneous units.
-    colmetadata!(df, :date,             "Unit", :UTC)
-    colmetadata!(df, :time,             "Unit", time_unit)
-    colmetadata!(df, :mean_elements,    "Unit", :SI)
-    colmetadata!(df, :apogee_altitude,  "Unit", distance_unit)
-    colmetadata!(df, :perigee_altitude, "Unit", distance_unit)
+    colmetadata!(df, :date,             "Unit", :UTC;          style = :note)
+    colmetadata!(df, :time,             "Unit", time_unit;     style = :note)
+    colmetadata!(df, :mean_elements,    "Unit", :SI;           style = :note)
+    colmetadata!(df, :apogee_altitude,  "Unit", distance_unit; style = :note)
+    colmetadata!(df, :perigee_altitude, "Unit", distance_unit; style = :note)
 
     return_solution && return df, sol
 

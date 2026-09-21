@@ -74,6 +74,17 @@ end
         @test metadata(df, k; style = true)[2] == :note
     end
 
+    # The same applies to the column-level metadata. Hence, the units must be kept, for
+    # example, when selecting a subset of the rows.
+    for (col, keys) in colmetadatakeys(df), k in keys
+        @test colmetadata(df, col, k; style = true)[2] == :note
+    end
+
+    df_subset = subset(df, :time => t -> t .>= 0)
+
+    @test colmetadata(df_subset, :time,            "Unit") == :y
+    @test colmetadata(df_subset, :apogee_altitude, "Unit") == :km
+
     @test colmetadata(df, :date,             "Unit") == :UTC
     @test colmetadata(df, :time,             "Unit") == :y
     @test colmetadata(df, :mean_elements,    "Unit") == :SI

@@ -125,6 +125,10 @@ Version 0.4.0
 - ![Enhancement][badge-enhancement] The function `frozen_orbit` now supports gravity models
   with fully normalized, Schmidt quasi-normalized, and unnormalized coefficients, and throws
   an `ArgumentError` if the normalization is not known.
+- ![Enhancement][badge-enhancement] All the metadata in the `DataFrame`s returned by
+  `eclipse_time_summary`, `ground_facility_accesses`, `ground_facility_gaps`, and
+  `decay_analysis`, including the column units, now have the style `:note`. Hence, they are
+  kept after `DataFrame` transformations such as `select` and `subset`.
 - ![Bugfix][badge-bugfix] The decay analysis passed the Julian date to the gravity model
   where it expects elapsed seconds from the J2000.0 epoch. The error was harmless for the
   default EGM96 model, whose coefficients are static, but it would produce wrong results

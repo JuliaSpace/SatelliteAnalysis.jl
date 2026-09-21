@@ -49,6 +49,14 @@ end
     @test metadata(df, "Description") == "Accesses to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :s
 
+    # All the metadata must use the style `:note` to propagate through DataFrame
+    # transformations.
+    @test all(k -> metadata(df, k; style = true)[2] == :note, metadatakeys(df))
+    @test all(
+        colmetadata(df, col, k; style = true)[2] == :note for
+        (col, keys) in colmetadatakeys(df) for k in keys
+    )
+
     # == Multiple Facilities ===============================================================
 
     df = ground_facility_accesses(
@@ -312,6 +320,14 @@ end
 
     @test metadata(df, "Description") == "Gaps to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :s
+
+    # All the metadata must use the style `:note` to propagate through DataFrame
+    # transformations.
+    @test all(k -> metadata(df, k; style = true)[2] == :note, metadatakeys(df))
+    @test all(
+        colmetadata(df, col, k; style = true)[2] == :note for
+        (col, keys) in colmetadatakeys(df) for k in keys
+    )
 
     # == Keywords Forwarded to the Access Computation ======================================
 

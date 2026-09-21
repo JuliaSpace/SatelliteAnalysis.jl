@@ -224,11 +224,15 @@ function eclipse_time_summary(
         umbra = umbra_time,
     )
 
-    # Add metadata to the DataFrame.
-    metadata!(df, "Description", "Eclipse time PER ORBIT computed at each day.")
-    colmetadata!(df, :sunlight, "Unit", unit)
-    colmetadata!(df, :penumbra, "Unit", unit)
-    colmetadata!(df, :umbra, "Unit", unit)
+    # Add metadata to the DataFrame. The style `:note` makes the metadata propagate through
+    # DataFrame transformations.
+    metadata!(
+        df, "Description", "Eclipse time PER ORBIT computed at each day."; style = :note
+    )
+
+    colmetadata!(df, :sunlight, "Unit", unit; style = :note)
+    colmetadata!(df, :penumbra, "Unit", unit; style = :note)
+    colmetadata!(df, :umbra,    "Unit", unit; style = :note)
 
     return df
 end
