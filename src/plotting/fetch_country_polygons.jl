@@ -29,25 +29,23 @@ function fetch_country_polygons(
     filename = "countries.geojson"
 
     # Get the scratch space where the files are located.
-    cache_dir          = @get_scratch!("geojson")
-    filepath           = joinpath(cache_dir, filename)
-    filepath_timestamp = joinpath(cache_dir, filename * "_timestamp")
+    cache_dir = @get_scratch!("geojson")
+    filepath  = joinpath(cache_dir, filename)
 
     # If the file exists, only re-download if `force_download` is true.
-    download_file = false
-
-    if force_download ||
-        isempty(readdir(cache_dir)) ||
-        !isfile(filepath) ||
-        !isfile(filepath_timestamp)
-        download_file = true
-    end
-
-    if download_file
+    if force_download || !isfile(filepath)
         @info "Downloading the file '$filename' from '$url'..."
-        Downloads.download(url, filepath)
-        open(filepath_timestamp, "w") do f
-            return write(f, string(now()))
+
+        # Download to a temporary file in the same directory and move it to the final path
+        # only after the download is completed. Hence, an interrupted download never leaves
+        # a partial file that would be considered valid in the next call.
+        filepath_tmp = filepath * ".download"
+
+        try
+            Downloads.download(url, filepath_tmp)
+            mv(filepath_tmp, filepath; force = true)
+        finally
+            rm(filepath_tmp; force = true)
         end
     end
 
