@@ -158,8 +158,8 @@ function frozen_orbit(
         C_2p_0  *= _frozen_orbit__zonal_unnormalization_factor(coefficient_norm, 2p)
         C_2p1_0 *= _frozen_orbit__zonal_unnormalization_factor(coefficient_norm, 2p + 1)
 
-        F_2p_0_p, ∂F_2p_0_p = _F_and_∂F_l0p(2p, p, ib)
-        F_2p1_0_p, ~ = _F_and_∂F_l0p(2p + 1, p, ib)
+        F_2p_0_p, ∂F_2p_0_p = _F_and_∂F_l0p(2p, p, sin_i, cos_i)
+        F_2p1_0_p, ~ = _F_and_∂F_l0p(2p + 1, p, sin_i, cos_i)
 
         den  += prod * (∂F_2p_0_p * cos_i - p * (2p + 1) * F_2p_0_p * sin_i) * C_2p_0
         prod *= fact # .................................................. (R_e / a)^(2p + 1)
@@ -217,10 +217,11 @@ function _frozen_orbit__zonal_unnormalization_factor(coefficient_norm, l::Intege
 end
 
 """
-    _F_and_∂F_l0p(l::Integer, p::Integer, i::Number) -> BigFloat, BigFloat
+    _F_and_∂F_l0p(l::Integer, p::Integer, sin_i::BigFloat, cos_i::BigFloat) -> BigFloat, BigFloat
 
 Compute the inclination function `F_{l,0,p}(i)` and its derivative `∂F_{l,0,p} / ∂i` as
-defined in **[1, p. 642]**.
+defined in **[1, p. 642]**. The inclination is specified by its sine `sin_i` [-] and cosine
+`cos_i` [-], allowing the caller to compute them only once for all the degrees.
 
 !!! note
 
@@ -231,17 +232,15 @@ defined in **[1, p. 642]**.
 - **[1]** Vallado, D. A (2013). Fundamentals of Astrodynamics and Applications. 4th ed.
     Microcosm Press, Hawthorne, CA.
 """
-function _F_and_∂F_l0p(l::Integer, p::Integer, i::Number)
+function _F_and_∂F_l0p(l::Integer, p::Integer, sin_i::BigFloat, cos_i::BigFloat)
     # We must using `BigInt` and `BigFloat` to compute for high degree.
     lb = big(l)
     pb = big(p)
-    ib = big(i)
 
     F  = zero(BigFloat)
     ∂F = zero(BigFloat)
     kb = div(lb, 2)
 
-    sin_i, cos_i = sincos(ib)
     sin²_i = sin_i * sin_i
 
     # `k_t` is the summation term of `F_l0p(i)` for a specific `t`. We will compute those
