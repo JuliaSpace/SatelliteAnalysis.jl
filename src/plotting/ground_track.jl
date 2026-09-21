@@ -7,7 +7,7 @@
 export plot_ground_track, plot_ground_track!
 
 """
-    plot_ground_track(gt::Vector{NTuple{2, Number}}; kwargs...) -> Figure, Axis
+    plot_ground_track(gt::Vector{NTuple{2, T}}; kwargs...) where {T <: Number} -> Figure, Axis
 
 Plot the ground track `gt` computed using the function [`ground_track`](@ref). It returns
 the objects `Figure` and `Axis` used to plot the data. For more information, please refer

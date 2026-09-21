@@ -7,7 +7,7 @@
 export plot_ground_facility_visibility_circles, plot_ground_facility_visibility_circles!
 
 """
-    plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, Number}}}; kwargs...) -> Figure, Axis
+    plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, T}}}; kwargs...) where {T <: Number} -> Figure, Axis
 
 Plot the ground facility visibility circles in the vector `vgf_vc`, where each element
 is computed using the function [`ground_facility_visibility_circle`](@ref). It returns
@@ -66,11 +66,7 @@ julia> gfv2 = ground_facility_visibility_circle((-40 |> deg2rad, -60 |> deg2rad,
 julia> fig, ax = plot_ground_facility_visibility_circles(
            [gfv1, gfv2];
            ground_facility_names = ["GF 1", "GF 2"]
-       )
-(Scene (1600px, 800px):
-  0 Plots
-  1 Child Scene:
-    └ Scene (1600px, 800px), Axis (7 plots))
+       );
 
 julia> fig
 ```

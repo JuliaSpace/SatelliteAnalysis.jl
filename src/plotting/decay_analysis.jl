@@ -125,6 +125,7 @@ To export the figure in high resolution for reports, use
 
 ## Throws
 
+- `ArgumentError`: If `df` is empty.
 - `ArgumentError`: If `df` does not have the columns `time`, `date`, `apogee_altitude`, and
     `perigee_altitude`, or if the keyword `show_f107` is `true` and `df` does not have the
     column `space_indices`.
