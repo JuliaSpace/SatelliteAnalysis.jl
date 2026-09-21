@@ -33,12 +33,13 @@ function SatelliteAnalysis.plot_world_map(;
         # Get the GeoJSON file with the countries.
         countries_filename = fetch_country_polygons(; force_download = false)
 
-        # Load the polygons of the countries.
-        country_polys = GeoMakie.GeoJSON.read(countries_filename)
+        # Load the polygons of the countries. Notice that **GeoJSON.jl** provides the
+        # recipes to plot its geometries when **Makie.jl** is loaded.
+        country_polys = GeoJSON.read(countries_filename)
 
         poly!(
             ax,
-            GeoMakie.to_multipoly(country_polys.geometry);
+            country_polys.geometry;
             color       = _COUNTRY_FILL_COLOR[theme],
             strokecolor = _COUNTRY_STROKE_COLOR[theme],
             strokewidth = 1,

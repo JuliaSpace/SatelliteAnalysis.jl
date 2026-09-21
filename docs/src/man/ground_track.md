@@ -149,10 +149,10 @@ gt_lat = first.(gt)
 gt_lon = last.(gt)
 ```
 
-If we use **GeoMakie.jl** to plot, we obtain:
+If we use **Makie.jl** to plot, we obtain:
 
 ```@setup ground_track
-using GeoMakie, CairoMakie
+using GeoJSON, CairoMakie
 
 fig, ax = plot_ground_track(gt)
 
@@ -171,7 +171,7 @@ ground_track_inclination(orb) |> rad2deg
 
 ## Plotting
 
-If the user loads the package [GeoMakie.jl](https://github.com/MakieOrg/GeoMakie.jl)
+If the user loads the package [GeoJSON.jl](https://github.com/JuliaGeo/GeoJSON.jl)
 together with a [Makie.jl](https://docs.makie.org/stable/) backend, an extension is loaded
 and adds the possibility to plot the ground track. In this case, the following functions are
 available:
@@ -211,7 +211,7 @@ it draws into an existing axis, it does not apply the theme provided by the func
 The code:
 
 ```@repl ground_track
-using GeoMakie, CairoMakie
+using GeoJSON, CairoMakie
 
 jd₀ = date_to_jd(2021, 1, 1)
 

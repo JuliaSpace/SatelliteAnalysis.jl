@@ -22,9 +22,8 @@ to **Makie.jl** documentation.
 
 !!! warning
 
-    This function **only works** after loading the package **GeoMakie.jl**. Furthermore, the
-    user must also load one Makie.jl backend (CairoMakie.jl or GLMakie.jl, for example) to
-    see the result.
+    This function **only works** after loading the package **GeoJSON.jl** and one
+    **Makie.jl** backend (**CairoMakie.jl** or **GLMakie.jl**, for example).
 
 # Keywords
 
@@ -47,7 +46,7 @@ All other `kwargs...` are passed to the function [`plot_world_map`](@ref).
 ## Examples
 
 ```julia
-julia> using SatelliteAnalysis, GeoMakie, GLMakie
+julia> using SatelliteAnalysis, GeoJSON, GLMakie
 
 julia> gfv1 = ground_facility_visibility_circle((0, 0, 0), EARTH_EQUATORIAL_RADIUS + 700e3);
 
@@ -68,8 +67,8 @@ julia> fig
 function plot_ground_facility_visibility_circles(args...; kwargs...)
     return _extension_error(
         "plot_ground_facility_visibility_circles",
-        "GeoMakie.jl",
-        "GeoMakie, CairoMakie",
+        "Makie.jl and GeoJSON.jl",
+        "CairoMakie, GeoJSON",
         "plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, T}}}; kwargs...) where {T <: Number}",
     )
 end
@@ -89,9 +88,8 @@ Plot in the **Makie.jl** axis `ax` the ground facility visibility circles in the
 
 !!! warning
 
-    This function **only works** after loading the package **GeoMakie.jl**. Furthermore, the
-    user must also load one Makie.jl backend (CairoMakie.jl or GLMakie.jl, for example) to
-    see the result.
+    This function **only works** after loading the package **GeoJSON.jl** and one
+    **Makie.jl** backend (**CairoMakie.jl** or **GLMakie.jl**, for example).
 
 # Keywords
 
@@ -105,7 +103,7 @@ Plot in the **Makie.jl** axis `ax` the ground facility visibility circles in the
 ## Examples
 
 ```julia
-julia> using SatelliteAnalysis, GeoMakie, GLMakie
+julia> using SatelliteAnalysis, GeoJSON, GLMakie
 
 julia> gfv1 = ground_facility_visibility_circle((0, 0, 0), EARTH_EQUATORIAL_RADIUS + 700e3);
 
@@ -125,8 +123,8 @@ julia> plot_ground_facility_visibility_circles!(
 function plot_ground_facility_visibility_circles!(args...; kwargs...)
     return _extension_error(
         "plot_ground_facility_visibility_circles!",
-        "GeoMakie.jl",
-        "GeoMakie, CairoMakie",
+        "Makie.jl and GeoJSON.jl",
+        "CairoMakie, GeoJSON",
         "plot_ground_facility_visibility_circles!(ax::Axis, vgf_vc::Vector{Vector{NTuple{2, T}}}; kwargs...) where {T <: Number}",
     )
 end

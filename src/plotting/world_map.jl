@@ -22,9 +22,8 @@ please refer to **Makie.jl** documentation.
 
 !!! warning
 
-    This function **only works** after loading the package **GeoMakie.jl**. Furthermore, the
-    user must also load one Makie.jl backend (CairoMakie.jl or GLMakie.jl, for example) to
-    see the result.
+    This function **only works** after loading the package **GeoJSON.jl** and one
+    **Makie.jl** backend (**CairoMakie.jl** or **GLMakie.jl**, for example).
 
 # Keywords
 
@@ -42,6 +41,6 @@ please refer to **Makie.jl** documentation.
 """
 function plot_world_map(args...; kwargs...)
     return _extension_error(
-        "plot_world_map", "GeoMakie.jl", "GeoMakie, CairoMakie", "plot_world_map(; kwargs...)"
+        "plot_world_map", "Makie.jl and GeoJSON.jl", "CairoMakie, GeoJSON", "plot_world_map(; kwargs...)"
     )
 end

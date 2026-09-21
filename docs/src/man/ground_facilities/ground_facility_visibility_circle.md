@@ -44,7 +44,7 @@ We can obtain the visibility circle between the Amazonia-1 satellite and INPE's 
 station at Cuiabá, MT, Brazil, using:
 
 ```@setup ground_facility_visibility_circle_example
-using SatelliteAnalysis, GeoMakie, CairoMakie
+using SatelliteAnalysis, GeoJSON, CairoMakie
 
 gf = ground_facility_visibility_circle(
     (-(15 + 33 / 60) |> deg2rad, -(56 + 04 / 60) |> deg2rad, 0),
@@ -53,7 +53,7 @@ gf = ground_facility_visibility_circle(
 
 countries_filename = fetch_country_polygons(; force_download = false)
 
-country_polys = GeoMakie.GeoJSON.read(countries_filename)
+country_polys = GeoJSON.read(countries_filename)
 
 fig = Figure(; size = (800, 800))
 
@@ -78,7 +78,7 @@ ax.yticks = -60:10:20
 
 poly!(
     ax,
-    GeoMakie.to_multipoly(country_polys.geometry);
+    country_polys.geometry;
     color       = :white,
     strokecolor = :black,
     strokewidth = 1
@@ -116,7 +116,7 @@ If we plot the result using Makie, we obtain:
 
 ## Plotting
 
-If the user loads the package [GeoMakie.jl](https://github.com/MakieOrg/GeoMakie.jl)
+If the user loads the package [GeoJSON.jl](https://github.com/JuliaGeo/GeoJSON.jl)
 together with a [Makie.jl](https://docs.makie.org/stable/) backend, an extension is loaded
 and adds the possibility to plot the ground facility visibility circle. In this case, the
 following functions are available:
@@ -172,7 +172,7 @@ by the function `SatelliteAnalysis.makie_theme`.
 The code:
 
 ```@repl ground_facility_visibility_circle
-using GeoMakie, CairoMakie
+using GeoJSON, CairoMakie
 
 gf1_vc = ground_facility_visibility_circle(
     (-(15 + 33 / 60) |> deg2rad, -(56 + 04 / 60) |> deg2rad, 0),

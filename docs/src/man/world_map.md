@@ -9,7 +9,7 @@ using SatelliteAnalysis
 ```
 
 **SatelliteAnalysis.jl** has a built-in algorithm to plot the World Map provided that the
-user loaded **GeoMakie.jl** and one of the **Makie.jl** backends. This empty plot can be
+user loaded **GeoJSON.jl** and one of the **Makie.jl** backends. This empty plot can be
 used to add analysis on top of it. We can create it using the function:
 
 ```julia
@@ -28,14 +28,14 @@ passed to the function `Figure`.
     this file does not exist, the algorithm tries to download it.
 
 ```@repl world_map
-using GeoMakie, CairoMakie
+using GeoJSON, CairoMakie
 
 fig, ax = plot_world_map()
 fig
 ```
 
 ```@setup world_map
-using GeoMakie, CairoMakie
+using GeoJSON, CairoMakie
 
 fig, ax = plot_world_map()
 save("world_map.png", fig)

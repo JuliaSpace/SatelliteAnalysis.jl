@@ -21,9 +21,8 @@ to **Makie.jl** documentation.
 
 !!! warning
 
-    This function **only works** after loading the package **GeoMakie.jl**. Furthermore, the
-    user must also load one Makie.jl backend (CairoMakie.jl or GLMakie.jl, for example) to
-    see the result.
+    This function **only works** after loading the package **GeoJSON.jl** and one
+    **Makie.jl** backend (**CairoMakie.jl** or **GLMakie.jl**, for example).
 
 # Keywords
 
@@ -42,7 +41,7 @@ All other `kwargs...` are passed to the function [`plot_world_map`](@ref).
 ## Examples
 
 ```julia-repl
-julia> using SatelliteAnalysis, GeoMakie, GLMakie
+julia> using SatelliteAnalysis, GeoJSON, GLMakie
 
 julia> jd₀ = date_to_jd(2021, 1, 1)
 2.4592155e6
@@ -85,8 +84,8 @@ julia> fig
 function plot_ground_track(args...; kwargs...)
     return _extension_error(
         "plot_ground_track",
-        "GeoMakie.jl",
-        "GeoMakie, CairoMakie",
+        "Makie.jl and GeoJSON.jl",
+        "CairoMakie, GeoJSON",
         "plot_ground_track(gt::Vector{NTuple{2, T}}; kwargs...) where {T <: Number}",
     )
 end
@@ -105,16 +104,15 @@ Plot in the **Makie.jl** axis `ax` the ground track `gt` computed using the func
 
 !!! warning
 
-    This function **only works** after loading the package **GeoMakie.jl**. Furthermore, the
-    user must also load one Makie.jl backend (CairoMakie.jl or GLMakie.jl, for example) to
-    see the result.
+    This function **only works** after loading the package **GeoJSON.jl** and one
+    **Makie.jl** backend (**CairoMakie.jl** or **GLMakie.jl**, for example).
 
 # Extended Help
 
 ## Examples
 
 ```julia-repl
-julia> using SatelliteAnalysis, GeoMakie, GLMakie
+julia> using SatelliteAnalysis, GeoJSON, GLMakie
 
 julia> jd₀ = date_to_jd(2021, 1, 1)
 2.4592155e6
@@ -156,8 +154,8 @@ julia> plot_ground_track!(ax, gt)
 function plot_ground_track!(args...; kwargs...)
     return _extension_error(
         "plot_ground_track!",
-        "GeoMakie.jl",
-        "GeoMakie, CairoMakie",
+        "Makie.jl and GeoJSON.jl",
+        "CairoMakie, GeoJSON",
         "plot_ground_track!(ax::Axis, gt::Vector{NTuple{2, T}}) where {T <: Number}",
     )
 end

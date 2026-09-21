@@ -286,7 +286,7 @@ end
 end
 
 @testset "Function plot_ground_track [EXT]" begin
-    using GeoMakie
+    using GeoJSON
 
     jd₀ = date_to_jd(2021, 1, 1)
     2.4592155e6
@@ -338,7 +338,7 @@ end
 end
 
 @testset "Function plot_ground_facility_visibility_circles [EXT]" begin
-    using GeoMakie
+    using GeoJSON
 
     gfv1 = ground_facility_visibility_circle((0, 0, 0), EARTH_EQUATORIAL_RADIUS + 700e3);
     gfv2 = ground_facility_visibility_circle(
@@ -369,7 +369,7 @@ end
 end
 
 @testset "Function plot_world_map [EXT]" begin
-    using GeoMakie
+    using GeoJSON
 
     fig, ax = plot_world_map()
 

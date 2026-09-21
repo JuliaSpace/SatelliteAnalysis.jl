@@ -28,6 +28,12 @@ Version 0.4.0
   requested by `step = nothing`, which is the new default value, as in `ground_track`. The
   functions `eclipse_time_summary`, `ground_track`, `ground_facility_accesses`, and
   `ground_facility_gaps` now throw an `ArgumentError` if the step is not positive.
+- ![Breaking][badge-breaking] The functions that plot maps (`plot_world_map`,
+  `plot_ground_track`, `plot_ground_facility_visibility_circles`, and their in-place
+  versions) are now available when **Makie.jl** and **GeoJSON.jl** are loaded (e.g., `using
+  CairoMakie, GeoJSON`) instead of **GeoMakie.jl**, which was used only to read the GeoJSON
+  file with the country polygons. Loading **GeoJSON.jl** is about 30x faster than loading
+  **GeoMakie.jl**.
 - ![Feature][badge-feature] We added the function `decay_analysis` to estimate the orbital
   decay lifetime of a satellite considering averaged perturbations (zonal harmonics with a
   J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the

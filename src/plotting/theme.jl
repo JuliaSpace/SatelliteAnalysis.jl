@@ -4,6 +4,14 @@
 #
 ############################################################################################
 
+# Colors of the theme that are used by more than one package extension, stored as hex
+# strings because the main package does not depend on a color package. One extension cannot
+# access the constants of another extension. Hence, the shared values must be defined here.
+const _THEME_SURFACE_HEX         = "#FFFFFF" # .................. light theme background
+const _THEME_BORDER_LIGHT_HEX    = "#CBD5E1" # ........ light theme spines, box outlines
+const _THEME_SEPARATOR_DARK_HEX  = "#162940" # ..... dark theme grid lines and dividers
+const _THEME_BORDER_DARK_HEX     = "#1E3A5F" # ......... dark theme spines, box outlines
+
 """
     SatelliteAnalysis.makie_palette(n::Int; kwargs...) -> Vector{Colorant}
 

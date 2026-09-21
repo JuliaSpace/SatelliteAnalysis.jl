@@ -1,7 +1,8 @@
-module SatelliteAnalysisGeoMakieExt
+module SatelliteAnalysisGeoJSONExt
 
+using GeoJSON
+using Makie
 using SatelliteAnalysis
-using GeoMakie
 
 ############################################################################################
 #                                        Constants                                         #
@@ -17,4 +18,4 @@ include("./ground_facilities.jl")
 include("./ground_track.jl")
 include("./world_map.jl")
 
-end # module SatelliteAnalysisGeoMakieExt
+end # module SatelliteAnalysisGeoJSONExt

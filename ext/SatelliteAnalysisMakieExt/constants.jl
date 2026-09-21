@@ -8,8 +8,12 @@
 
 const NAVY_PRIMARY   = colorant"#0A1929" # ................................ slide background
 const NAVY_CARD      = colorant"#0D2137" # ..... slightly raised surface (legends, tooltips)
-const SEPARATOR_DARK = colorant"#162940" # ................. grid lines, horizontal dividers
-const BORDER_DARK    = colorant"#1E3A5F" # ....................... axis spines, box outlines
+
+# Grid lines and horizontal dividers (`SEPARATOR_DARK`), and axis spines and box outlines
+# (`BORDER_DARK`). Those colors are also used by the extension that plots the maps. Hence,
+# their values are defined in the main package.
+const SEPARATOR_DARK = parse(Colorant, SatelliteAnalysis._THEME_SEPARATOR_DARK_HEX)
+const BORDER_DARK    = parse(Colorant, SatelliteAnalysis._THEME_BORDER_DARK_HEX)
 
 const TEXT_PRIMARY_DARK   = colorant"#F1F5F9" # ..................... body text, axis labels
 const TEXT_SECONDARY_DARK = colorant"#94A3B8" # ............ captions, tick labels, metadata
@@ -32,10 +36,14 @@ const CATEGORICAL_DARK = [
 
 # == Light Theme Colors ====================================================================
 
-const SURFACE         = colorant"#FFFFFF" # ............................... slide background
 const SURFACE_CARD    = colorant"#F7FAFD" # .. slightly recessed surface (legends, tooltips)
 const SEPARATOR_LIGHT = colorant"#DDE8F5" # ................ grid lines, horizontal dividers
-const BORDER_LIGHT    = colorant"#CBD5E1" # ...................... axis spines, box outlines
+
+# Slide background (`SURFACE`), and axis spines and box outlines (`BORDER_LIGHT`). Those
+# colors are also used by the extension that plots the maps. Hence, their values are defined
+# in the main package.
+const SURFACE      = parse(Colorant, SatelliteAnalysis._THEME_SURFACE_HEX)
+const BORDER_LIGHT = parse(Colorant, SatelliteAnalysis._THEME_BORDER_LIGHT_HEX)
 
 const TEXT_PRIMARY_LIGHT   = colorant"#0A1929" # .................... body text, axis labels
 const TEXT_SECONDARY_LIGHT = colorant"#334155" # ........... captions, tick labels, metadata

@@ -9,13 +9,13 @@
 ############################################################################################
 
 """
-    _extension_error(function_name::String, package::String, using_example::String, valid_call::String) -> Union{}
+    _extension_error(function_name::String, packages::String, using_example::String, valid_call::String) -> Union{}
 
 Throw the error of the fallback method of the function `function_name`, which is provided by
-the package extension loaded together with `package`. This method is called if the
-extension is not loaded or if the arguments are not valid. Hence, the message must help the
-user in both cases: `using_example` is an example of a package that loads the extension,
-and `valid_call` is the signature of the valid call.
+the package extension loaded together with `packages` (e.g., `"Makie.jl and GeoJSON.jl"`).
+This method is called if the extension is not loaded or if the arguments are not valid.
+Hence, the message must help the user in both cases: `using_example` is an example of
+packages that load the extension, and `valid_call` is the signature of the valid call.
 
 # Extended help
 
@@ -24,11 +24,11 @@ and `valid_call` is the signature of the valid call.
 - `ErrorException`: Always.
 """
 function _extension_error(
-    function_name::String, package::String, using_example::String, valid_call::String
+    function_name::String, packages::String, using_example::String, valid_call::String
 )
     return error(
-        "The function `$function_name` is provided by a package extension. Load $package " *
-        "(e.g., `using $using_example`) to use it. If $package is already loaded, check " *
-        "the arguments: the valid call is `$valid_call`.",
+        "The function `$function_name` is provided by a package extension. Load " *
+        "$packages (e.g., `using $using_example`) to use it. If the extension is already " *
+        "loaded, check the arguments: the valid call is `$valid_call`.",
     )
 end
