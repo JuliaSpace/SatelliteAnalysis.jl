@@ -75,14 +75,7 @@ function ground_repeating_orbit_adjacent_track_angle(
         a, e, i, orbit_cycle; perturbation, J2, J4, R0, m0, we
     )
 
-    # Compute the angle between the two ground tracks measured from the satellite. `a` is an
-    # auxiliary distance and `γ` is the angle we are looking for.
-    sin_β, cos_β = sincos(β)
-    α = √(R₀^2 + a^2 - 2R₀ * a * cos_β)
-    γ = asin(R₀ / α * sin_β)
-
-    # Finally, the adjacent track distance is two times `γ`.
-    return 2γ
+    return _ground_repeating_orbit__half_angle_to_track_angle(β, T(a), R₀)
 end
 
 """
@@ -148,15 +141,44 @@ function ground_repeating_orbit_adjacent_track_distance(
         a, e, i, orbit_cycle; perturbation, J2, J4, R0, m0, we
     )
 
-    # Distance between two adjacent tracks on the Earth's surface.
-    d = 2β * R₀
-
-    return d
+    return _ground_repeating_orbit__half_angle_to_track_distance(β, R₀)
 end
 
 ############################################################################################
 #                                    Private Functions                                     #
 ############################################################################################
+
+"""
+    _ground_repeating_orbit__half_angle_to_track_angle(β::Number, a::Number, R₀::Number) -> Number
+
+Compute the angle [rad] between two adjacent ground tracks at the Equator measured from the
+satellite position given the angle `β` [rad] computed by
+`_ground_repeating_orbit__adjacent_track_half_angle`, the orbit semi-major axis `a` [m], and
+the Earth's equatorial radius `R₀` [m].
+"""
+function _ground_repeating_orbit__half_angle_to_track_angle(
+    β::Number, a::Number, R₀::Number
+)
+    # Compute the angle between the two ground tracks measured from the satellite. `α` is an
+    # auxiliary distance and `γ` is half the angle we are looking for.
+    sin_β, cos_β = sincos(β)
+    α = √(R₀^2 + a^2 - 2R₀ * a * cos_β)
+    γ = asin(R₀ / α * sin_β)
+
+    return 2γ
+end
+
+"""
+    _ground_repeating_orbit__half_angle_to_track_distance(β::Number, R₀::Number) -> Number
+
+Compute the distance [m] between two adjacent ground tracks on the Earth's surface at the
+Equator given the angle `β` [rad] computed by
+`_ground_repeating_orbit__adjacent_track_half_angle` and the Earth's equatorial radius `R₀`
+[m].
+"""
+function _ground_repeating_orbit__half_angle_to_track_distance(β::Number, R₀::Number)
+    return 2β * R₀
+end
 
 """
     _ground_repeating_orbit__adjacent_track_half_angle(a::T1, e::T2, i::T3, orbit_cycle::Integer; kwargs...) where {T1 <: Number, T2 <: Number, T3 <: Number} -> T

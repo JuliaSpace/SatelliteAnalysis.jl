@@ -150,6 +150,10 @@ Version 0.4.0
 - ![Enhancement][badge-enhancement] The function `frozen_orbit` now keeps the default
   gravity model (EGM96) in memory instead of parsing the ICGEM file at every call, being
   about 45x faster if the keyword `gravity_model` is omitted.
+- ![Enhancement][badge-enhancement] The function `design_sun_sync_ground_repeating_orbit`
+  now filters the orbits by altitude before computing their properties and computes the
+  geometry of the adjacent ground tracks only once per orbit. The design with an altitude
+  interval of 100 km is about 3x faster.
 - ![Bugfix][badge-bugfix] The decay analysis passed the Julian date to the gravity model
   where it expects elapsed seconds from the J2000.0 epoch. The error was harmless for the
   default EGM96 model, whose coefficients are static, but it would produce wrong results

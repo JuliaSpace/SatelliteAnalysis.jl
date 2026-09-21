@@ -170,6 +170,13 @@ function design_sun_sync_ground_repeating_orbit(
                 orbit_valid = (abs(cos_i) <= 1) && (a * (1 - e) > R₀)
                 (!converged || !orbit_valid) && continue
 
+                # Skip the orbits outside the selected altitude interval before performing
+                # any other computation.
+                h = a - R₀
+
+                !isnothing(minimum_altitude) && (h < minimum_altitude) && continue
+                !isnothing(maximum_altitude) && (h > maximum_altitude) && continue
+
                 i = acos(cos_i)
 
                 # If we reach this point, add the orbit to the `DataFrame`.
@@ -178,9 +185,20 @@ function design_sun_sync_ground_repeating_orbit(
                 )
 
                 orb_period = 2π / orb_angvel
-                orb_cycle = num == 0 ? 1 : den
+                orb_cycle  = num == 0 ? 1 : den
 
-                h = a - R₀
+                # The distance and the angle between two adjacent ground tracks are obtained
+                # from the same angle measured from the Earth's center. Hence, we compute
+                # it only once.
+                β = _ground_repeating_orbit__adjacent_track_half_angle(
+                    a, e, i, orb_cycle; perturbation = :J2, J2, J4 = EGM_2008_J4, R0, m0, we
+                )
+
+                adjacent_gt_distance =
+                    _ground_repeating_orbit__half_angle_to_track_distance(β, R₀)
+
+                adjacent_gt_angle =
+                    _ground_repeating_orbit__half_angle_to_track_angle(β, a, R₀)
 
                 push!(
                     df,
@@ -191,33 +209,13 @@ function design_sun_sync_ground_repeating_orbit(
                         orb_period * tunit,
                         pretty_rev_per_days ? _pretify_rev_per_days(int, num, den) :
                         (int, num // den),
-                        ground_repeating_orbit_adjacent_track_distance(
-                            a, e, i, orb_cycle; J2 = J2, m0 = m0, R0 = R0, we = we
-                        ) * dunit,
-                        ground_repeating_orbit_adjacent_track_angle(
-                            a, e, i, orb_cycle; J2 = J2, m0 = m0, R0 = R0, we = we
-                        ) * angunit,
+                        adjacent_gt_distance * dunit,
+                        adjacent_gt_angle * angunit,
                     ),
                 )
             end
         end
     end
-
-    # Filter the `DataFrame` with respect to the altitude.
-    filter!(
-        r -> begin
-            if !isnothing(minimum_altitude) && (r[:altitude] < minimum_altitude * dunit)
-                return false
-            end
-
-            if !isnothing(maximum_altitude) && (r[:altitude] > maximum_altitude * dunit)
-                return false
-            end
-
-            return true
-        end,
-        df,
-    )
 
     # Sort the `DataFrame` by the semi-major axis.
     sort!(df, :semi_major_axis)
