@@ -98,8 +98,12 @@ keyword was not passed, is omitted from the panel.
     the decay analysis, used to detect if a reentry happened. If it is `nothing`, the value
     is obtained from the metadata `Terminate Altitude` of `df`.
     (**Default**: `nothing`)
-- `theme::Symbol`: Theme variant used to style the figure, applied locally through the
-    function `SatelliteAnalysis.makie_theme`. It can be `:light` or `:dark`.
+- `theme::Union{Nothing, Symbol, Makie.Theme}`: Theme used to style the figure, which is
+    applied locally. If it is a `Symbol`, it selects the variant of the theme created by the
+    function `SatelliteAnalysis.makie_theme`, which can be `:light` or `:dark`. If it is a
+    `Makie.Theme`, this theme is applied. If it is `nothing`, no theme is applied, and the
+    figure uses the current Makie theme. In the last two cases, the elements that are not
+    styled by the theme use the colors of the variant `:light`.
     (**Default**: `:light`)
 - `title::String`: Title of the plot.
     (**Default**: `"Orbital Decay Analysis"`)

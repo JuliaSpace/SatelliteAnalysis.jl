@@ -76,7 +76,7 @@ function overview_figure(; dark::Bool)
     x, ys  = line_data()
     sx, sy = scatter_data()
     bx, by = bar_data()
-    pal    = SatelliteAnalysis.makie_palette(6; dark = dark)
+    pal    = SatelliteAnalysis.makie_palette(6; variant = dark ? :dark : :light)
 
     fig = Figure(size = (1280, 760))
 
@@ -196,11 +196,11 @@ end
 ## Palette
 
 The function [`SatelliteAnalysis.makie_palette`](@ref) returns the first `n` colors of the
-6-color categorical palette, matching the theme variant selected by the keyword `dark`:
+6-color categorical palette, matching the theme variant selected by the keyword `variant`:
 
 ```@example makie_theme
 with_theme(SatelliteAnalysis.makie_theme(:dark)) do
-    dark  = SatelliteAnalysis.makie_palette(6; dark = true)
+    dark  = SatelliteAnalysis.makie_palette(6; variant = :dark)
     light = SatelliteAnalysis.makie_palette(6)
 
     fig = Figure(size = (900, 300))

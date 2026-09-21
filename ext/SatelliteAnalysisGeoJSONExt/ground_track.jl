@@ -18,13 +18,13 @@ end
 
 function SatelliteAnalysis.plot_ground_track(
     gt::Vector{NTuple{2, T}};
-    theme::Symbol = :light,
+    theme::Union{Nothing, Symbol, Makie.Theme} = :light,
     kwargs...
 ) where {T <: Number}
-    # Wrap the entire body in `with_theme` so that the plot calls also resolve their
-    # attributes, such as the color cycle, using the SatelliteAnalysis.jl theme.
-    return with_theme(SatelliteAnalysis.makie_theme(theme)) do
-        fig, ax = _create_world_map(theme; kwargs...)
+    # Wrap the entire body in this function so that the plot calls also resolve their
+    # attributes, such as the color cycle, using the selected theme.
+    return SatelliteAnalysis._with_plot_theme(theme) do
+        fig, ax = _create_world_map(_theme_variant(theme); kwargs...)
         ax.title = "Ground Track"
 
         plot_ground_track!(ax, gt)

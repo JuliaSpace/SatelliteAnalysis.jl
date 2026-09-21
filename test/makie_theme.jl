@@ -12,7 +12,7 @@ SAMakieExt = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisMakieExt)
 
 @testset "Function makie_palette" begin
     @test SatelliteAnalysis.makie_palette(6) == SAMakieExt.CATEGORICAL_LIGHT
-    @test SatelliteAnalysis.makie_palette(6; dark = true) == SAMakieExt.CATEGORICAL_DARK
+    @test SatelliteAnalysis.makie_palette(6; variant = :dark) == SAMakieExt.CATEGORICAL_DARK
     @test SatelliteAnalysis.makie_palette(3) == SAMakieExt.CATEGORICAL_LIGHT[1:3]
     @test isempty(SatelliteAnalysis.makie_palette(0))
 end
@@ -20,6 +20,7 @@ end
 @testset "Function makie_palette [ERRORS]" begin
     @test_throws ArgumentError SatelliteAnalysis.makie_palette(7)
     @test_throws ArgumentError SatelliteAnalysis.makie_palette(-1)
+    @test_throws ArgumentError SatelliteAnalysis.makie_palette(3; variant = :blue)
 end
 
 # -- Function makie_theme ------------------------------------------------------------------

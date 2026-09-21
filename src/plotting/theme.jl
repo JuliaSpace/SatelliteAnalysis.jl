@@ -12,6 +12,14 @@ const _THEME_BORDER_LIGHT_HEX    = "#CBD5E1" # ........ light theme spines, box 
 const _THEME_SEPARATOR_DARK_HEX  = "#162940" # ..... dark theme grid lines and dividers
 const _THEME_BORDER_DARK_HEX     = "#1E3A5F" # ......... dark theme spines, box outlines
 
+# Call the function `f` applying the theme selected by the keyword `theme` of the plotting
+# functions: `_with_plot_theme(f, theme; kwargs...)`. If `theme` is a `Symbol`, the theme is
+# created by `makie_theme` using `kwargs...`. If it is a `Makie.Theme`, it is applied as it
+# is. If it is `nothing`, `f` is called without applying any theme. The methods are defined
+# in the extension loaded with Makie.jl, and this function allows the other extensions to
+# use them.
+function _with_plot_theme end
+
 """
     SatelliteAnalysis.makie_palette(n::Int; kwargs...) -> Vector{Colorant}
 
@@ -29,16 +37,17 @@ See also: [`makie_theme`](@ref)
 
 # Keywords
 
-- `dark::Bool`: If `true`, return the palette designed for dark backgrounds. Otherwise,
-    return the palette designed for light backgrounds, matching the default theme returned
-    by [`makie_theme`](@ref).
-    (**Default**: `false`)
+- `variant::Symbol`: Variant of the palette, as in the function [`makie_theme`](@ref). If it
+    is `:dark`, return the palette designed for dark backgrounds. If it is `:light`, return
+    the palette designed for light backgrounds, matching the default theme.
+    (**Default**: `:light`)
 
 # Extended help
 
 ## Throws
 
-- `ArgumentError`: If `n` is negative or greater than the number of colors in the palette.
+- `ArgumentError`: If `n` is negative or greater than the number of colors in the palette,
+    or if `variant` is not `:dark` or `:light`.
 - `ErrorException`: If Makie.jl is not loaded.
 """
 function makie_palette(args...; kwargs...)

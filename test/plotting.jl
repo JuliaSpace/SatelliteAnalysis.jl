@@ -199,6 +199,16 @@ end
     @test fig isa Figure
     @test ax isa Axis
 
+    # The keyword `theme` also accepts a Makie theme, which is applied as it is, and
+    # `nothing`, which keeps the current Makie theme.
+    fig, ax = plot_decay_analysis(df; theme = Theme(; Axis = (; titlesize = 31,)))
+    @test ax.titlesize[] == 31
+
+    fig, ax = with_theme(Theme(; Axis = (; titlesize = 33,))) do
+        plot_decay_analysis(df; theme = nothing)
+    end
+    @test ax.titlesize[] == 33
+
     # Partial assumption metadata must render only the resolvable lines.
     df_partial = copy(df_no_metadata)
     metadata!(df_partial, "Drag Coefficient", 2.0; style = :note)
@@ -384,4 +394,22 @@ end
     # == Errors ============================================================================
 
     @test_throws ArgumentError plot_world_map(; theme = :blue)
+
+    # The keyword `theme` also accepts a Makie theme, which is applied as it is, and
+    # `nothing`, which keeps the current Makie theme.
+    custom_theme = Theme(; Axis = (; titlesize = 31,))
+
+    fig, ax = plot_world_map(; theme = custom_theme)
+    @test ax.titlesize[] == 31
+
+    fig, ax = with_theme(Theme(; Axis = (; titlesize = 33,))) do
+        plot_world_map(; theme = nothing)
+    end
+    @test ax.titlesize[] == 33
+
+    # The default theme must not use the current Makie theme.
+    fig, ax = with_theme(Theme(; Axis = (; titlesize = 33,))) do
+        plot_world_map()
+    end
+    @test ax.titlesize[] != 33
 end

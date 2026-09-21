@@ -8,8 +8,14 @@
 #                                     Public Functions                                     #
 ############################################################################################
 
-function makie_palette(n::Int; dark::Bool = false)
-    colors = dark ? CATEGORICAL_DARK : CATEGORICAL_LIGHT
+function makie_palette(n::Int; variant::Symbol = :light)
+    variant in (:dark, :light) || throw(
+        ArgumentError(
+            "Unknown palette variant `:$variant`. The available options are `:dark` and `:light`.",
+        ),
+    )
+
+    colors = variant == :dark ? CATEGORICAL_DARK : CATEGORICAL_LIGHT
 
     (0 <= n <= length(colors)) || throw(
         ArgumentError("The categorical palette has $(length(colors)) colors; requested: $n.")
@@ -63,6 +69,31 @@ end
 ############################################################################################
 #                                    Private Functions                                     #
 ############################################################################################
+
+"""
+    _with_plot_theme(f, theme::Symbol; kwargs...) -> Any
+    _with_plot_theme(f, theme::Makie.Theme; kwargs...) -> Any
+    _with_plot_theme(f, theme::Nothing; kwargs...) -> Any
+
+Call the function `f` applying the theme selected by the keyword `theme` of the plotting
+functions, returning the value returned by `f`. If `theme` is a `Symbol`, it is the variant
+of the theme created by [`makie_theme`](@ref), which receives `kwargs...`. If it is a
+`Makie.Theme`, it is applied as it is. If it is `nothing`, no theme is applied.
+
+Every Makie object must be created inside `f` because Makie resolves the theme attributes at
+object-creation time.
+"""
+function SatelliteAnalysis._with_plot_theme(f, theme::Symbol; kwargs...)
+    # Build the theme first since it also validates the variant in `theme`.
+    sa_theme = makie_theme(theme; kwargs...)
+    return with_theme(f, sa_theme)
+end
+
+function SatelliteAnalysis._with_plot_theme(f, theme::Makie.Theme; kwargs...)
+    return with_theme(f, theme)
+end
+
+SatelliteAnalysis._with_plot_theme(f, ::Nothing; kwargs...) = f()
 
 # Directory holding the bundled `.ttf` font files, relative to this source file.
 const _FONT_DIR = normpath(joinpath(@__DIR__, "..", "..", "assets", "fonts"))

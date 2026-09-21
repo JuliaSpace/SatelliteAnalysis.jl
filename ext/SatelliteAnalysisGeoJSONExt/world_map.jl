@@ -5,23 +5,30 @@
 ############################################################################################
 
 function SatelliteAnalysis.plot_world_map(;
-    theme::Symbol = :light,
+    theme::Union{Nothing, Symbol, Makie.Theme} = :light,
     size = (1450, 800),
     kwargs...
 )
-    # Build the theme first since it also validates the variant in `theme`.
-    sa_theme = SatelliteAnalysis.makie_theme(theme)
-
-    # Every object must be created inside `with_theme` because Makie resolves the theme
+    # Every object must be created inside this function because Makie resolves the theme
     # attributes at object-creation time.
-    return with_theme(sa_theme) do
-        return _create_world_map(theme; size = size, kwargs...)
+    return SatelliteAnalysis._with_plot_theme(theme) do
+        return _create_world_map(_theme_variant(theme); size = size, kwargs...)
     end
 end
 
 ############################################################################################
 #                                    Private Functions                                     #
 ############################################################################################
+
+"""
+    _theme_variant(theme::Union{Nothing, Symbol, Makie.Theme}) -> Symbol
+
+Return the variant of the SatelliteAnalysis.jl theme used to select the colors of the
+elements that are not styled by the Makie theme, such as the country polygons. If `theme` is
+a `Symbol`, it is the variant. Otherwise, the variant is `:light`.
+"""
+_theme_variant(theme::Symbol) = theme
+_theme_variant(::Union{Nothing, Makie.Theme}) = :light
 
 """
     _create_world_map(variant::Symbol; kwargs...) -> Figure, Axis

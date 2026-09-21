@@ -26,7 +26,7 @@ function SatelliteAnalysis.plot_decay_analysis(
     show_reentry_callout::Bool = true,
     subtitle::Union{Nothing, String, Symbol} = :auto,
     terminate_altitude::Union{Nothing, Number}  = nothing,
-    theme::Symbol = :light,
+    theme::Union{Nothing, Symbol, Makie.Theme} = :light,
     title::String = "Orbital Decay Analysis",
     xlims::Union{Nothing, Tuple} = nothing,
     ylims::Union{Nothing, Tuple} = nothing,
@@ -86,8 +86,11 @@ function SatelliteAnalysis.plot_decay_analysis(
         ArgumentError("The keyword `subtitle` must be a `String`, `nothing`, or `:auto`.")
     )
 
-    # Build the theme first since it also validates the variant in `theme`.
-    sa_theme = makie_theme(theme; fontscale = fontscale, mono_ticklabels = mono_ticklabels)
+    # If the user selected a theme variant, build the theme first since it also validates
+    # the variant in `theme`. Otherwise, `theme` is a Makie theme or `nothing`.
+    sa_theme = theme isa Symbol ?
+        makie_theme(theme; fontscale = fontscale, mono_ticklabels = mono_ticklabels) :
+        theme
 
     # Width of the column with the information panel and the legend, scaling with the
     # figure width by default.
@@ -140,6 +143,8 @@ function SatelliteAnalysis.plot_decay_analysis(
 
     # == Colors ============================================================================
 
+    # Notice that the elements not styled by the theme use the colors of the variant
+    # `:light` if `theme` is a Makie theme or `nothing`.
     dark = theme == :dark
 
     accent_color    = dark ? MAGENTA_DARK        : MAGENTA_LIGHT
@@ -205,7 +210,7 @@ function SatelliteAnalysis.plot_decay_analysis(
 
     # Every object must be created inside `with_theme` because Makie resolves the theme
     # attributes at object-creation time.
-    return with_theme(sa_theme) do
+    return SatelliteAnalysis._with_plot_theme(sa_theme) do
         fig = Figure(; size = size, kwargs...)
 
         legend_plots  = Any[]

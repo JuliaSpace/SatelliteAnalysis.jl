@@ -55,7 +55,8 @@ Version 0.4.0
 - ![Feature][badge-feature] The plotting functions `plot_world_map`, `plot_ground_track`,
   and `plot_ground_facility_visibility_circles` now apply the SatelliteAnalysis.jl Makie
   theme automatically and gained the keyword `theme` to select the variant (`:light` or
-  `:dark`).
+  `:dark`). This keyword also accepts a `Makie.Theme`, which is applied as it is, or
+  `nothing`, which keeps the current Makie theme.
 - ![Feature][badge-feature] We added the function `plot_decay_analysis`, available when
   **Makie.jl** is loaded, that plots the mean apogee and perigee altitude evolution
   computed by `decay_analysis` together with an information panel showing the satellite
