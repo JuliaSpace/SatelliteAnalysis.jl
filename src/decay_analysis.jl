@@ -4,8 +4,10 @@
 #
 ############################################################################################
 
-export decay_analysis, @decay_analysis__jacchia77, @decay_analysis__jacchia77_stela
-export @decay_analysis__jr1971
+export decay_analysis
+export decay_analysis__jacchia77_kwargs, @decay_analysis__jacchia77
+export decay_analysis__jacchia77_stela_kwargs, @decay_analysis__jacchia77_stela
+export decay_analysis__jr1971_kwargs, @decay_analysis__jr1971
 
 """
     decay_analysis(orb::KeplerianElements; kwargs...) -> DataFrame
@@ -302,18 +304,36 @@ macro decay_analysis__jacchia77()
     # The expansion splats the named tuple returned by the setup function into the keyword
     # section of the call, adding the keywords `atmospheric_model`,
     # `atmospheric_model_name`, and `space_indices`.
-    return Expr(:..., :(_decay_analysis__jacchia77_setup(nothing)))
+    return Expr(:..., :(decay_analysis__jacchia77_kwargs()))
 end
 
 """
-    _decay_analysis__jacchia77_setup(::Any) -> NamedTuple
+    decay_analysis__jacchia77_kwargs() -> NamedTuple
 
-Return the named tuple with the keywords of [`decay_analysis`](@ref) that select the
-Jacchia 1977 atmospheric model, used by the macro [`@decay_analysis__jacchia77`](@ref).
-The argument is a dummy value (`nothing`) that allows the decay analysis extension to
-override this fallback with a more specific method instead of overwriting it, which is
-forbidden during precompilation.
+Return the named tuple with the keywords of [`decay_analysis`](@ref) that select the Jacchia
+1977 atmospheric model: `atmospheric_model`, `atmospheric_model_name`, and `space_indices`.
+It is the function version of the macro [`@decay_analysis__jacchia77`](@ref), which
+describes the model and the default space indices source. The function allows selecting the
+model programmatically:
+
+```julia
+kwargs = decay_analysis__jacchia77_kwargs()
+decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0, kwargs...)
+```
+
+Keywords passed **after** the splatted named tuple override the ones it provides.
+
+!!! warning
+
+    This function **only works** after loading the package
+    **OrdinaryDiffEqAdamsBashforthMoulton.jl**, as described in [`decay_analysis`](@ref).
 """
+decay_analysis__jacchia77_kwargs() = _decay_analysis__jacchia77_setup(nothing)
+
+# Fallback of the function that returns the keywords selecting the Jacchia 1977 atmospheric
+# model. The argument is a dummy value (`nothing`) that allows the decay analysis extension
+# to override this fallback with a more specific method instead of overwriting it, which is
+# forbidden during precompilation.
 function _decay_analysis__jacchia77_setup(::Any)
     return error(
         "Load OrdinaryDiffEqAdamsBashforthMoulton.jl to use `@decay_analysis__jacchia77`."
@@ -383,18 +403,36 @@ macro decay_analysis__jacchia77_stela()
     # The expansion splats the named tuple returned by the setup function into the keyword
     # section of the call, adding the keywords `atmospheric_model`,
     # `atmospheric_model_name`, and `space_indices`.
-    return Expr(:..., :(_decay_analysis__jacchia77_stela_setup(nothing)))
+    return Expr(:..., :(decay_analysis__jacchia77_stela_kwargs()))
 end
 
 """
-    _decay_analysis__jacchia77_stela_setup(::Any) -> NamedTuple
+    decay_analysis__jacchia77_stela_kwargs() -> NamedTuple
 
-Return the named tuple with the keywords of [`decay_analysis`](@ref) that select the
-STELA variant of the Jacchia 1977 atmospheric model, used by the macro
-[`@decay_analysis__jacchia77_stela`](@ref). The argument is a dummy value (`nothing`)
-that allows the decay analysis extension to override this fallback with a more specific
-method instead of overwriting it, which is forbidden during precompilation.
+Return the named tuple with the keywords of [`decay_analysis`](@ref) that select the STELA
+variant of the Jacchia 1977 atmospheric model: `atmospheric_model`,
+`atmospheric_model_name`, and `space_indices`. It is the function version of the macro
+[`@decay_analysis__jacchia77_stela`](@ref), which describes the model and the default space
+indices source. The function allows selecting the model programmatically:
+
+```julia
+kwargs = decay_analysis__jacchia77_stela_kwargs()
+decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0, kwargs...)
+```
+
+Keywords passed **after** the splatted named tuple override the ones it provides.
+
+!!! warning
+
+    This function **only works** after loading the package
+    **OrdinaryDiffEqAdamsBashforthMoulton.jl**, as described in [`decay_analysis`](@ref).
 """
+decay_analysis__jacchia77_stela_kwargs() = _decay_analysis__jacchia77_stela_setup(nothing)
+
+# Fallback of the function that returns the keywords selecting the STELA variant of the
+# Jacchia 1977 atmospheric model. The argument is a dummy value (`nothing`) that allows the
+# decay analysis extension to override this fallback with a more specific method instead of
+# overwriting it, which is forbidden during precompilation.
 function _decay_analysis__jacchia77_stela_setup(::Any)
     return error(
         "Load OrdinaryDiffEqAdamsBashforthMoulton.jl to use " *
@@ -458,18 +496,36 @@ macro decay_analysis__jr1971()
     # The expansion splats the named tuple returned by the setup function into the keyword
     # section of the call, adding the keywords `atmospheric_model`,
     # `atmospheric_model_name`, and `space_indices`.
-    return Expr(:..., :(_decay_analysis__jr1971_setup(nothing)))
+    return Expr(:..., :(decay_analysis__jr1971_kwargs()))
 end
 
 """
-    _decay_analysis__jr1971_setup(::Any) -> NamedTuple
+    decay_analysis__jr1971_kwargs() -> NamedTuple
 
 Return the named tuple with the keywords of [`decay_analysis`](@ref) that select the
-Jacchia-Roberts 1971 atmospheric model, used by the macro
-[`@decay_analysis__jr1971`](@ref). The argument is a dummy value (`nothing`) that allows
-the decay analysis extension to override this fallback with a more specific method instead
-of overwriting it, which is forbidden during precompilation.
+Jacchia-Roberts 1971 atmospheric model: `atmospheric_model`, `atmospheric_model_name`, and
+`space_indices`. It is the function version of the macro [`@decay_analysis__jr1971`](@ref),
+which describes the model and the default space indices source. The function allows
+selecting the model programmatically:
+
+```julia
+kwargs = decay_analysis__jr1971_kwargs()
+decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0, kwargs...)
+```
+
+Keywords passed **after** the splatted named tuple override the ones it provides.
+
+!!! warning
+
+    This function **only works** after loading the package
+    **OrdinaryDiffEqAdamsBashforthMoulton.jl**, as described in [`decay_analysis`](@ref).
 """
+decay_analysis__jr1971_kwargs() = _decay_analysis__jr1971_setup(nothing)
+
+# Fallback of the function that returns the keywords selecting the Jacchia-Roberts 1971
+# atmospheric model. The argument is a dummy value (`nothing`) that allows the decay
+# analysis extension to override this fallback with a more specific method instead of
+# overwriting it, which is forbidden during precompilation.
 function _decay_analysis__jr1971_setup(::Any)
     return error(
         "Load OrdinaryDiffEqAdamsBashforthMoulton.jl to use `@decay_analysis__jr1971`."

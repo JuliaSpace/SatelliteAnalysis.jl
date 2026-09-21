@@ -604,7 +604,7 @@ end
     @test 5 < lifetime < 200
 
     # The macro must select the shared Kp-based default space indices source.
-    setup = SatelliteAnalysis._decay_analysis__jacchia77_stela_setup(nothing)
+    setup = decay_analysis__jacchia77_stela_kwargs()
     ext   = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
 
     @test setup.atmospheric_model === ext.Jacchia77AtmosphericModel(Val(:stela))
@@ -678,6 +678,27 @@ end
     @test all(isfinite, kps)
     @test all(0.0 .<= kps .<= 9.0)
 
+    # The function version of the macro must provide the same keywords, allowing to select
+    # the model programmatically.
+    kwargs = decay_analysis__jr1971_kwargs()
+
+    @test kwargs isa NamedTuple
+    @test keys(kwargs) == (:atmospheric_model, :atmospheric_model_name, :space_indices)
+
+    df_kwargs = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        kwargs...,
+        space_indices       = si_const
+    )
+
+    @test df_kwargs[end, :date] == df[end, :date]
+    @test metadata(df_kwargs, "Atmospheric Model") == "Jacchia-Roberts 1971"
+
+    @test decay_analysis__jacchia77_kwargs().atmospheric_model_name == "Jacchia 1977"
+
     # The wrapper must clamp the altitude to the lower limit of the model and must return
     # a null density above its upper limit.
     ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
@@ -700,17 +721,17 @@ end
         0.0
     )
 
-    for setup in (
-        SatelliteAnalysis._decay_analysis__jr1971_setup,
-        SatelliteAnalysis._decay_analysis__jacchia77_setup,
-        SatelliteAnalysis._decay_analysis__jacchia77_stela_setup,
+    for model_kwargs in (
+        decay_analysis__jr1971_kwargs,
+        decay_analysis__jacchia77_kwargs,
+        decay_analysis__jacchia77_stela_kwargs,
     )
         df_gto = decay_analysis(
             orb_gto;
             satellite_mass      = 100.0,
             satellite_mean_area = 1.0,
             gravity_model       = gm,
-            setup(nothing)...,
+            model_kwargs()...,
             space_indices       = si_const,
             tf                  = 10 * 86400.0
         )

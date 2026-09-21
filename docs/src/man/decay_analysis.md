@@ -298,6 +298,25 @@ df_j77_stela = decay_analysis(
 df_j77_stela[end, :date]
 ```
 
+Each macro has a function version that returns the same keywords as a named tuple:
+[`decay_analysis__jacchia77_kwargs`](@ref),
+[`decay_analysis__jacchia77_stela_kwargs`](@ref), and
+[`decay_analysis__jr1971_kwargs`](@ref). They allow selecting the atmospheric model
+programmatically, for example, when comparing the models in a loop:
+
+```julia
+for model_kwargs in (decay_analysis__jacchia77_kwargs, decay_analysis__jr1971_kwargs)
+    df = decay_analysis(
+        orb;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        model_kwargs()...
+    )
+
+    println(df[end, :date])
+end
+```
+
 ## Plotting
 
 If the user loads the package [Makie.jl](https://docs.makie.org/stable/), an extension is

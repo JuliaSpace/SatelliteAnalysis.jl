@@ -60,7 +60,9 @@ Version 0.4.0
   macros provides the F10.7 values adjusted to 1 AU, as required by the Jacchia models,
   and the observed Kp (space indices `F10adj`, `F10adj_avg_center81`, and `Kp_daily`),
   falling back to the predicted F10.7 and to Kp = 7 / 3 (equivalent to Ap = 9, as in
-  STELA) outside the available timespans.
+  STELA) outside the available timespans. The functions `decay_analysis__jacchia77_kwargs`,
+  `decay_analysis__jacchia77_stela_kwargs`, and `decay_analysis__jr1971_kwargs` return the
+  same keywords as named tuples, allowing the selection of the model programmatically.
 - ![Feature][badge-feature] We added the keyword `verbose` to `decay_analysis`. When
   enabled, a progress interface is shown in `stderr` during the numerical integration: in
   interactive terminals, a live panel with a progress bar, the current perigee and apogee
