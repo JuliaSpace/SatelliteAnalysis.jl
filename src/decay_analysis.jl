@@ -9,6 +9,7 @@ export @decay_analysis__jr1971
 
 """
     decay_analysis(orb::KeplerianElements; kwargs...) -> DataFrame
+    decay_analysis(sv::OrbitStateVector; kwargs...) -> DataFrame
 
 Compute the orbital decay analysis of a satellite with initial mean elements `orb`
 represented in the TOD reference frame, propagating the mean orbital elements with
@@ -20,6 +21,10 @@ averaged dynamics, following the same convention of semi-analytical tools such a
 Osculating elements, obtained, for example, from an instantaneous state vector, can be
 used by setting the keyword `input_type` to `:osculating`, in which case they are
 converted to mean elements before the propagation.
+
+The initial state can also be specified by the orbit state vector `sv` represented in the
+TOD reference frame. Since a state vector is an instantaneous (osculating) state, the
+default value of the keyword `input_type` is `:osculating` in this case.
 
 The model averages the following perturbations over one orbit: Earth gravity zonal
 harmonics (including a closed-form J₂² correction), third-body attraction of the Sun and
@@ -221,8 +226,20 @@ indices provided by **SpaceIndices.jl**, requiring only the satellite properties
 julia> df = decay_analysis(orb; satellite_mass = 100.0, satellite_mean_area = 1.0);
 ```
 """
+function decay_analysis(sv::OrbitStateVector; input_type::Symbol = :osculating, kwargs...)
+    # A state vector is an instantaneous state. Hence, the elements obtained from it are
+    # osculating by default.
+    orb = convert(KeplerianElements, sv)
+    return decay_analysis(orb; input_type = input_type, kwargs...)
+end
+
 function decay_analysis(::Any; kwargs...)
-    return error("Load OrdinaryDiffEqAdamsBashforthMoulton.jl to use `decay_analysis`.")
+    return _extension_error(
+        "decay_analysis",
+        "OrdinaryDiffEqAdamsBashforthMoulton.jl",
+        "OrdinaryDiffEqAdamsBashforthMoulton",
+        "decay_analysis(orb::Union{KeplerianElements, OrbitStateVector}; kwargs...)",
+    )
 end
 
 """

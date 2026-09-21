@@ -180,6 +180,39 @@ end
     # The raw solution must not be stored by default.
     @test "Solution" ∉ metadatakeys(df_mean)
 
+    # == Orbit State Vector ================================================================
+
+    # A state vector is treated as an osculating state by default.
+    sv = convert(OrbitStateVector, orb)
+
+    df_sv = decay_analysis(
+        sv;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        space_indices       = si_const
+    )
+
+    lifetime_sv = datetime2julian(df_sv[end, :date]) - jd₀
+    @test lifetime_sv ≈ lifetime_osc rtol = 1e-6
+
+    df_sv = decay_analysis(
+        sv;
+        satellite_mass      = 100.0,
+        satellite_mean_area = 1.0,
+        gravity_model       = gm,
+        space_indices       = si_const,
+        input_type          = :mean
+    )
+
+    lifetime_sv = datetime2julian(df_sv[end, :date]) - jd₀
+    @test lifetime_sv ≈ lifetime rtol = 1e-6
+
+    # Inputs with an invalid type must throw an error that describes the valid call.
+    @test_throws "the valid call is" decay_analysis(
+        1.0; satellite_mass = 100.0, satellite_mean_area = 1.0
+    )
+
     # An unknown symbol must raise a clear error.
     @test_throws ArgumentError decay_analysis(
         orb;
