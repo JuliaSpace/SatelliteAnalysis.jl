@@ -27,6 +27,12 @@ to **Makie.jl** documentation.
 
 # Keywords
 
+- `ground_facilities::Union{Nothing, AbstractVector{<:Tuple}}`: Vector with the WGS84
+    position of each ground facility `(latitude [rad], longitude [rad], altitude [m])`, as
+    used to compute the visibility circles, which selects the position of the ground
+    facility markers. If it is `nothing`, the positions are estimated using the visibility
+    circles.
+    (**Default** = `nothing`)
 - `ground_facility_names::Union{Nothing, Vector{String}}`: The user can provide a vector of
     `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
     parameter is `nothing`, no ground facility name is added to the figure.
@@ -98,6 +104,12 @@ visibility circle, which can be used, for example, to build a legend.
 
 # Keywords
 
+- `ground_facilities::Union{Nothing, AbstractVector{<:Tuple}}`: Vector with the WGS84
+    position of each ground facility `(latitude [rad], longitude [rad], altitude [m])`, as
+    used to compute the visibility circles, which selects the position of the ground
+    facility markers. If it is `nothing`, the positions are estimated using the visibility
+    circles.
+    (**Default** = `nothing`)
 - `ground_facility_names::Union{Nothing, Vector{String}}`: The user can provide a vector of
     `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
     parameter is `nothing`, no ground facility name is added to the figure.

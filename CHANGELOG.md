@@ -129,6 +129,10 @@ Version 0.4.0
   `sun_sync_orbit_from_angular_velocity`.
 - ![Feature][badge-feature] We added the function `plot_world_map!`, which plots the country
   polygons of the world map in an existing **Makie.jl** axis.
+- ![Feature][badge-feature] The functions `plot_ground_facility_visibility_circles` and
+  `plot_ground_facility_visibility_circles!` have the new keyword `ground_facilities` to
+  provide the WGS84 positions of the ground facilities, which are used to place the markers.
+  Otherwise, the positions are estimated using the visibility circles, as before.
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were

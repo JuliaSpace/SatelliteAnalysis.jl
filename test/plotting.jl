@@ -402,10 +402,44 @@ end
     # Two circles, two markers, and two labels.
     @test length(ax.scene.plots) == 6
 
+    # == Ground Facility Positions =========================================================
+
+    # If the user provides the ground facility positions, the markers must be exactly at
+    # those positions. Otherwise, they are estimated using the visibility circles.
+    gfs = [(0, 0, 0), (-40 |> deg2rad, -60 |> deg2rad, 0)]
+
+    fig = Figure()
+    ax  = Axis(fig[1, 1])
+
+    plot_ground_facility_visibility_circles!(ax, [gfv1, gfv2]; ground_facilities = gfs)
+
+    markers = filter(p -> p isa Scatter, ax.scene.plots)
+
+    @test length(markers) == 2
+    @test markers[2][1][][1] ≈ Point2f(-60, -40)
+
+    fig = Figure()
+    ax  = Axis(fig[1, 1])
+
+    plot_ground_facility_visibility_circles!(ax, [gfv1, gfv2])
+
+    markers = filter(p -> p isa Scatter, ax.scene.plots)
+
+    @test markers[2][1][][1] ≈ Point2f(-60, -40) atol = 0.5
+    @test markers[2][1][][1] != Point2f(-60, -40)
+
+    fig, ax = plot_ground_facility_visibility_circles([gfv1, gfv2]; ground_facilities = gfs)
+
+    @test fig isa Figure
+
     # == Errors ============================================================================
 
     @test_throws ArgumentError plot_ground_facility_visibility_circles(
         [gfv1, gfv2]; ground_facility_names = ["GF 1", "GF 2", "GF 3"]
+    )
+
+    @test_throws ArgumentError plot_ground_facility_visibility_circles(
+        [gfv1, gfv2]; ground_facilities = [(0, 0, 0)]
     )
 
     @test_throws ArgumentError plot_ground_facility_visibility_circles!(
