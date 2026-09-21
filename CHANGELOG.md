@@ -134,6 +134,11 @@ Version 0.4.0
 - ![Bugfix][badge-bugfix] The function `ground_facility_gaps` was not accepting the keyword
   `num_chunks`. It now forwards all the keywords related to the access computation to
   `ground_facility_accesses`.
+- ![Bugfix][badge-bugfix] The function `design_sun_sync_ground_repeating_orbit` was throwing
+  an exception if there was no Sun-synchronous orbit for one of the values in
+  `int_rev_per_day`. Those values are now skipped. Furthermore, the keyword `no_warnings` of
+  `sun_sync_orbit_from_angular_velocity` was not suppressing the warning printed when the
+  algorithm did not converge.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to

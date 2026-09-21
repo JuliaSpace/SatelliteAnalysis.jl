@@ -151,15 +151,25 @@ function design_sun_sync_ground_repeating_orbit(
                 num_rev_per_day = int + num / den
                 n = num_rev_per_day * 2π / 86400
 
-                # Find a Sun synchronous orbit with that angular velocity.
-                a, i, converged = sun_sync_orbit_from_angular_velocity(
-                    n, e; no_warnings = true, J2 = J2, m0 = m0, R0 = R0
+                # Find a Sun synchronous orbit with that angular velocity. Notice that we
+                # use the private function that does not throw exceptions or print warnings
+                # if the orbit is not valid.
+                a, cos_i, converged, ~, ~ = _sun_sync_orbit_from_angular_velocity(
+                    n,
+                    e;
+                    max_iterations = 30,
+                    tolerance      = nothing,
+                    J2             = J2,
+                    m0             = m0,
+                    R0             = R0,
                 )
 
                 # If the algorithm has not converged or if the orbit is not valid, skip this
                 # value.
-                orbit_valid = a * (1 - e) > R₀
+                orbit_valid = (abs(cos_i) <= 1) && (a * (1 - e) > R₀)
                 (!converged || !orbit_valid) && continue
+
+                i = acos(cos_i)
 
                 # If we reach this point, add the orbit to the `DataFrame`.
                 orb_angvel = orbital_angular_velocity(
@@ -379,117 +389,20 @@ function sun_sync_orbit_from_angular_velocity(
     m0::Number = GM_EARTH,
     R0::Number = EARTH_EQUATORIAL_RADIUS,
 ) where {T1 <: Number, T2 <: Number}
-    T = float(promote_type(T1, T2))
-
-    # Constant to convert [rad / s] to [deg / day].
-    rs_to_dd = T(86400 * 180 / π)
-
-    # Constant to convert [rad / s] to [deg / min].
-    rs_to_dm = T(60 * 180 / π)
-
     # Check if the arguments are valid.
     angvel <= 0 && throw(ArgumentError("The angular velocity must be greater than 0."))
     !(0 <= e < 1) &&
         throw(ArgumentError("The eccentricity must be within the interval [0, 1)."))
 
-    # Obtain the tolerance.
-    tol = isnothing(tolerance) ? (√eps(T), √eps(T)) : (T(tolerance[1]), T(tolerance[2]))
-
-    # Auxiliary variables.
-    μ  = T(m0)
-    R₀ = T(R0)
-    J₂ = T(J2)
-    β² = 1 - T(e)^2
-    β  = √β²
-    β³ = β² * β
-    β⁴ = β² * β²
-
-    # Auxiliary constant to compute the functions.
-    k₅ = √(μ / R₀^3)
-    k₁ = -(3 // 2) * J₂ * k₅ / β⁴
-    k₂ = +(3 // 4) * J₂ / β³
-    k₄ = -k₁ / 2
-    k₃ = k₄ * β
-    k₆ = ((3 // 4) * J₂ / β⁴)^2 * k₅ * β
-
-    # We will change the units of the desired values to improve the numerical stability.
-    k₁ *= rs_to_dd
-    k₃ *= rs_to_dm
-    k₄ *= rs_to_dm
-    k₅ *= rs_to_dm
-    k₆ *= rs_to_dm
-
-    # The desired RAAN time-derivative is equal to the Earth's orbit mean motion
-    # [deg / day].
-    Ω̇_d = T(EARTH_ORBIT_MEAN_MOTION) * rs_to_dd
-
-    # The desired angular velocity in [deg / min].
-    ω_d = T(angvel) * rs_to_dm
-
-    # == Solving for Zeros of f₁ and f₂ Using Newton-Raphson Method ========================
-    #
-    # The function `f₁` is the residue related to the time derivative of RAAN, and the
-    # function `f₂` is the residue related to the angular velocity.
-
-    # Initial guess based on the unperturbed model. Notice that we will estimate
-    # `1 / √(a / R₀)` and `cos(i)`
-    isqrt_ā = (ω_d / k₅)^(1 // 3)
-    cos_i   = -Ω̇_d / isqrt_ā^7 / k₁
-
-    # By setting the initial values of `f1` and `f2` to `10tol`, we assure that the loop
-    # will be executed at least one time.
-    f₁ = 10T(tol[1])
-    f₂ = 10T(tol[2])
-
-    # Loop
-    it = 1
-    converged = true
-
-    while (abs(f₁) > tol[1]) || (abs(f₂) > tol[2])
-        # Compute the residues and the Jacobian using the current estimates.
-        f, J = _sun_sync_orbit__residues_and_jacobian(
-            isqrt_ā, cos_i, Ω̇_d, ω_d, k₁, k₂, k₃, k₄, k₅, k₆
-        )
-
-        f₁, f₂ = f
-
-        @debug """
-        Iteration #$it
-          Estimation :
-            a  = $(R₀ / (isqrt_ā * isqrt_ā) / 1000) km
-            i  = $(abs(cos_i) <= 1 ? acosd(cos_i) : "INVALID") °
-          Residues :
-            f₁ = $(f₁) ° / day
-            f₂ = $(f₂) ° / min
-        """
-
-        # A singular/non-finite Newton step cannot produce a meaningful orbit.  Return the
-        # best estimate and report non-convergence rather than throwing from a division by
-        # zero or allowing NaNs to spread through subsequent iterations.
-        if !all(isfinite, (f₁, f₂)) || !all(isfinite, J) || iszero(det(J))
-            converged = false
-            break
-        end
-
-        # Compute the new estimate using the Newton-Raphson method.
-        new_isqrt_ā, new_cos_i = @SVector([isqrt_ā, cos_i]) - J \ @SVector([f₁, f₂])
-
-        if !all(isfinite, (new_isqrt_ā, new_cos_i))
-            converged = false
-            break
-        end
-
-        isqrt_ā, cos_i = new_isqrt_ā, new_cos_i
-
-        # If the maximum number of iterations allowed has been reached, then
-        # indicate that the solution did not converged and exit loop.
-        if (it >= max_iterations)
-            converged = false
-            break
-        end
-
-        it += 1
-    end
+    a, cos_i, converged, f₁, f₂ = _sun_sync_orbit_from_angular_velocity(
+        angvel,
+        e;
+        max_iterations = max_iterations,
+        tolerance      = tolerance,
+        J2             = J2,
+        m0             = m0,
+        R0             = R0,
+    )
 
     # If `cos_i` absolute value is larger than 1, the solution does not have physical
     # meaning.
@@ -499,20 +412,18 @@ function sun_sync_orbit_from_angular_velocity(
         ),
     )
 
-    a = R₀ / (isqrt_ā * isqrt_ā)
     i = acos(cos_i)
 
     # Check if the orbit is valid.
-    ((a * (1 - e) < R₀) & !no_warnings) &&
+    ((a * (1 - e) < R0) && !no_warnings) &&
         @warn("The orbit is not valid because the perigee is inside the Earth.")
 
-    !converged && @warn("""
+    (!converged && !no_warnings) && @warn("""
         The algorithm to compute the Sun-synchronous orbit has not converged!
         Residues :
           f₁ = $f₁ ° / day
           f₂ = $f₂ ° / min""")
 
-    # Return.
     return a, i, converged
 end
 
@@ -1005,6 +916,157 @@ end
 ############################################################################################
 
 """
+    _sun_sync_orbit_from_angular_velocity(angvel::T1, e::T2; kwargs...) where {T1 <: Number, T2 <: Number} -> T, T, Bool, T, T
+
+Solve the problem described in [`sun_sync_orbit_from_angular_velocity`](@ref) for the
+angular velocity `angvel` [rad / s] and the eccentricity `e` [-] without validating the
+inputs, throwing exceptions, or printing warnings. Hence, the caller must verify whether
+the algorithm converged and whether the solution has physical meaning, i.e., whether the
+absolute value of the returned inclination cosine is not larger than 1.
+
+!!! note
+
+    The type `T` is obtained by promoting `T1` and `T2` to a float-pointing number.
+
+# Keywords
+
+- `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
+- `tolerance::Union{Nothing, NTuple{2, Number}}`: Residue tolerances to verify if the
+    numerical method has converged. If it is `nothing`, `(√eps(T), √eps(T))` will be used.
+- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
+- `J2::Number`: J₂ perturbation term.
+- `R0::Number`: Earth's equatorial radius [m].
+
+# Returns
+
+- `T`: Semi-major axis [m].
+- `T`: Cosine of the inclination [-].
+- `Bool`: `true` if the Newton-Raphson algorithm converged, or `false` otherwise.
+- `T`: Residue related to the RAAN time-derivative [° / day].
+- `T`: Residue related to the angular velocity [° / min].
+"""
+function _sun_sync_orbit_from_angular_velocity(
+    angvel::T1,
+    e::T2;
+    max_iterations::Number,
+    tolerance::Union{Nothing, NTuple{2, Number}},
+    J2::Number,
+    m0::Number,
+    R0::Number,
+) where {T1 <: Number, T2 <: Number}
+    T = float(promote_type(T1, T2))
+
+    # Constant to convert [rad / s] to [deg / day].
+    rs_to_dd = T(86400 * 180 / π)
+
+    # Constant to convert [rad / s] to [deg / min].
+    rs_to_dm = T(60 * 180 / π)
+
+    # Obtain the tolerance.
+    tol = isnothing(tolerance) ? (√eps(T), √eps(T)) : (T(tolerance[1]), T(tolerance[2]))
+
+    # Auxiliary variables.
+    μ  = T(m0)
+    R₀ = T(R0)
+    J₂ = T(J2)
+    β² = 1 - T(e)^2
+    β  = √β²
+    β³ = β² * β
+    β⁴ = β² * β²
+
+    # Auxiliary constant to compute the functions.
+    k₅ = √(μ / R₀^3)
+    k₁ = -(3 // 2) * J₂ * k₅ / β⁴
+    k₂ = +(3 // 4) * J₂ / β³
+    k₄ = -k₁ / 2
+    k₃ = k₄ * β
+    k₆ = ((3 // 4) * J₂ / β⁴)^2 * k₅ * β
+
+    # We will change the units of the desired values to improve the numerical stability.
+    k₁ *= rs_to_dd
+    k₃ *= rs_to_dm
+    k₄ *= rs_to_dm
+    k₅ *= rs_to_dm
+    k₆ *= rs_to_dm
+
+    # The desired RAAN time-derivative is equal to the Earth's orbit mean motion
+    # [deg / day].
+    Ω̇_d = T(EARTH_ORBIT_MEAN_MOTION) * rs_to_dd
+
+    # The desired angular velocity in [deg / min].
+    ω_d = T(angvel) * rs_to_dm
+
+    # == Solving for Zeros of f₁ and f₂ Using Newton-Raphson Method ========================
+    #
+    # The function `f₁` is the residue related to the time derivative of RAAN, and the
+    # function `f₂` is the residue related to the angular velocity.
+
+    # Initial guess based on the unperturbed model. Notice that we will estimate
+    # `1 / √(a / R₀)` and `cos(i)`
+    isqrt_ā = (ω_d / k₅)^(1 // 3)
+    cos_i   = -Ω̇_d / isqrt_ā^7 / k₁
+
+    # By setting the initial values of `f1` and `f2` to `10tol`, we assure that the loop
+    # will be executed at least one time.
+    f₁ = 10T(tol[1])
+    f₂ = 10T(tol[2])
+
+    # Loop
+    it = 1
+    converged = true
+
+    while (abs(f₁) > tol[1]) || (abs(f₂) > tol[2])
+        # Compute the residues and the Jacobian using the current estimates.
+        f, J = _sun_sync_orbit__residues_and_jacobian(
+            isqrt_ā, cos_i, Ω̇_d, ω_d, k₁, k₂, k₃, k₄, k₅, k₆
+        )
+
+        f₁, f₂ = f
+
+        @debug """
+        Iteration #$it
+          Estimation :
+            a  = $(R₀ / (isqrt_ā * isqrt_ā) / 1000) km
+            i  = $(abs(cos_i) <= 1 ? acosd(cos_i) : "INVALID") °
+          Residues :
+            f₁ = $(f₁) ° / day
+            f₂ = $(f₂) ° / min
+        """
+
+        # A singular/non-finite Newton step cannot produce a meaningful orbit.  Return the
+        # best estimate and report non-convergence rather than throwing from a division by
+        # zero or allowing NaNs to spread through subsequent iterations.
+        if !all(isfinite, (f₁, f₂)) || !all(isfinite, J) || iszero(det(J))
+            converged = false
+            break
+        end
+
+        # Compute the new estimate using the Newton-Raphson method.
+        new_isqrt_ā, new_cos_i = @SVector([isqrt_ā, cos_i]) - J \ @SVector([f₁, f₂])
+
+        if !all(isfinite, (new_isqrt_ā, new_cos_i))
+            converged = false
+            break
+        end
+
+        isqrt_ā, cos_i = new_isqrt_ā, new_cos_i
+
+        # If the maximum number of iterations allowed has been reached, then
+        # indicate that the solution did not converged and exit loop.
+        if (it >= max_iterations)
+            converged = false
+            break
+        end
+
+        it += 1
+    end
+
+    a = R₀ / (isqrt_ā * isqrt_ā)
+
+    return a, cos_i, converged, f₁, f₂
+end
+
+"""
     _sun_sync_orbit__residues_and_jacobian(isqrt_ā::T, cos_i::T, Ω̇_d::T, ω_d::T, k₁::T, k₂::T, k₃::T, k₄::T, k₅::T, k₆::T) where {T <: Number} -> SVector{2, T}, SMatrix{2, 2, T, 4}
 
 Compute the residues and the Jacobian used by the Newton-Raphson method in the function
@@ -1045,7 +1107,8 @@ function _sun_sync_orbit__residues_and_jacobian(
     ∂f₁_∂isqrt_a = -k₁ * (7cos_i + 11k₂ * (3cos³_i - cos_i) * isqrt_ā⁴) * isqrt_ā⁶
     ∂f₁_∂cos_i   = -k₁ * (1 + k₂ * (9cos²_i - 1) * isqrt_ā⁴) * isqrt_ā⁷
     ∂f₂_∂isqrt_a = -(3k₅ + 7c₄ * isqrt_ā⁴ + 11k₆ * c₃ * isqrt_ā⁸) * isqrt_ā²
-    ∂f₂_∂cos_i   = -((6k₃ + 10k₄) * cos_i + k₆ * (-16cos_i + 60cos³_i) * isqrt_ā⁴) * isqrt_ā⁷
+    ∂f₂_∂cos_i   =
+        -((6k₃ + 10k₄) * cos_i + k₆ * (-16cos_i + 60cos³_i) * isqrt_ā⁴) * isqrt_ā⁷
 
     f = @SVector T[f₁, f₂]
     J = @SMatrix T[

@@ -130,6 +130,19 @@
     @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
         1, 5; eccentricity = 1
     )
+
+    # == Revolutions per Day Without a Sun-Synchronous Orbit ===============================
+
+    # If there is no Sun-synchronous orbit for a number of revolutions per day, it must be
+    # skipped without throwing exceptions or printing warnings.
+    df = @test_logs design_sun_sync_ground_repeating_orbit(1, 1; int_rev_per_day = (5, 14))
+
+    @test size(df) == (1, 7)
+    @test df[begin, :rev_per_days] == "14"
+
+    df = @test_logs design_sun_sync_ground_repeating_orbit(1, 1; int_rev_per_day = (5,))
+
+    @test size(df) == (0, 7)
 end
 
 # -- Function: sun_sync_orbit_from_angular_velocity ----------------------------------------
@@ -173,6 +186,17 @@ end
         (:warn,), sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad; max_iterations = 3)
     ))
     @test c == false
+
+    # The keyword `no_warnings` must suppress all the warnings.
+    a, i, c = @test_logs sun_sync_orbit_from_angular_velocity(
+        0.06 |> deg2rad; max_iterations = 3, no_warnings = true
+    )
+    @test c == false
+
+    a, i, c = @test_logs sun_sync_orbit_from_angular_velocity(
+        0.2 |> deg2rad; no_warnings = true
+    )
+    @test c == true
 
     # == Test When the Orbit Is Not Valid ==================================================
 
