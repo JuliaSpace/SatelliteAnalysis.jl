@@ -737,6 +737,10 @@ end
 
     @test occursin("no reentry within 24.0 h", out)
 
+    # The wall time must be measured from the object creation if the progress interface was
+    # not explicitly started.
+    @test occursin(r"\(wall time: [0-9.]+ s\)", out)
+
     # == Progress Fraction =================================================================
 
     p₃ = ext.DecayProgress(devnull, 100.0, 300e3, 120e3)

@@ -32,7 +32,8 @@ Store the state of the progress interface shown during the decay analysis.
 - `tf::Float64`: Maximum propagation time [s] after the orbit epoch.
 - `perigee₀::Float64`: Initial mean perigee altitude [m].
 - `terminate_altitude::Float64`: Mean perigee altitude [m] that terminates the analysis.
-- `start_wall::Float64`: Wall clock [s] at the beginning of the analysis.
+- `start_wall::Float64`: Wall clock [s] at the beginning of the analysis. It is initialized
+    when the object is created and updated by the function `_start_decay_progress!`.
 - `last_draw_wall::Float64`: Wall clock [s] of the last panel redraw, used for throttling.
 - `last_percent::Int`: Last progress percentage rendered, used to force a redraw whenever
     the progress advances.
@@ -76,7 +77,7 @@ function DecayProgress(
         Float64(tf),
         Float64(perigee₀),
         Float64(terminate_altitude),
-        0.0,
+        time(),
         0.0,
         -1,
         false
