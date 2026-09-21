@@ -55,27 +55,15 @@
         pretty_rev_per_days = false,
     )
     @test corrected[begin, :rev_per_days] == (14, 2 // 5)
-    same_value = @test_deprecated design_sun_sync_ground_repeating_orbit(
+
+    # == Revolutions per day ===============================================================
+
+    df = design_sun_sync_ground_repeating_orbit(
         5,
         5;
         minimum_altitude = 750e3,
         maximum_altitude = 760e3,
         pretty_rev_per_days = false,
-        pretify_rev_per_days = false,
-    )
-    @test same_value[begin, :rev_per_days] == (14, 2 // 5)
-    @test_deprecated @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
-        5, 5; pretty_rev_per_days = true, pretify_rev_per_days = false
-    )
-
-    # == Revolutions per day ===============================================================
-
-    df = @test_deprecated design_sun_sync_ground_repeating_orbit(
-        5,
-        5;
-        minimum_altitude = 750e3,
-        maximum_altitude = 760e3,
-        pretify_rev_per_days = false,
     )
 
     @test size(df) == (1, 7)

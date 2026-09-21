@@ -16,6 +16,8 @@ Version 0.4.0
   `ground_facility_accesses`, `ground_facility_gaps`, and
   `design_sun_sync_ground_repeating_orbit`), because `:m` selects meters in the distance
   units. The unit stored in the `DataFrame` metadata is also `:min`.
+- ![Breaking][badge-breaking] The deprecated keyword `pretify_rev_per_days` of
+  `design_sun_sync_ground_repeating_orbit` was removed.
 - ![Feature][badge-feature] We added the function `decay_analysis` to estimate the orbital
   decay lifetime of a satellite considering averaged perturbations (zonal harmonics with a
   J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the

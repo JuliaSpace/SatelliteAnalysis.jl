@@ -89,8 +89,7 @@ function design_sun_sync_ground_repeating_orbit(
     distance_unit::Symbol = :km,
     eccentricity::Number = 0,
     int_rev_per_day::Tuple = (13, 14, 15, 16, 17),
-    pretty_rev_per_days::Union{Nothing, Bool} = nothing,
-    pretify_rev_per_days::Union{Nothing, Bool} = nothing,
+    pretty_rev_per_days::Bool = true,
     maximum_altitude::Union{Nothing, Number} = nothing,
     minimum_altitude::Union{Nothing, Number} = nothing,
     time_unit::Symbol = :min,
@@ -100,9 +99,6 @@ function design_sun_sync_ground_repeating_orbit(
     R0::Number = EARTH_EQUATORIAL_RADIUS,
     we::Number = EARTH_ANGULAR_SPEED,
 )
-    pretty_rev_per_days = _resolve_pretty_rev_per_days(
-        pretty_rev_per_days, pretify_rev_per_days
-    )
     R₀ = float(R0)
     e = eccentricity
 
@@ -1124,20 +1120,4 @@ function _pretify_rev_per_days(i::Int, num::Int, den::Int)
     else
         return string(i) * " + " * pretty_number(String, num // den)
     end
-end
-
-function _resolve_pretty_rev_per_days(pretty_rev_per_days, pretify_rev_per_days)
-    !isnothing(pretify_rev_per_days) && Base.depwarn(
-        "`pretify_rev_per_days` is deprecated; use `pretty_rev_per_days` instead.",
-        :design_sun_sync_ground_repeating_orbit,
-    )
-    isnothing(pretty_rev_per_days) &&
-        return isnothing(pretify_rev_per_days) ? true : pretify_rev_per_days
-    (isnothing(pretify_rev_per_days) || pretty_rev_per_days == pretify_rev_per_days) &&
-        return pretty_rev_per_days
-    return throw(
-        ArgumentError(
-            "`pretty_rev_per_days` and deprecated `pretify_rev_per_days` must have the same value.",
-        ),
-    )
 end

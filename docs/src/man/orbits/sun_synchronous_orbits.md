@@ -1,10 +1,5 @@
 # Sun-Synchronous Orbits
 
-The `design_sun_sync_ground_repeating_orbit` function uses the correctly spelled
-`pretty_rev_per_days` keyword for formatted revolution counts. The misspelled
-`pretify_rev_per_days` remains as a deprecated compatibility alias. If both are supplied,
-they must have the same value; conflicting values raise an `ArgumentError`.
-
 ```@meta
 CurrentModule = SatelliteAnalysis
 ```
