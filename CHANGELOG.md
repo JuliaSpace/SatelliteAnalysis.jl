@@ -158,6 +158,9 @@ Version 0.4.0
 - ![Bugfix][badge-bugfix] The function `ground_facility_visibility_circle` was throwing a
   `DomainError` if the satellite position norm was too small. It now throws an
   `ArgumentError` if the satellite is not above the ground facility.
+- ![Bugfix][badge-bugfix] The function `frozen_orbit` was returning `NaN` for equatorial
+  orbits. It now throws an `ArgumentError` if the inclination is not within the interval
+  `(0, π)`.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to

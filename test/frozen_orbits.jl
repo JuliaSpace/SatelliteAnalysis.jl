@@ -108,4 +108,12 @@ end
     @test_throws ArgumentError frozen_orbit(
         7130.982e3, 98.410 |> deg2rad; gravity_model = gm
     )
+
+    # == Equatorial Orbits =================================================================
+
+    # The frozen orbit is not defined for equatorial orbits.
+    @test_throws ArgumentError frozen_orbit(7130.982e3, 0; gravity_model = jgm3)
+    @test_throws ArgumentError frozen_orbit(7130.982e3, π; gravity_model = jgm3)
+    @test_throws ArgumentError frozen_orbit(7130.982e3, -0.1; gravity_model = jgm3)
+    @test_throws ArgumentError frozen_orbit(7130.982e3, 3.2; gravity_model = jgm3)
 end

@@ -69,6 +69,11 @@ yields theoretically:
 
 This orbit is called **frozen**. Refer to **[1]** for more information.
 
+## Throws
+
+- `ArgumentError`: If the inclination `i` is not within the interval `(0, π)` [rad] because
+    the frozen orbit is not defined for equatorial orbits.
+
 ## Examples
 
 ```julia-repl
@@ -101,6 +106,11 @@ function frozen_orbit(
     gravity_model::Union{Nothing, AbstractGravityModel} = nothing,
     max_degree::Int = 53,
 )
+    # The inclination functions are singular in equatorial orbits, in which the argument of
+    # perigee is not defined.
+    ((0 < i < π) && !iszero(sin(i))) || throw(
+        ArgumentError("The inclination must be within the interval (0, π) [rad].")
+    )
 
     # Fetch EGM-96 gravity model if the user does not specify one.
     if isnothing(gravity_model)
