@@ -422,7 +422,10 @@ function _decay_analysis(
     colmetadata!(df, :apogee_altitude,  "Unit", distance_unit; style = :note)
     colmetadata!(df, :perigee_altitude, "Unit", distance_unit; style = :note)
 
-    return_solution && return df, sol
+    # The raw solution is attached to the `DataFrame`, keeping the return type stable.
+    # Notice that this metadata has the style `:default`. Hence, it is not propagated by
+    # DataFrame transformations because it would not describe the new table.
+    return_solution && metadata!(df, "Solution", sol; style = :default)
 
     return df
 end

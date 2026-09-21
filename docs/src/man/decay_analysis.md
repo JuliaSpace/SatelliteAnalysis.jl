@@ -114,9 +114,10 @@ The following keywords are available:
   (**Default**: `nothing`)
 - `reltol::Number`: Relative tolerance of the numerical integration.
   (**Default**: 1e-6)
-- `return_solution::Bool`: If `true`, the function also returns the raw solution of the
-  numerical integration (see `SciMLBase.ODESolution`), whose state vector is the
-  equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`.
+- `return_solution::Bool`: If `true`, the raw solution of the numerical integration (see
+  `SciMLBase.ODESolution`), whose state vector is the equinoctial orbital elements
+  `[a, ψ, e_x, e_y, i_x, i_y]`, is stored in the table-level metadata `Solution` of the
+  output `DataFrame`. It can be obtained using `metadata(df, "Solution")`.
   (**Default**: `false`)
 - `solver`: Solver from the **OrdinaryDiffEq.jl** ecosystem used for the numerical
   integration. Notice that the user must load the package that provides the selected

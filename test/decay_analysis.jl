@@ -29,7 +29,7 @@ end
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
 
-    df, sol = decay_analysis(
+    df = decay_analysis(
         orb;
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
@@ -37,6 +37,15 @@ end
         space_indices       = si_const,
         return_solution     = true
     )
+
+    # The raw solution must be stored in the metadata, and it must not be propagated by
+    # DataFrame transformations.
+    @test df isa DataFrame
+
+    sol = metadata(df, "Solution")
+
+    @test metadata(df, "Solution"; style = true)[2] == :default
+    @test "Solution" ∉ metadatakeys(subset(df, :time => t -> t .>= 0))
 
     # == Schema and Metadata ===============================================================
 
@@ -71,6 +80,7 @@ end
     # All the table-level metadata must use the style `:note` to propagate through
     # DataFrame transformations.
     for k in metadatakeys(df)
+        k == "Solution" && continue
         @test metadata(df, k; style = true)[2] == :note
     end
 
@@ -166,6 +176,9 @@ end
     )
 
     @test df_mean[end, :date] == df[end, :date]
+
+    # The raw solution must not be stored by default.
+    @test "Solution" ∉ metadatakeys(df_mean)
 
     # An unknown symbol must raise a clear error.
     @test_throws ArgumentError decay_analysis(

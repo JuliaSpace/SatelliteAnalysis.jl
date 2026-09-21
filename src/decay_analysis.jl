@@ -112,9 +112,10 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     (**Default**: `nothing`)
 - `reltol::Number`: Relative tolerance of the numerical integration.
     (**Default**: 1e-6)
-- `return_solution::Bool`: If `true`, the function also returns the raw solution of the
-    numerical integration (see `SciMLBase.ODESolution`), whose state vector is the
-    equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`.
+- `return_solution::Bool`: If `true`, the raw solution of the numerical integration (see
+    `SciMLBase.ODESolution`), whose state vector is the equinoctial orbital elements
+    `[a, ψ, e_x, e_y, i_x, i_y]`, is stored in the table-level metadata `Solution` of the
+    output `DataFrame`. It can be obtained using `metadata(df, "Solution")`.
     (**Default**: `false`)
 - `solver`: Solver from the **OrdinaryDiffEq.jl** ecosystem used for the numerical
     integration. Notice that the user must load the package that provides the selected
@@ -167,8 +168,9 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
         dynamics.
     - `SRP Coefficient`: Solar radiation pressure coefficient [-].
     - `Terminate Altitude`: Mean perigee altitude that terminates the analysis [m].
-    If the keyword `return_solution` is `true`, the function returns a tuple with the
-    `DataFrame` and the raw `ODESolution`.
+    If the keyword `return_solution` is `true`, the `DataFrame` also stores the raw
+    `ODESolution` in the metadata `Solution`, which is not propagated by `DataFrame`
+    transformations.
 
 # Extended help
 
