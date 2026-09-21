@@ -11,6 +11,11 @@ Version 0.4.0
   `design_sun_sync_ground_repeating_orbit`, and `ground_track` now throw an `ArgumentError`
   if a symbol that selects a unit or the track type is not valid, instead of silently
   falling back to a default value.
+- ![Breaking][badge-breaking] The minutes are now selected by the symbol `:min` instead of
+  `:m` in all the keywords that select a time unit (`eclipse_time_summary`,
+  `ground_facility_accesses`, `ground_facility_gaps`, and
+  `design_sun_sync_ground_repeating_orbit`), because `:m` selects meters in the distance
+  units. The unit stored in the `DataFrame` metadata is also `:min`.
 - ![Feature][badge-feature] We added the function `decay_analysis` to estimate the orbital
   decay lifetime of a satellite considering averaged perturbations (zonal harmonics with a
   J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the

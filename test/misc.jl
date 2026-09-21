@@ -38,7 +38,7 @@ end
     @test_throws ArgumentError SatelliteAnalysis._distance_unit_factor(:unknown)
 
     @test SatelliteAnalysis._time_unit_factor(:s) == 1
-    @test SatelliteAnalysis._time_unit_factor(:m) ≈ 1 / 60
+    @test SatelliteAnalysis._time_unit_factor(:min) ≈ 1 / 60
     @test SatelliteAnalysis._time_unit_factor(:h) ≈ 1 / 3600
     @test SatelliteAnalysis._time_unit_factor(:d, (:s, :d, :y)) ≈ 1 / 86400
     @test SatelliteAnalysis._time_unit_factor(:y, (:s, :d, :y)) ≈ 1 / (365.25 * 86400)
@@ -47,5 +47,8 @@ end
     @test_throws ArgumentError SatelliteAnalysis._time_unit_factor(:d)
     @test_throws ArgumentError SatelliteAnalysis._time_unit_factor(:y)
     @test_throws ArgumentError SatelliteAnalysis._time_unit_factor(:unknown)
-    @test_throws ArgumentError SatelliteAnalysis._time_unit_factor(:m, (:s, :d, :y))
+    @test_throws ArgumentError SatelliteAnalysis._time_unit_factor(:min, (:s, :d, :y))
+
+    # The symbol `:m` selects meters. Hence, it is not a valid time unit.
+    @test_throws ArgumentError SatelliteAnalysis._time_unit_factor(:m)
 end

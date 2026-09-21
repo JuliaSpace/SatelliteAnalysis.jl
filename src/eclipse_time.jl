@@ -32,7 +32,7 @@ each day.
 - `unit::Symbol`: Select the unit in which the results will be generated. The possible
     values are:
     - `:s` for seconds (**Default**);
-    - `:m` for minutes; or
+    - `:min` for minutes; or
     - `:h` for hours.
 
 # Returns
@@ -48,7 +48,7 @@ each day.
 ## Throws
 
 - `ArgumentError`: If `num_days` is lower than 1, if `step` is zero or not lower than the
-    orbital period, or if `unit` is not `:s`, `:m`, or `:h`.
+    orbital period, or if `unit` is not `:s`, `:min`, or `:h`.
 
 ## Examples
 
@@ -80,7 +80,7 @@ julia> df = eclipse_time_summary(orbp; num_days = 5)
    4 │ 2021-01-04   3975.74   20.4758  2003.79
    5 │ 2021-01-05   3976.94   20.5022  2002.55
 
-julia> df = eclipse_time_summary(orbp; num_days = 5, unit = :m)
+julia> df = eclipse_time_summary(orbp; num_days = 5, unit = :min)
 5×4 DataFrame
  Row │ date        sunlight  penumbra  umbra
      │ Date        Float64   Float64   Float64
@@ -93,9 +93,9 @@ julia> df = eclipse_time_summary(orbp; num_days = 5, unit = :m)
 
 julia> colmetadata(df)
 Dict{Symbol, Dict{String, Symbol}} with 3 entries:
-  :penumbra => Dict("Unit"=>:m)
-  :sunlight => Dict("Unit"=>:m)
-  :umbra    => Dict("Unit"=>:m)
+  :penumbra => Dict("Unit"=>:min)
+  :sunlight => Dict("Unit"=>:min)
+  :umbra    => Dict("Unit"=>:min)
 ```
 """
 function eclipse_time_summary(

@@ -107,7 +107,7 @@ end
     # -- Minutes ---------------------------------------------------------------------------
 
     df = ground_facility_accesses(
-        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :m
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :min
     )
 
     @test size(df) == (2, 3)
@@ -118,7 +118,7 @@ end
     @test df.duration[2] ≈ exp_duration[2]
 
     @test metadata(df, "Description") == "Accesses to the ground facilities."
-    @test colmetadata(df, :duration, "Unit") == :m
+    @test colmetadata(df, :duration, "Unit") == :min
 
     # -- Hours -----------------------------------------------------------------------------
 
@@ -399,7 +399,7 @@ end
     # -- Minutes ---------------------------------------------------------------------------
 
     df = ground_facility_gaps(
-        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :m
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :min
     )
 
     @test size(df) == (3, 3)
@@ -419,7 +419,7 @@ end
     @test df.duration[3] ≈ exp_duration[3]
 
     @test metadata(df, "Description") == "Gaps to the ground facilities."
-    @test colmetadata(df, :duration, "Unit") == :m
+    @test colmetadata(df, :duration, "Unit") == :min
 
     # -- Hours -----------------------------------------------------------------------------
 

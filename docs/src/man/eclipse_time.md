@@ -34,7 +34,7 @@ The following keywords are available:
 - `unit::Symbol`: Select the unit in which the results will be generated. The possible
   values are:
     - `:s` for seconds (**Default**);
-    - `:m` for minutes; or
+    - `:min` for minutes; or
     - `:h` for hours.
 
 The function returns a `DataFrame` with three columns:
@@ -79,7 +79,7 @@ Now, we can use the function `eclipse_time_summary` to obtain the eclipse time i
 for each day of the year:
 
 ```@repl eclipse_time
-df = eclipse_time_summary(orbp; unit = :m)
+df = eclipse_time_summary(orbp; unit = :min)
 ```
 
 Finally, we can use the `DataFrame` to analyze the result. For example, the maximum eclipse

@@ -123,7 +123,7 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
 - `tf::Number`: Maximum propagation time [s] after the orbit epoch.
     (**Default**: `30 * 365.25 * 86400`, or 30 years)
 - `time_unit::Symbol`: Unit of the column `time` in the output `DataFrame`. It can be `:s`
-    for seconds, `:m` for minutes, `:h` for hours, `:d` for days, or `:y` for Julian years
+    for seconds, `:min` for minutes, `:h` for hours, `:d` for days, or `:y` for Julian years
     (365.25 days).
     (**Default**: `:y`)
 - `verbose::Bool`: If `true`, a progress interface is shown in `stderr` during the
@@ -176,7 +176,7 @@ epoch estimation.
 ## Throws
 
 - `ArgumentError`: If `input_type` is not `:mean` or `:osculating`, if `distance_unit` is
-    not `:m` or `:km`, or if `time_unit` is not `:s`, `:m`, `:h`, `:d`, or `:y`.
+    not `:m` or `:km`, or if `time_unit` is not `:s`, `:min`, `:h`, `:d`, or `:y`.
 - `ArgumentError`: If `satellite_mass`, `num_sampling_points_per_orbit`, `abstol`, `reltol`,
     or `tf` is not positive, or if `satellite_mean_area`, `C_d`, `C_r`, or
     `terminate_altitude` is negative.

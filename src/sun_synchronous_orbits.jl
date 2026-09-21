@@ -63,8 +63,8 @@ This function returns a `DataFrame` with the following columns:
     the orbital altitude.
     (**Default** = `nothing`)
 - `time_unit::Symbol`: Unit for all the time values in the output `DataFrame`.  It can be
-    `:s` for seconds, `:m` for minutes, or `:h` for hours.
-    (**Default** = `:m`)
+    `:s` for seconds, `:min` for minutes, or `:h` for hours.
+    (**Default** = `:min`)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
     (**Default** = `GM_EARTH`)
 - `J2::Number`: J₂ perturbation term.
@@ -93,7 +93,7 @@ function design_sun_sync_ground_repeating_orbit(
     pretify_rev_per_days::Union{Nothing, Bool} = nothing,
     maximum_altitude::Union{Nothing, Number} = nothing,
     minimum_altitude::Union{Nothing, Number} = nothing,
-    time_unit::Symbol = :m,
+    time_unit::Symbol = :min,
     # Constants.
     J2::Number = EGM_2008_J2,
     m0::Number = GM_EARTH,

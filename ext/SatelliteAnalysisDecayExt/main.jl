@@ -495,10 +495,10 @@ function _default_f107(jd_utc::Number, index::Val, predicted::Val)
     return space_index(predicted, jd_utc)
 end
 
-# Factor to convert the time in seconds to the unit `time_unit`, which can be `:s`, `:m`,
+# Factor to convert the time in seconds to the unit `time_unit`, which can be `:s`, `:min`,
 # `:h`, `:d`, or `:y` (Julian year). It throws an `ArgumentError` if the unit is not valid.
 function _decay_analysis__time_unit_factor(time_unit::Symbol)
-    return SatelliteAnalysis._time_unit_factor(time_unit, (:s, :m, :h, :d, :y))
+    return SatelliteAnalysis._time_unit_factor(time_unit, (:s, :min, :h, :d, :y))
 end
 
 # Element type of the gravity model workspace: the promotion between the type of the

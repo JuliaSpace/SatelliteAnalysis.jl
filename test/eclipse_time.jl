@@ -48,7 +48,7 @@
 
     # == Minutes ===========================================================================
 
-    df = eclipse_time_summary(orbp; num_days = 5, unit = :m)
+    df = eclipse_time_summary(orbp; num_days = 5, unit = :min)
 
     @test size(df) == (5, 4)
 
@@ -58,9 +58,9 @@
 
     @test metadata(df, "Description") == "Eclipse time PER ORBIT computed at each day."
 
-    @test colmetadata(df, :sunlight, "Unit") == :m
-    @test colmetadata(df, :penumbra, "Unit") == :m
-    @test colmetadata(df, :umbra, "Unit") == :m
+    @test colmetadata(df, :sunlight, "Unit") == :min
+    @test colmetadata(df, :penumbra, "Unit") == :min
+    @test colmetadata(df, :umbra, "Unit") == :min
 
     # == Hours =============================================================================
 

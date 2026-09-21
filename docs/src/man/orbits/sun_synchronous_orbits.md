@@ -343,7 +343,7 @@ The following keywords are available:
     the orbital altitude.
     (**Default** = `nothing`)
 - `time_unit::Symbol`: Unit for all the time values in the output `DataFrame`.  It can be
-    `:s` for seconds, `:m` for minutes, or `:h` for hours.
+    `:s` for seconds, `:min` for minutes, or `:h` for hours.
     (**Default** = `:h`)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
     (**Default** = `GM_EARTH`)

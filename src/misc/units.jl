@@ -56,9 +56,14 @@ end
     _time_unit_factor(time_unit::Symbol[, valid_units::Tuple]) -> Float64
 
 Return the factor that converts a time in seconds to the unit `time_unit`. The supported
-units are `:s` for seconds, `:m` for minutes, `:h` for hours, `:d` for days, and `:y` for
+units are `:s` for seconds, `:min` for minutes, `:h` for hours, `:d` for days, and `:y` for
 Julian years. The tuple `valid_units` contains the units the caller accepts, and, if it is
-omitted, only `:s`, `:m`, and `:h` are valid.
+omitted, only `:s`, `:min`, and `:h` are valid.
+
+!!! note
+
+    The symbol `:m` is not a valid time unit because it selects meters in the distance
+    units.
 
 # Extended help
 
@@ -66,21 +71,24 @@ omitted, only `:s`, `:m`, and `:h` are valid.
 
 - `ArgumentError`: If `time_unit` is not in `valid_units`.
 """
-function _time_unit_factor(time_unit::Symbol, valid_units::Tuple = (:s, :m, :h))
+function _time_unit_factor(time_unit::Symbol, valid_units::Tuple = (:s, :min, :h))
     if time_unit ∉ valid_units
         str_valid_units = join(("`:$u`" for u in valid_units), ", ", ", or ")
 
+        # The minutes were selected by `:m` in previous versions.
+        hint = time_unit == :m ? " Notice that the minutes are selected by `:min`." : ""
+
         throw(
             ArgumentError(
-                "The time unit `:$time_unit` is not valid. Use $str_valid_units."
+                "The time unit `:$time_unit` is not valid. Use $str_valid_units.$hint"
             ),
         )
     end
 
-    time_unit == :s && return 1.0
-    time_unit == :m && return 1 / 60
-    time_unit == :h && return 1 / 3600
-    time_unit == :d && return 1 / 86400
+    time_unit == :s   && return 1.0
+    time_unit == :min && return 1 / 60
+    time_unit == :h   && return 1 / 3600
+    time_unit == :d   && return 1 / 86400
 
     # Julian year.
     return 1 / (365.25 * 86400)
