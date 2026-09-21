@@ -26,6 +26,23 @@ end
     )
 end
 
+@testset "Function find_crossing [Maximum Number of Iterations]" begin
+    # The function must be called exactly `max` times if the interval is never smaller than
+    # the tolerance.
+    num_calls = Ref(0)
+
+    f = t -> begin
+        num_calls[] += 1
+        return t > 0.3
+    end
+
+    t = SatelliteAnalysis.find_crossing(f, 0.0, 1.0, false, true; Δ = 1e-20, max = 5)
+
+    @test num_calls[] == 5
+    @test t ≈ 0.3 atol = 1 / 2^5
+    @test t >= 0.3
+end
+
 # == File: ./src/misc/units.jl =============================================================
 
 @testset "Unit Factors" begin

@@ -14,8 +14,8 @@ The parameters in `vargs...` are passed to the function `f` after `t`, and the k
 `kwargs...` are also passed to `f`. Hence, it will always be called as
 `f(t, vargs...; kwargs...)`.
 
-If the computed interval is smaller than `Δ`, or if the number of iterations is higher than
-`max`, the algorithm stops.
+If the computed interval is smaller than `Δ`, or if the number of iterations reaches `max`,
+the algorithm stops.
 
 !!! note
 
@@ -46,7 +46,7 @@ function find_crossing(
     max = 100,
     kwargs...,
 ) where {N}
-    it = 0
+    it = 1
 
     T = typeof((t₁ + t₀) / 2)
 
