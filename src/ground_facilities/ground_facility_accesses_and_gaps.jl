@@ -350,7 +350,7 @@ function ground_facility_gaps(
     vgap_end = DateTime[]
 
     # If the number of accesses is 0, return the entire interval.
-    num_rows, num_cols = size(dfa)
+    num_rows = size(dfa, 1)
 
     if num_rows == 0
         push!(vgap_beg, dt₀)

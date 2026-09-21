@@ -337,7 +337,6 @@ function ground_track_inclination(
     we::Number = EARTH_ANGULAR_SPEED,
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
     T   = float(promote_type(T1, T2, T3))
-    μ   = T(m0)
     ω_e = T(we)
 
     # Satellite mean angular velocity [rad / s].
