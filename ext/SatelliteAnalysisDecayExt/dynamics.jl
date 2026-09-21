@@ -20,8 +20,10 @@ radiation pressure) over one orbit, and adds the closed-form J₂² rates.
       spaced in the true anomaly and the temporal weighting `r² / h`. Hence, the sampling
       is denser near the perigee, where the perturbations are stronger.
     - Conservative perturbations are evaluated on the mean orbit.
-    - Non-conservative perturbations are evaluated on the osculating orbit obtained from
-      the mean elements (see `_atmospheric_drag_and_solar_radiation_pressure_rates`).
+    - The accelerations of the non-conservative perturbations are evaluated on the
+      osculating orbit obtained from the mean elements, but they are mapped to the rates
+      using the Gauss matrix, the Hill frame, and the weighting of the mean orbit (see
+      `_atmospheric_drag_and_solar_radiation_pressure_rates`).
     - Units must be consistent: meters, seconds, kilograms.
 
 # Arguments
@@ -88,11 +90,10 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
     space_indices = params.space_indices(jd_utc)
 
     # Initialization of the weighted sums of the variation rates.
-    ∂C_sum    = @SVector zeros(T, 6)
-    ∂u_drag   = @SVector zeros(T, 6)
-    ∂u_srp    = @SVector zeros(T, 6)
-    Wsum      = zero(T)
-    Wsum_drag = zero(T)
+    ∂C_sum  = @SVector zeros(T, 6)
+    ∂u_drag = @SVector zeros(T, 6)
+    ∂u_srp  = @SVector zeros(T, 6)
+    Wsum    = zero(T)
 
     N = params.num_sampling_points_per_orbit
 
@@ -135,29 +136,27 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
         ∂C_sum += w_t * (Ak * δak_hill)
         Wsum   += w_t
 
-        # Non-conservative perturbations at the same sampling point.
-        ∂u_drag_k, ∂u_srp_k, w_drag_k =
-            _atmospheric_drag_and_solar_radiation_pressure_rates(
-                jd_utc,
-                ā,
-                ē,
-                ī,
-                Ω̄,
-                ω̄,
-                f̄k,
-                p̄,
-                h̄,
-                η̄,
-                rsun_tod,
-                D_pef_tod,
-                D_tod_pef,
-                space_indices,
-                params
-            )
+        # Non-conservative perturbations at the same sampling point, using the same Gauss
+        # matrix, Hill frame, and temporal weighting.
+        ∂u_drag_k, ∂u_srp_k = _atmospheric_drag_and_solar_radiation_pressure_rates(
+            jd_utc,
+            ā,
+            ē,
+            ī,
+            Ω̄,
+            ω̄,
+            f̄k,
+            Ak,
+            Dk_hill_tod,
+            rsun_tod,
+            D_pef_tod,
+            D_tod_pef,
+            space_indices,
+            params
+        )
 
-        ∂u_drag   += ∂u_drag_k
-        ∂u_srp    += ∂u_srp_k
-        Wsum_drag += w_drag_k
+        ∂u_drag += w_t * ∂u_drag_k
+        ∂u_srp  += w_t * ∂u_srp_k
     end
 
     # Average of the conservative perturbations plus the constant Kepler term of the
@@ -166,8 +165,8 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
     ∂C_total = ∂C_sum / Wsum + @SVector T[0, n̄, 0, 0, 0, 0]
 
     # Average of the non-conservative perturbations.
-    ∂u_drag = ∂u_drag / Wsum_drag
-    ∂u_srp  = ∂u_srp  / Wsum_drag
+    ∂u_drag = ∂u_drag / Wsum
+    ∂u_srp  = ∂u_srp  / Wsum
 
     # The J₂² rates are expressed in classical elements. Convert them to equinoctial
     # rates using the Jacobian of the transformation.

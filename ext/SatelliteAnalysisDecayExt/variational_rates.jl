@@ -13,20 +13,25 @@
         Ω̄::T,
         ω̄::T,
         f̄::T,
-        p̄::T,
-        h̄::T,
-        η̄::T,
+        A::StaticMatrix{6, 3, T},
+        D_hill_tod::StaticMatrix{3, 3, T},
         rsun_tod::SVector{3, T},
         D_pef_tod::StaticMatrix{3, 3, T},
         D_tod_pef::StaticMatrix{3, 3, T},
         space_indices::NamedTuple,
         params::NamedTuple
-    ) where T <: Number -> SVector{6, T}, SVector{6, T}, T
+    ) where T <: Number -> SVector{6, T}, SVector{6, T}
 
-Compute the weighted Gauss variation rates due to the atmospheric drag and the solar
-radiation pressure **[1]** at the sampling point of the orbit-averaging quadrature with
-mean true anomaly `f̄` [rad]. The rates are multiplied by the temporal weighting (`r² / h`),
-which is also returned so that the caller can normalize the sums.
+Compute the Gauss variation rates due to the atmospheric drag and the solar radiation
+pressure **[1]** at the sampling point of the orbit-averaging quadrature with mean true
+anomaly `f̄` [rad].
+
+The accelerations are computed using the osculating position and velocity obtained from the
+mean elements because the atmospheric density, the velocity relative to the atmosphere, and
+the Earth shadow depend on the actual satellite position. However, the variational
+equations are written for the mean elements. Hence, the accelerations are projected onto
+the Hill frame of the mean orbit and mapped to the rates using the Gauss matrix of the mean
+orbit, which are computed by the caller, consistently with the conservative perturbations.
 
 The mean elements and the auxiliaries passed to this function must already be clamped to
 the physically meaningful region and derived consistently, as done by `_dynamics`.
@@ -40,9 +45,10 @@ the physically meaningful region and derived consistently, as done by `_dynamics
 - `Ω̄::T`: Mean right ascension of ascending node [rad].
 - `ω̄::T`: Mean argument of perigee [rad].
 - `f̄::T`: Mean true anomaly of the sampling point [rad], which must be in `[0, 2π)`.
-- `p̄::T`: Mean semi-latus rectum [m].
-- `h̄::T`: Mean specific angular momentum [m²/s].
-- `η̄::T`: Mean eccentricity factor `√(1 - ē²)` [-].
+- `A::StaticMatrix{6, 3, T}`: Gauss matrix of the mean orbit at the sampling point,
+    computed by `_equinoctial_gauss_variational_matrices`.
+- `D_hill_tod::StaticMatrix{3, 3, T}`: DCM that rotates vectors from the TOD frame to the
+    Hill frame of the mean orbit at the sampling point.
 - `rsun_tod::SVector{3, T}`: Sun position vector [m] in TOD frame.
 - `D_pef_tod::StaticMatrix{3, 3, T}`: DCM that rotates vectors from the TOD frame to the
     PEF frame at `jd_utc`.
@@ -63,9 +69,8 @@ the physically meaningful region and derived consistently, as done by `_dynamics
 
 # Returns
 
-- `SVector{6, T}`: Weighted Gauss rates due to atmospheric drag.
-- `SVector{6, T}`: Weighted Gauss rates due to solar radiation pressure.
-- `T`: Temporal weighting of the sampling point [s/rad].
+- `SVector{6, T}`: Gauss rates due to atmospheric drag.
+- `SVector{6, T}`: Gauss rates due to solar radiation pressure.
 
 # References
 
@@ -80,9 +85,8 @@ function _atmospheric_drag_and_solar_radiation_pressure_rates(
     Ω̄::T,
     ω̄::T,
     f̄::T,
-    p̄::T,
-    h̄::T,
-    η̄::T,
+    A::StaticMatrix{6, 3, T},
+    D_hill_tod::StaticMatrix{3, 3, T},
     rsun_tod::SVector{3, T},
     D_pef_tod::StaticMatrix{3, 3, T},
     D_tod_pef::StaticMatrix{3, 3, T},
@@ -102,11 +106,6 @@ function _atmospheric_drag_and_solar_radiation_pressure_rates(
 
     # Position and velocity of the osculating orbit in TOD.
     r_tod, v_tod = _mean_to_osculating_rv(ā, ē, ī, Ω̄, ω̄, f̄, orbp)
-    r² = dot(r_tod, r_tod)
-    r  = √r²
-
-    # Matrix to convert TOD to Hill frame.
-    D_hill_tod = _r_eci_to_hill(r_tod, v_tod)
 
     # Position and velocity in PEF to compute the atmospheric drag acceleration.
     r_pef = D_pef_tod * r_tod
@@ -128,19 +127,14 @@ function _atmospheric_drag_and_solar_radiation_pressure_rates(
 
     asrp_tod = ν * _solar_radiation_acceleration(r_tod, rsun_tod, mean_area, mass, C_r)
 
-    # Compute accelerations in Hill frame.
+    # Compute accelerations in the Hill frame of the mean orbit.
     adrag_hill = D_hill_tod * adrag_tod
     asrp_hill  = D_hill_tod * asrp_tod
 
     # Gauss equations with mean parameters. The Kepler term is not added here because it is
     # already accounted for in `_dynamics`, avoiding counting the mean motion multiple times
     # in the mean anomaly rate.
-    A = _equinoctial_gauss_variational_matrices(ā, ē, ī, Ω̄, ω̄, f̄, r, p̄, h̄, η̄)
-
-    # Temporal weighting.
-    w_t = r² / h̄
-
-    return w_t * (A * adrag_hill), w_t * (A * asrp_hill), w_t
+    return A * adrag_hill, A * asrp_hill
 end
 
 """

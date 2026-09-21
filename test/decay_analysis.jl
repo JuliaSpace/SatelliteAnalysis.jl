@@ -134,7 +134,7 @@ end
     )
 
     lifetime_tight = datetime2julian(df_tight[end, :date]) - jd₀
-    @test lifetime_tight ≈ 26.492610 rtol = 1e-4
+    @test lifetime_tight ≈ 26.474468 rtol = 1e-4
     @test lifetime ≈ lifetime_tight rtol = 2e-3
 
     # == Keyword input_type ================================================================
