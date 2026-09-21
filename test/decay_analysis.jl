@@ -225,6 +225,29 @@ end
     @test df_d.time ≈ df.time .* 365.25
     @test colmetadata(df_d, :time, "Unit") == :d
 
+    # Invalid physical inputs must throw an error.
+    for invalid_kwargs in (
+        (; satellite_mass = 0.0),
+        (; satellite_mass = -1.0),
+        (; satellite_mean_area = -1.0),
+        (; num_sampling_points_per_orbit = 0),
+        (; C_d = -1.0),
+        (; C_r = -1.0),
+        (; abstol = 0.0),
+        (; reltol = 0.0),
+        (; terminate_altitude = -1.0),
+        (; tf = 0.0),
+    )
+        @test_throws ArgumentError decay_analysis(
+            orb;
+            satellite_mass      = 100.0,
+            satellite_mean_area = 1.0,
+            gravity_model       = gm,
+            space_indices       = si_const,
+            invalid_kwargs...
+        )
+    end
+
     # Unknown unit symbols must throw an error.
     @test_throws ArgumentError decay_analysis(
         orb;

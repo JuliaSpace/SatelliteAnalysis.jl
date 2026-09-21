@@ -177,6 +177,9 @@ epoch estimation.
 
 - `ArgumentError`: If `input_type` is not `:mean` or `:osculating`, if `distance_unit` is
     not `:m` or `:km`, or if `time_unit` is not `:s`, `:m`, `:h`, `:d`, or `:y`.
+- `ArgumentError`: If `satellite_mass`, `num_sampling_points_per_orbit`, `abstol`, `reltol`,
+    or `tf` is not positive, or if `satellite_mean_area`, `C_d`, `C_r`, or
+    `terminate_altitude` is negative.
 
 ## Examples
 

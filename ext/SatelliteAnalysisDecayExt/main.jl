@@ -42,6 +42,32 @@ function SatelliteAnalysis.decay_analysis(
         ArgumentError("The keyword `input_type` must be `:mean` or `:osculating`.")
     )
 
+    # Validate the physical inputs. Otherwise, the analysis can silently produce `NaN`s or
+    # infinite values.
+    satellite_mass > 0 ||
+        throw(ArgumentError("The satellite mass must be greater than 0."))
+
+    satellite_mean_area >= 0 ||
+        throw(ArgumentError("The satellite mean area must not be negative."))
+
+    num_sampling_points_per_orbit >= 1 || throw(
+        ArgumentError("The number of sampling points per orbit must be greater than 0.")
+    )
+
+    C_d >= 0 || throw(ArgumentError("The drag coefficient must not be negative."))
+
+    C_r >= 0 || throw(
+        ArgumentError("The solar radiation pressure coefficient must not be negative.")
+    )
+
+    abstol > 0 || throw(ArgumentError("The absolute tolerance must be greater than 0."))
+    reltol > 0 || throw(ArgumentError("The relative tolerance must be greater than 0."))
+
+    terminate_altitude >= 0 ||
+        throw(ArgumentError("The terminate altitude must not be negative."))
+
+    tf > 0 || throw(ArgumentError("The maximum propagation time must be greater than 0."))
+
     # Validate the units before performing the analysis.
     _decay_analysis__time_unit_factor(time_unit)
     SatelliteAnalysis._distance_unit_factor(distance_unit)
