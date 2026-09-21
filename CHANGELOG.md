@@ -91,6 +91,10 @@ Version 0.4.0
   the report formulation yields a decay time about 7 % longer. The macro selects the same
   default space indices source as the other Jacchia macros and requires
   SatelliteToolboxAtmosphericModels.jl v1.5.0 or later.
+- ![Feature][badge-feature] The function `is_ground_facility_visible` has a new method that
+  receives the ground facility position and its local vertical represented in the ECEF
+  reference frame, which performs neither reference frame conversions nor trigonometric
+  operations related to the ground facility.
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were
@@ -136,6 +140,10 @@ Version 0.4.0
   `eclipse_time_summary`, `ground_facility_accesses`, `ground_facility_gaps`, and
   `decay_analysis`, including the column units, now have the style `:note`. Hence, they are
   kept after `DataFrame` transformations such as `select` and `subset`.
+- ![Enhancement][badge-enhancement] The functions `ground_facility_accesses` and
+  `ground_facility_gaps` now compute the position and the local vertical of each ground
+  facility only once instead of at every propagation instant. The access computation is
+  about 3.5x faster in an analysis with 20 ground facilities.
 - ![Bugfix][badge-bugfix] The decay analysis passed the Julian date to the gravity model
   where it expects elapsed seconds from the J2000.0 epoch. The error was harmless for the
   default EGM96 model, whose coefficients are static, but it would produce wrong results

@@ -459,6 +459,13 @@ function _ground_facility_access_chunk(
     # State to help the computation.
     state = :initial
 
+    # Pre-compute the position and the local vertical of each ground facility, represented
+    # in the ECEF reference frame, together with the sine of the minimum elevation angle.
+    # Hence, the visibility verification at each instant does not require any reference
+    # frame conversion or trigonometric operation.
+    vgf_r_up_e = [_ground_facility_position_and_zenith(gf...) for gf in vgf_wgs84]
+    sin_min_el = sin(minimum_elevation)
+
     # Pre-allocate the visibility vector for custom reductions only. The built-in
     # reductions evaluate visibility directly and do not need one.
     visibility =
@@ -473,23 +480,23 @@ function _ground_facility_access_chunk(
         # propagation instant does not require constructing/filling a Bool vector. Custom
         # reductions retain the historical vector-based API.
         if reduction === any
-            @inbounds for gf in vgf_wgs84
-                is_ground_facility_visible(r_e, gf..., minimum_elevation) && return true
+            for (gf_r_e, gf_up_e) in vgf_r_up_e
+                _is_ground_facility_visible(r_e, gf_r_e, gf_up_e, sin_min_el) && return true
             end
             return false
         end
 
         if reduction === all
-            @inbounds for gf in vgf_wgs84
-                is_ground_facility_visible(r_e, gf..., minimum_elevation) || return false
+            for (gf_r_e, gf_up_e) in vgf_r_up_e
+                _is_ground_facility_visible(r_e, gf_r_e, gf_up_e, sin_min_el) ||
+                    return false
             end
             return true
         end
 
-        @inbounds for i in eachindex(visibility)
-            visibility[i] = is_ground_facility_visible(
-                r_e, vgf_wgs84[i]..., minimum_elevation
-            )
+        for i in eachindex(visibility, vgf_r_up_e)
+            gf_r_e, gf_up_e = vgf_r_up_e[i]
+            visibility[i] = _is_ground_facility_visible(r_e, gf_r_e, gf_up_e, sin_min_el)
         end
 
         return reduction(visibility)

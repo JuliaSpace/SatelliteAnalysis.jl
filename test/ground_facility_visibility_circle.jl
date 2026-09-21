@@ -12,6 +12,35 @@
 
     ret = is_ground_facility_visible([6500e3, 700e3, 0], [6378e3, 0, 0], 10 |> deg2rad)
     @test ret == false
+
+    # == Method With the Ground Facility Position and Local Vertical =======================
+
+    # This method must provide the same result as the one that receives the geodetic
+    # coordinates for satellites around the entire Earth.
+    for (gf_lat, gf_lon, gf_h) in ((0.0, 0.0, 0.0), (-0.4, 2.5, 800.0), (1.3, -1.0, 50.0))
+        gf_r_e  = geodetic_to_ecef(gf_lat, gf_lon, gf_h)
+        gf_up_e = [cos(gf_lat) * cos(gf_lon), cos(gf_lat) * sin(gf_lon), sin(gf_lat)]
+
+        num_visible = 0
+
+        for lat in -1.5:0.1:1.5, lon in -3.1:0.1:3.1, θ in (0.0, 0.2, 0.5)
+            sat_r_e = geodetic_to_ecef(lat, lon, 700e3)
+
+            expected = is_ground_facility_visible(sat_r_e, gf_lat, gf_lon, gf_h, θ)
+            result   = is_ground_facility_visible(sat_r_e, gf_r_e, gf_up_e, θ)
+
+            num_visible += expected
+
+            @test result == expected
+        end
+
+        @test num_visible > 0
+    end
+
+    # == Method With the Satellite Position in the NED Reference Frame =====================
+
+    @test is_ground_facility_visible([0.0, 0.0, -700e3], 10 |> deg2rad) == true
+    @test is_ground_facility_visible([700e3, 0.0, -10e3], 10 |> deg2rad) == false
 end
 
 # == File: ./src/ground_facilities/ground_facility_visibility_circle.jl ====================
