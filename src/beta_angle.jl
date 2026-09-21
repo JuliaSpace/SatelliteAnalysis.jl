@@ -108,7 +108,9 @@ function beta_angle(orb::KeplerianElements, Δjd::Number; perturbation::Symbol =
     s̄_tod     = D_tod_mod * s_mod / norm(s_mod)
 
     # Compute the beta angle, which is the angle between the Sun vector and the orbit plane.
-    β = π / 2 - acos(n̄_tod ⋅ s̄_tod)
+    # Notice that we must clamp the dot product because it can be slightly outside the
+    # interval [-1, 1] due to numerical errors.
+    β = asin(clamp(n̄_tod ⋅ s̄_tod, -1, 1))
 
     return β
 end
