@@ -53,7 +53,7 @@ end
     @test eltype(df.date)             == DateTime
     @test eltype(df.time)             == Float64
     @test eltype(df.space_indices)    == typeof(si_const)
-    @test eltype(df.mean_elements)    == KeplerianElements{Float64, Float64}
+    @test eltype(df.mean_elements)    == KeplerianElements{MeanAnomaly, Float64, Float64}
     @test eltype(df.apogee_altitude)  == Float64
     @test eltype(df.perigee_altitude) == Float64
 
@@ -801,7 +801,7 @@ end
 
     ke_beg = df[begin, :mean_elements]
     ke_end = df[end,   :mean_elements]
-    M_end  = true_to_mean_anomaly(ke_end.e, ke_end.f)
+    M_end  = mean_anomaly(ke_end)
 
     # The averaged model must show significant motion, otherwise the comparison is
     # meaningless.

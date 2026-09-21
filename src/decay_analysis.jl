@@ -147,8 +147,10 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
         point. This column has no unit metadata since its fields have heterogeneous units.
         The default source provides the fields `f107` [sfu], `f107_avg` [sfu], and
         `ap` [-].
-    - `mean_elements`: Mean Keplerian elements encoded using `KeplerianElements` [SI],
-        where the epoch is the point date [UTC].
+    - `mean_elements`: Mean Keplerian elements encoded using
+        `KeplerianElements{MeanAnomaly}` [SI], where the epoch is the point date [UTC].
+        Notice that the anomaly stored in the elements is the mean anomaly. The true
+        anomaly can be obtained using the function `true_anomaly`.
     - `apogee_altitude`: Mean apogee altitude [`distance_unit`].
     - `perigee_altitude`: Mean perigee altitude [`distance_unit`].
     The unit of each column is stored in the `DataFrame` using metadata. The `DataFrame`

@@ -313,7 +313,9 @@ function _decay_analysis(
 
     date             = Vector{DateTime}(undef, num_points)
     time             = Vector{Float64}(undef, num_points)
-    mean_elements    = Vector{KeplerianElements{Float64, Float64}}(undef, num_points)
+    mean_elements    = Vector{KeplerianElements{MeanAnomaly, Float64, Float64}}(
+        undef, num_points
+    )
     apogee_altitude  = Vector{Float64}(undef, num_points)
     perigee_altitude = Vector{Float64}(undef, num_points)
 
@@ -325,9 +327,9 @@ function _decay_analysis(
         date[k] = julian2datetime(jdₖ)
         time[k] = sol.t[k]
 
-        mean_elements[k] = KeplerianElements(
-            jdₖ, aₖ, eₖ, iₖ, Ωₖ, ωₖ, mean_to_true_anomaly(eₖ, Mₖ)
-        )
+        # The state already contains the mean anomaly. Hence, we store it directly,
+        # avoiding solving Kepler's equation for every point.
+        mean_elements[k] = KeplerianElements{MeanAnomaly}(jdₖ, aₖ, eₖ, iₖ, Ωₖ, ωₖ, Mₖ)
 
         apogee_altitude[k]  = aₖ * (1 + eₖ) - EARTH_EQUATORIAL_RADIUS
         perigee_altitude[k] = aₖ * (1 - eₖ) - EARTH_EQUATORIAL_RADIUS
