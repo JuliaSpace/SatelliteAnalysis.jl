@@ -231,6 +231,13 @@ Compute the osculating position and velocity vectors from the mean classical ele
 `[a, e, i, Ω, ω, f]` under the J2 perturbation model **[1]** using the pre-allocated J2
 osculating propagator `orbp`, which is re-initialized in place.
 
+!!! note
+
+    This function is called at every sampling point of the right-hand side. Hence, it does
+    not normalize the inputs, which must be performed by the caller: the eccentricity and
+    the inclination must not be lower than `1e-6`, and the angles must be in the interval
+    `[0, 2π)` [rad].
+
 # Arguments
 
 - `a::T`: Mean semi-major axis [m].
@@ -263,11 +270,6 @@ function _mean_to_osculating_rv(
     f::T,
     orbp::OrbitPropagatorJ2Osculating
 ) where T <: Number
-    # Normalize. The true anomaly is normalized like the other angular elements.
-    a, e, i, Ω, ω, f = _normalize_classical_elements(a, e, i, Ω, ω, f)
-    e = max(e, T(1e-6))
-    i = max(i, T(1e-6))
-
     orb_tod = KeplerianElements(0.0, a, e, i, Ω, ω, f)
 
     # Convert to osculating. The J2 osculating conversion is not total: for unphysical
@@ -296,11 +298,14 @@ end
         i::T,
         Ω::T,
         ω::T,
-        M::T
+        f::T
     ) where T <: Number -> NTuple{6, T}
 
-Convert the osculating classical elements `[a, e, i, Ω, ω, M]` to mean elements under the J2
-perturbation model **[1]**.
+Convert the osculating classical elements `[a, e, i, Ω, ω, f]` to the mean elements
+`[a, e, i, Ω, ω, M]` under the J2 perturbation model **[1]**. Notice that the input contains
+the true anomaly, as in the elements provided by the user, whereas the output contains the
+mean anomaly, as in the state of the numerical integration, avoiding unnecessary
+conversions between the anomalies.
 
 # Arguments
 
@@ -309,7 +314,7 @@ perturbation model **[1]**.
 - `i::T`: Inclination [rad].
 - `Ω::T`: Right ascension of ascending node [rad].
 - `ω::T`: Argument of perigee [rad].
-- `M::T`: Mean anomaly [rad].
+- `f::T`: True anomaly [rad].
 
 # Returns
 
@@ -327,23 +332,29 @@ perturbation model **[1]**.
 - **[1]** Vallado, D. A. (2013). *Fundamentals of Astrodynamics and Applications*. 4th ed.
     Microcosm Press, Hawthorne, CA.
 """
-function _osculating_to_mean_elements(a::T, e::T, i::T, Ω::T, ω::T, M::T) where T <: Number
+function _osculating_to_mean_elements(a::T, e::T, i::T, Ω::T, ω::T, f::T) where T <: Number
     # Normalize.
-    a, e, i, Ω, ω, M = _normalize_classical_elements(a, e, i, Ω, ω, M)
+    a, e, i, Ω, ω, f = _normalize_classical_elements(a, e, i, Ω, ω, f)
     e = max(e, T(1e-6))
     i = max(i, T(1e-6))
 
     # Convert to mean.
-    orb_osc_tod  = KeplerianElements(0.0, a, e, i, Ω, ω, mean_to_true_anomaly(e, M))
+    orb_osc_tod  = KeplerianElements(0.0, a, e, i, Ω, ω, f)
     r_tod, v_tod = kepler_to_rv(orb_osc_tod)
-    ke, _        = fit_j2osc_mean_elements([0], [r_tod], [v_tod]; max_iterations = 50, verbose = false)
+
+    ke, _ = fit_j2osc_mean_elements(
+        [0.0], [r_tod], [v_tod]; max_iterations = 50, verbose = false
+    )
 
     ap = ke.a
     ep = ke.e
     ip = ke.i
     Ωp = ke.Ω
     ωp = ke.ω
-    Mp = true_to_mean_anomaly(ke.e, ke.f)
+
+    # The fitted elements already store the mean anomaly. Hence, this function does not
+    # perform any conversion in this case.
+    Mp = mean_anomaly(ke)
 
     # Return new state.
     return ap, ep, ip, Ωp, ωp, Mp

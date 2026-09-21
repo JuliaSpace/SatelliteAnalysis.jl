@@ -75,13 +75,13 @@ function SatelliteAnalysis.decay_analysis(
     # The propagation uses mean elements with respect to the averaged dynamics. Hence, if
     # the input elements are osculating, they must be converted to mean elements first.
     orb′ = if input_type == :osculating
-        M_osc = true_to_mean_anomaly(orb.e, orb.f)
-        a_mean, e_mean, i_mean, O_mean, o_mean, M_mean =
-            _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, M_osc)
+        a_mean, e_mean, i_mean, Ω_mean, ω_mean, M_mean =
+            _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, orb.f)
 
-        KeplerianElements(
-            orb.t, a_mean, e_mean, i_mean, O_mean, o_mean,
-            mean_to_true_anomaly(e_mean, M_mean)
+        # The numerical integration uses the mean anomaly. Hence, we must not convert it to
+        # the true anomaly here.
+        KeplerianElements{MeanAnomaly}(
+            orb.t, a_mean, e_mean, i_mean, Ω_mean, ω_mean, M_mean
         )
     else
         orb
@@ -236,8 +236,9 @@ function _decay_analysis(
 ) where {AM, SF}
     # The input elements are treated as mean elements with respect to the averaged
     # dynamics, following the same convention of semi-analytical tools such as STELA.
-    M = true_to_mean_anomaly(orb.e, orb.f)
-    ā, ē, ī, Ω̄, ω̄, M̄ = orb.a, orb.e, orb.i, orb.Ω, orb.ω, M
+    # Notice that the following function does not perform any conversion if the elements
+    # already store the mean anomaly.
+    ā, ē, ī, Ω̄, ω̄, M̄ = orb.a, orb.e, orb.i, orb.Ω, orb.ω, mean_anomaly(orb)
 
     # The state is a static vector with an out-of-place right-hand side, removing the
     # per-step state allocations of the numerical integration.
