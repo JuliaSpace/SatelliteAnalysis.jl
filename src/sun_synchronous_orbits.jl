@@ -446,46 +446,22 @@ function sun_sync_orbit_from_angular_velocity(
     converged = true
 
     while (abs(f₁) > tol[1]) || (abs(f₂) > tol[2])
-        isqrt_ā² = isqrt_ā * isqrt_ā
-        isqrt_ā³ = isqrt_ā² * isqrt_ā
-        isqrt_ā⁴ = isqrt_ā² * isqrt_ā²
-        isqrt_ā⁶ = isqrt_ā³ * isqrt_ā³
-        isqrt_ā⁷ = isqrt_ā⁴ * isqrt_ā³
-        isqrt_ā⁸ = isqrt_ā⁴ * isqrt_ā⁴
+        # Compute the residues and the Jacobian using the current estimates.
+        f, J = _sun_sync_orbit__residues_and_jacobian(
+            isqrt_ā, cos_i, Ω̇_d, ω_d, k₁, k₂, k₃, k₄, k₅, k₆
+        )
 
-        cos²_i = cos_i * cos_i
-        cos³_i = cos²_i * cos_i
-        cos⁴_i = cos²_i * cos²_i
-
-        c₁ = 3cos²_i - 1
-        c₂ = 5cos²_i - 1
-        c₃ = c₁ * c₂
-        c₄ = k₃ * c₁ + k₄ * c₂
-
-        # Compute the residue using the current estimates.
-        f₁ = Ω̇_d - k₁ * cos_i * isqrt_ā⁷ * (1 + k₂ * c₁ * isqrt_ā⁴)
-        f₂ = ω_d - (k₅ + c₄ * isqrt_ā⁴ + k₆ * c₃ * isqrt_ā⁸) * isqrt_ā³
+        f₁, f₂ = f
 
         @debug """
         Iteration #$it
           Estimation :
-            a  = $(R₀ / (isqrt_ā * isqrt_ā) / 1000) km
+            a  = $(R₀ / (isqrt_ā * isqrt_ā) / 1000) km
             i  = $(abs(cos_i) <= 1 ? acosd(cos_i) : "INVALID") °
           Residues :
             f₁ = $(f₁) ° / day
             f₂ = $(f₂) ° / min
         """
-
-        # Compute the Jacobian.
-        ∂f₁_∂isqrt_a = -k₁ * (7cos_i + 11k₂ * (3cos²_i - cos_i) * isqrt_ā⁴) * isqrt_ā⁶
-        ∂f₁_∂cos_i   = -k₁ * (1 + k₂ * (9cos²_i - 1) * isqrt_ā⁴) * isqrt_ā⁷
-        ∂f₂_∂isqrt_a = -(3k₅ + 7c₄ * isqrt_ā⁴ + 11k₆ * c₃ * isqrt_ā⁸) * isqrt_ā²
-        ∂f₂_∂cos_i   = -((6k₃ + 10k₄) * cos_i + k₆ * (-16cos_i + 60cos³_i) * isqrt_ā⁴) * isqrt_ā⁷
-
-        J = @SMatrix T[
-            ∂f₁_∂isqrt_a ∂f₁_∂cos_i
-            ∂f₂_∂isqrt_a ∂f₂_∂cos_i
-        ]
 
         # A singular/non-finite Newton step cannot produce a meaningful orbit.  Return the
         # best estimate and report non-convergence rather than throwing from a division by
@@ -1027,6 +1003,58 @@ end
 ############################################################################################
 #                                    Private Functions                                     #
 ############################################################################################
+
+"""
+    _sun_sync_orbit__residues_and_jacobian(isqrt_ā::T, cos_i::T, Ω̇_d::T, ω_d::T, k₁::T, k₂::T, k₃::T, k₄::T, k₅::T, k₆::T) where {T <: Number} -> SVector{2, T}, SMatrix{2, 2, T, 4}
+
+Compute the residues and the Jacobian used by the Newton-Raphson method in the function
+[`sun_sync_orbit_from_angular_velocity`](@ref). The estimates are `isqrt_ā`, which is
+`1 / √(a / R₀)` [-], and `cos_i`, which is the cosine of the inclination [-]. `Ω̇_d` is the
+desired RAAN time-derivative [° / day], `ω_d` is the desired angular velocity [° / min],
+and `k₁` to `k₆` are the auxiliary constants computed in that function.
+
+# Returns
+
+- `SVector{2, T}`: Residues `f₁` [° / day], related to the RAAN time-derivative, and `f₂`
+    [° / min], related to the angular velocity.
+- `SMatrix{2, 2, T, 4}`: Jacobian of the residues with respect to `isqrt_ā` and `cos_i`.
+"""
+function _sun_sync_orbit__residues_and_jacobian(
+    isqrt_ā::T, cos_i::T, Ω̇_d::T, ω_d::T, k₁::T, k₂::T, k₃::T, k₄::T, k₅::T, k₆::T
+) where {T <: Number}
+    isqrt_ā² = isqrt_ā * isqrt_ā
+    isqrt_ā³ = isqrt_ā² * isqrt_ā
+    isqrt_ā⁴ = isqrt_ā² * isqrt_ā²
+    isqrt_ā⁶ = isqrt_ā³ * isqrt_ā³
+    isqrt_ā⁷ = isqrt_ā⁴ * isqrt_ā³
+    isqrt_ā⁸ = isqrt_ā⁴ * isqrt_ā⁴
+
+    cos²_i = cos_i * cos_i
+    cos³_i = cos²_i * cos_i
+
+    c₁ = 3cos²_i - 1
+    c₂ = 5cos²_i - 1
+    c₃ = c₁ * c₂
+    c₄ = k₃ * c₁ + k₄ * c₂
+
+    # Compute the residues using the current estimates.
+    f₁ = Ω̇_d - k₁ * cos_i * isqrt_ā⁷ * (1 + k₂ * c₁ * isqrt_ā⁴)
+    f₂ = ω_d - (k₅ + c₄ * isqrt_ā⁴ + k₆ * c₃ * isqrt_ā⁸) * isqrt_ā³
+
+    # Compute the Jacobian.
+    ∂f₁_∂isqrt_a = -k₁ * (7cos_i + 11k₂ * (3cos³_i - cos_i) * isqrt_ā⁴) * isqrt_ā⁶
+    ∂f₁_∂cos_i   = -k₁ * (1 + k₂ * (9cos²_i - 1) * isqrt_ā⁴) * isqrt_ā⁷
+    ∂f₂_∂isqrt_a = -(3k₅ + 7c₄ * isqrt_ā⁴ + 11k₆ * c₃ * isqrt_ā⁸) * isqrt_ā²
+    ∂f₂_∂cos_i   = -((6k₃ + 10k₄) * cos_i + k₆ * (-16cos_i + 60cos³_i) * isqrt_ā⁴) * isqrt_ā⁷
+
+    f = @SVector T[f₁, f₂]
+    J = @SMatrix T[
+        ∂f₁_∂isqrt_a ∂f₁_∂cos_i
+        ∂f₂_∂isqrt_a ∂f₂_∂cos_i
+    ]
+
+    return f, J
+end
 
 function _pretify_rev_per_days(i::Int, num::Int, den::Int)
     if num == 0

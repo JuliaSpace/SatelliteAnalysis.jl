@@ -123,6 +123,10 @@ Version 0.4.0
   propagates through DataFrame transformations, and the reported mean eccentricity is no
   longer clamped to 1e-6, removing a fake apogee and perigee split of about 13 m for
   circular orbits.
+- ![Bugfix][badge-bugfix] The Jacobian used by the Newton-Raphson method in
+  `sun_sync_orbit_from_angular_velocity` had a wrong term (`cos²(i)` instead of `cos³(i)`).
+  The algorithm was still converging to the correct solution because the term is
+  proportional to J₂, but with a slightly lower convergence rate.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to

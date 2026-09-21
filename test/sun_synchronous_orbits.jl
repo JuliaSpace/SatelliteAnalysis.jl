@@ -192,6 +192,34 @@ end
     @test_throws ArgumentError sun_sync_orbit_from_angular_velocity(+0.004 |> deg2rad, -1.1)
 end
 
+# -- Function: _sun_sync_orbit__residues_and_jacobian --------------------------------------
+
+@testset "Function _sun_sync_orbit__residues_and_jacobian" begin
+    # The analytical Jacobian must match the one obtained using central finite differences.
+    # We use constants with the same order of magnitude as those in a LEO design, but with a
+    # large `k₂` and `k₆` to make the second-order terms relevant.
+    k = (-5.0, 0.2, 0.004, 0.0045, 3.5, 1e-3)
+    Ω̇_d = 0.9856
+    ω_d  = 3.6
+
+    fun(x, c) = SatelliteAnalysis._sun_sync_orbit__residues_and_jacobian(
+        x, c, Ω̇_d, ω_d, k...
+    )
+
+    for (x, c) in ((0.95, -0.15), (0.9, 0.3), (0.8, -0.6), (1.0, 0.05))
+        ~, J = fun(x, c)
+
+        Δ = 1e-6
+        ∂f_∂x = (fun(x + Δ, c)[1] - fun(x - Δ, c)[1]) / 2Δ
+        ∂f_∂c = (fun(x, c + Δ)[1] - fun(x, c - Δ)[1]) / 2Δ
+
+        @test J[1, 1] ≈ ∂f_∂x[1] rtol = 1e-7
+        @test J[2, 1] ≈ ∂f_∂x[2] rtol = 1e-7
+        @test J[1, 2] ≈ ∂f_∂c[1] rtol = 1e-7
+        @test J[2, 2] ≈ ∂f_∂c[2] rtol = 1e-7
+    end
+end
+
 # -- Function: sun_sync_orbit_inclination --------------------------------------------------
 
 @testset "Function sun_sync_orbit_inclination" begin
