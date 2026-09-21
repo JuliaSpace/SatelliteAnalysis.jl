@@ -82,8 +82,13 @@ julia> fig, ax = plot_ground_track(gt; size = (2000, 1000))
 julia> fig
 ```
 """
-function plot_ground_track(::Any; kwargs...)
-    return error("Wrong input or the package GeoMakie.jl is not loaded.")
+function plot_ground_track(args...; kwargs...)
+    return _extension_error(
+        "plot_ground_track",
+        "GeoMakie.jl",
+        "GeoMakie, CairoMakie",
+        "plot_ground_track(gt::Vector{NTuple{2, T}}; kwargs...) where {T <: Number}",
+    )
 end
 
 """
@@ -148,6 +153,11 @@ julia> ax = Axis(fig[1, 1])
 julia> plot_ground_track!(ax, gt)
 ```
 """
-function plot_ground_track!(args...)
-    return error("Wrong input or the package GeoMakie.jl is not loaded.")
+function plot_ground_track!(args...; kwargs...)
+    return _extension_error(
+        "plot_ground_track!",
+        "GeoMakie.jl",
+        "GeoMakie, CairoMakie",
+        "plot_ground_track!(ax::Axis, gt::Vector{NTuple{2, T}}) where {T <: Number}",
+    )
 end

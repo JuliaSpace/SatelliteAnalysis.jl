@@ -41,5 +41,7 @@ please refer to **Makie.jl** documentation.
 - `ArgumentError`: If the theme variant in `theme` is not `:dark` or `:light`.
 """
 function plot_world_map(args...; kwargs...)
-    return error("Wrong input or the package GeoMakie.jl is not loaded.")
+    return _extension_error(
+        "plot_world_map", "GeoMakie.jl", "GeoMakie, CairoMakie", "plot_world_map(; kwargs...)"
+    )
 end

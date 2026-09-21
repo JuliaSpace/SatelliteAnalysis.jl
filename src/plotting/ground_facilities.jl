@@ -66,7 +66,12 @@ julia> fig
 ```
 """
 function plot_ground_facility_visibility_circles(args...; kwargs...)
-    return error("Wrong input or the package GeoMakie.jl is not loaded.")
+    return _extension_error(
+        "plot_ground_facility_visibility_circles",
+        "GeoMakie.jl",
+        "GeoMakie, CairoMakie",
+        "plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, T}}}; kwargs...) where {T <: Number}",
+    )
 end
 
 """
@@ -117,6 +122,11 @@ julia> plot_ground_facility_visibility_circles!(
        )
 ```
 """
-function plot_ground_facility_visibility_circles!(args...)
-    return error("Wrong input or the package GeoMakie.jl is not loaded.")
+function plot_ground_facility_visibility_circles!(args...; kwargs...)
+    return _extension_error(
+        "plot_ground_facility_visibility_circles!",
+        "GeoMakie.jl",
+        "GeoMakie, CairoMakie",
+        "plot_ground_facility_visibility_circles!(ax::Axis, vgf_vc::Vector{Vector{NTuple{2, T}}}; kwargs...) where {T <: Number}",
+    )
 end

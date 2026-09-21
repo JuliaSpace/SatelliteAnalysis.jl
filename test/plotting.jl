@@ -10,7 +10,7 @@
 
 @testset "Function plot_decay_analysis" begin
     @test_throws(
-        "Wrong input or the package Makie.jl is not loaded.", plot_decay_analysis(1)
+        "The function `plot_decay_analysis` is provided by a package extension.", plot_decay_analysis(1)
     )
 end
 
@@ -255,11 +255,13 @@ end
 
 @testset "Function plot_ground_track" begin
     @test_throws(
-        "Wrong input or the package GeoMakie.jl is not loaded.", plot_ground_track(1)
+        "The function `plot_ground_track` is provided by a package extension.",
+        plot_ground_track(1)
     )
 
     @test_throws(
-        "Wrong input or the package GeoMakie.jl is not loaded.", plot_ground_track!(1)
+        "The function `plot_ground_track!` is provided by a package extension.",
+        plot_ground_track!(1)
     )
 end
 
@@ -294,13 +296,24 @@ end
 
 @testset "Function plot_ground_facility_visibility_circles" begin
     @test_throws(
-        "Wrong input or the package GeoMakie.jl is not loaded.",
+        "The function `plot_ground_facility_visibility_circles` is provided by a package",
         plot_ground_facility_visibility_circles(1)
     )
 
     @test_throws(
-        "Wrong input or the package GeoMakie.jl is not loaded.",
+        "The function `plot_ground_facility_visibility_circles!` is provided by a package",
         plot_ground_facility_visibility_circles!(1)
+    )
+
+    # The fallback methods must also accept keywords. Otherwise, the user would see a
+    # `MethodError` instead of the message describing the valid call.
+    @test_throws(
+        "check the arguments: the valid call is",
+        plot_ground_facility_visibility_circles!(1; ground_facility_names = ["A"])
+    )
+
+    @test_throws(
+        "check the arguments: the valid call is", plot_ground_track!(1; color = :red)
     )
 end
 
@@ -329,7 +342,10 @@ end
 # == File: ./src/plotting/world_map.jl =====================================================
 
 @testset "Function plot_world_map" begin
-    @test_throws("Wrong input or the package GeoMakie.jl is not loaded.", plot_world_map(1))
+    @test_throws(
+        "The function `plot_world_map` is provided by a package extension.",
+        plot_world_map(1)
+    )
 end
 
 @testset "Function plot_world_map [EXT]" begin

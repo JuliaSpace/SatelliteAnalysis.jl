@@ -159,6 +159,11 @@ julia> fig, ax = plot_decay_analysis(df);
 julia> fig
 ```
 """
-function plot_decay_analysis(::Any; kwargs...)
-    return error("Wrong input or the package Makie.jl is not loaded.")
+function plot_decay_analysis(args...; kwargs...)
+    return _extension_error(
+        "plot_decay_analysis",
+        "Makie.jl",
+        "CairoMakie",
+        "plot_decay_analysis(df::DataFrame; kwargs...)",
+    )
 end

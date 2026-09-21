@@ -33,11 +33,12 @@ See also: [`makie_theme`](@ref)
 - `ArgumentError`: If `n` is negative or greater than the number of colors in the palette.
 - `ErrorException`: If Makie.jl is not loaded.
 """
-function makie_palette(::Any; kwargs...)
-    return error(
-        "The function `makie_palette` is provided by a package extension. Load Makie.jl " *
-        "(e.g., `using CairoMakie`) to use it. If Makie.jl is already loaded, check the " *
-        "arguments: the valid call is `SatelliteAnalysis.makie_palette(n::Int; kwargs...)`."
+function makie_palette(args...; kwargs...)
+    return _extension_error(
+        "makie_palette",
+        "Makie.jl",
+        "CairoMakie",
+        "SatelliteAnalysis.makie_palette(n::Int; kwargs...)",
     )
 end
 
