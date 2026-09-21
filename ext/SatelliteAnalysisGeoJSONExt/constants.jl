@@ -13,6 +13,6 @@ const _COUNTRY_FILL_COLOR = Dict(
 )
 
 const _COUNTRY_STROKE_COLOR = Dict(
-    :light => "#000000",
+    :light => SatelliteAnalysis._THEME_BORDER_LIGHT_HEX,
     :dark  => SatelliteAnalysis._THEME_BORDER_DARK_HEX,
 )
