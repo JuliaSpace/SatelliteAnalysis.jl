@@ -131,6 +131,9 @@ Version 0.4.0
   consecutive passages when the keyword `track_types` was `:ascending` or `:descending` and
   the orbit inclination was lower than 45°, leading to spurious lines when plotting the
   ground track.
+- ![Bugfix][badge-bugfix] The function `ground_facility_gaps` was not accepting the keyword
+  `num_chunks`. It now forwards all the keywords related to the access computation to
+  `ground_facility_accesses`.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to

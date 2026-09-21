@@ -271,6 +271,16 @@ end
     @test metadata(df, "Description") == "Gaps to the ground facilities."
     @test colmetadata(df, :duration, "Unit") == :s
 
+    # == Keywords Forwarded to the Access Computation ======================================
+
+    # All the keywords supported by `ground_facility_accesses` must be accepted, including
+    # `num_chunks`, and the result must not depend on the number of chunks.
+    df_chunks = ground_facility_gaps(
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, num_chunks = 3
+    )
+
+    @test df_chunks == df
+
     # == Multiple Facilities ===============================================================
 
     df = ground_facility_gaps(

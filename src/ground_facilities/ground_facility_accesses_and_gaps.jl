@@ -325,34 +325,21 @@ function ground_facility_gaps(
 end
 
 function ground_facility_gaps(
-    orbp,
+    orbp::OrbitPropagator,
     vgf_wgs84::AbstractVector{T};
     duration::Number = 86400,
-    f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
     initial_time::Number = 0,
-    minimum_elevation::Number = 10 |> deg2rad,
-    reduction::R = any,
-    step::Number = 60,
     unit::Symbol = :s,
-) where {
-    T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}, R <: Function
-}
+    kwargs...,
+) where {T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}}
 
     # Get the epoch of the propagator.
     jd₀ = Propagators.epoch(orbp)
     dt₀ = jd_to_date(DateTime, jd₀) + Dates.Second(round(Int, initial_time))
 
-    # Compute the list of ground facility accesses.
-    dfa = ground_facility_accesses(
-        orbp,
-        vgf_wgs84;
-        duration,
-        f_eci_to_ecef,
-        initial_time,
-        minimum_elevation,
-        step,
-        reduction,
-    )
+    # Compute the list of ground facility accesses. All the other keywords are forwarded to
+    # the function that computes the accesses.
+    dfa = ground_facility_accesses(orbp, vgf_wgs84; duration, initial_time, kwargs...)
 
     # Compute the last propagation instant.
     jd₁ = jd₀ + (initial_time + duration) / 86400
