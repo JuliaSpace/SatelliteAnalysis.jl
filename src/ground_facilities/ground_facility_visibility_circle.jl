@@ -28,6 +28,11 @@ The ground facility is specified using a tuple with its WGS84 position:
 
 # Extended Help
 
+## Throws
+
+- `ArgumentError`: If `satellite_position_norm` is not greater than the distance between
+    the ground facility and the Earth's center.
+
 ## Examples
 
 ```julia-repl
@@ -95,6 +100,14 @@ function ground_facility_visibility_circle(
 
     # Distance between the Earth's center and the ground station.
     r_gf = norm(gf_ecef)
+
+    # The satellite must be above the ground facility. Otherwise, there is no visibility
+    # circle.
+    satellite_position_norm > r_gf || throw(
+        ArgumentError(
+            "The satellite position norm must be greater than the distance between the ground facility and the Earth's center ($r_gf m).",
+        ),
+    )
 
     # Compute the distance `r` from the ground facility to the satellite considering the
     # minimum elevation angle. We obtained this equation from the law of cosines.

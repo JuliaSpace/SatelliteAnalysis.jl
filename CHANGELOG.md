@@ -152,6 +152,9 @@ Version 0.4.0
   `initial_time` or `step` had a fractional part, making the result depend on the number of
   threads. The accesses are now merged using the visibility state at the chunk boundaries,
   and all instants are converted to `DateTime` by a single function.
+- ![Bugfix][badge-bugfix] The function `ground_facility_visibility_circle` was throwing a
+  `DomainError` if the satellite position norm was too small. It now throws an
+  `ArgumentError` if the satellite is not above the ground facility.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to

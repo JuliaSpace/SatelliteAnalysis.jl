@@ -37,4 +37,10 @@ end
     @test gfv[5][2] ≈ gfv[1][2] atol = 1e-10
     @test gfv[6][1] ≈ gfv[2][1] atol = 1e-10
     @test gfv[6][2] ≈ gfv[2][2] atol = 1e-10
+
+    # The satellite must be above the ground facility.
+    @test_throws ArgumentError ground_facility_visibility_circle((0, 0, 0), 6000e3)
+    @test_throws ArgumentError ground_facility_visibility_circle(
+        (0, 0, 0), EARTH_EQUATORIAL_RADIUS
+    )
 end
