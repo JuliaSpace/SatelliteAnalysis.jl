@@ -67,77 +67,81 @@
 
     @compile_workload begin
         path = tempname() * ".gfc"
-        write(path, icgem)
 
-        gm = GravityModels.load(IcgemFile, path)
+        # The temporary file must be removed even if the workload throws.
+        try
+            write(path, icgem)
 
-        jd₀ = date_to_jd(2024, 1, 1)
+            gm = GravityModels.load(IcgemFile, path)
 
-        orb = KeplerianElements(
-            jd₀,
-            EARTH_EQUATORIAL_RADIUS + 300e3,
-            0.001,
-            98.0 |> deg2rad,
-            ltdn_to_raan(10.5, jd₀),
-            90.0 |> deg2rad,
-            0.0
-        )
+            jd₀ = date_to_jd(2024, 1, 1)
 
-        # Run a short analysis compiling the whole pipeline: the solver stack, the
-        # right-hand side, and the output assembly.
-        decay_analysis(
-            orb;
-            satellite_mass      = 100.0,
-            satellite_mean_area = 1.0,
-            gravity_model       = gm,
-            space_indices       = (f107 = 140.0, f107_avg = 140.0, ap = 9.0),
-            tf                  = 86400.0
-        )
+            orb = KeplerianElements(
+                jd₀,
+                EARTH_EQUATORIAL_RADIUS + 300e3,
+                0.001,
+                98.0 |> deg2rad,
+                ltdn_to_raan(10.5, jd₀),
+                90.0 |> deg2rad,
+                0.0
+            )
 
-        # Compile the Jacchia 1977, Jacchia 1977 (STELA variant), and Jacchia-Roberts 1971
-        # pipelines selected by the macros `@decay_analysis__jacchia77`,
-        # `@decay_analysis__jacchia77_stela`, and `@decay_analysis__jr1971`. The space
-        # indices provided by the macros are overridden with a constant named tuple to
-        # keep the workload network-free.
-        decay_analysis(
-            orb;
-            satellite_mass      = 100.0,
-            satellite_mean_area = 1.0,
-            gravity_model       = gm,
-            tf                  = 86400.0,
-            @decay_analysis__jacchia77,
-            space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
-        )
+            # Run a short analysis compiling the whole pipeline: the solver stack, the
+            # right-hand side, and the output assembly.
+            decay_analysis(
+                orb;
+                satellite_mass      = 100.0,
+                satellite_mean_area = 1.0,
+                gravity_model       = gm,
+                space_indices       = (f107 = 140.0, f107_avg = 140.0, ap = 9.0),
+                tf                  = 86400.0
+            )
 
-        decay_analysis(
-            orb;
-            satellite_mass      = 100.0,
-            satellite_mean_area = 1.0,
-            gravity_model       = gm,
-            tf                  = 86400.0,
-            @decay_analysis__jacchia77_stela,
-            space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
-        )
+            # Compile the Jacchia 1977, Jacchia 1977 (STELA variant), and Jacchia-Roberts
+            # 1971 pipelines selected by the macros `@decay_analysis__jacchia77`,
+            # `@decay_analysis__jacchia77_stela`, and `@decay_analysis__jr1971`. The space
+            # indices provided by the macros are overridden with a constant named tuple to
+            # keep the workload network-free.
+            decay_analysis(
+                orb;
+                satellite_mass      = 100.0,
+                satellite_mean_area = 1.0,
+                gravity_model       = gm,
+                tf                  = 86400.0,
+                @decay_analysis__jacchia77,
+                space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+            )
 
-        decay_analysis(
-            orb;
-            satellite_mass      = 100.0,
-            satellite_mean_area = 1.0,
-            gravity_model       = gm,
-            tf                  = 86400.0,
-            @decay_analysis__jr1971,
-            space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
-        )
+            decay_analysis(
+                orb;
+                satellite_mass      = 100.0,
+                satellite_mean_area = 1.0,
+                gravity_model       = gm,
+                tf                  = 86400.0,
+                @decay_analysis__jacchia77_stela,
+                space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+            )
 
-        # Compile the progress interface rendering.
-        buf      = IOBuffer()
-        progress = DecayProgress(buf, 86400.0, 300e3, 120e3; ansi = true)
+            decay_analysis(
+                orb;
+                satellite_mass      = 100.0,
+                satellite_mean_area = 1.0,
+                gravity_model       = gm,
+                tf                  = 86400.0,
+                @decay_analysis__jr1971,
+                space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+            )
 
-        _start_decay_progress!(progress, 310e3)
-        _update_decay_progress!(progress, 43200.0, 200e3, 210e3)
-        _finish_decay_progress!(progress, 86400.0, 120e3, 130e3, true)
-        _cleanup_decay_progress!(progress)
+            # Compile the progress interface rendering.
+            buf      = IOBuffer()
+            progress = DecayProgress(buf, 86400.0, 300e3, 120e3; ansi = true)
 
-        rm(path; force = true)
+            _start_decay_progress!(progress, 310e3)
+            _update_decay_progress!(progress, 43200.0, 200e3, 210e3)
+            _finish_decay_progress!(progress, 86400.0, 120e3, 130e3, true)
+            _cleanup_decay_progress!(progress)
+        finally
+            rm(path; force = true)
+        end
     end
 end
