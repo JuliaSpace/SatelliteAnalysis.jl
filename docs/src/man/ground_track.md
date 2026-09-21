@@ -35,7 +35,7 @@ The following keywords are available:
 
     and it must return the position vector `r_i` represented in the ECEF at the instant `jd`
     [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.
-    (**Default**: `_ground_track_default_eci_to_ecef`)
+    (**Default**: `_default_eci_to_ecef`)
 - `step::Union{Nothing, Number}`: Step for the computation. If `nothing`, we will roughly
     compute the step to approximate 1° in the mean anomaly.
     (**Default**: `nothing`)

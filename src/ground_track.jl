@@ -31,7 +31,7 @@ ground track.
 
     and it must return the position vector `r_i` represented in the ECEF at the instant `jd`
     [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.
-    (**Default**: `_ground_track_default_eci_to_ecef`)
+    (**Default**: `_default_eci_to_ecef`)
 - `step::Union{Nothing, Number}`: Step for the computation. If `nothing`, we will roughly
     compute the step to approximate 1° in the mean anomaly.
     (**Default**: `nothing`)
@@ -137,7 +137,7 @@ function ground_track(
     add_nans::Bool = true,
     duration::Number = 86400,
     initial_time::Number = 0,
-    f_eci_to_ecef::Function = _ground_track_default_eci_to_ecef,
+    f_eci_to_ecef::Function = _default_eci_to_ecef,
     step::Union{Nothing, Number} = nothing,
     track_types::Symbol = :all,
 )
@@ -361,15 +361,4 @@ function ground_track_inclination(orb::Orbit; kwargs...)
     # Convert first to Keplerian elements.
     k = convert(KeplerianElements, orb)
     return ground_track_inclination(k.a, k.e, k.i; kwargs...)
-end
-
-############################################################################################
-#                                    Private Functions                                     #
-############################################################################################
-
-# Default function to convert `r_i` from the ECI reference frame to ECEF reference frame at
-# the instant `jd`.
-function _ground_track_default_eci_to_ecef(r_eci::AbstractVector, jd::Number)
-    D_ecef_eci = r_eci_to_ecef(TEME(), PEF(), jd)
-    return D_ecef_eci * r_eci
 end

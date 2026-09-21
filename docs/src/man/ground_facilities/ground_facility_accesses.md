@@ -46,7 +46,7 @@ The following keywords are available:
 
     and it must return the position vector `r_i` represented in the ECEF at the instant `jd`
     [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.
-    (**Default**: `_ground_facility_default_eci_to_ecef`)
+    (**Default**: `_default_eci_to_ecef`)
 - `initial_time::Number`: Initial time of the analysis after the propagator epoch [s].
     (**Default** = 0)
 - `minimum_elevation::Number`: Minimum elevation angle for communication between the

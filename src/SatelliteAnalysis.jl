@@ -27,6 +27,7 @@ include("./ground_track.jl")
 include("./lighting_condition.jl")
 include("./sun_synchronous_orbits.jl")
 
+include("./misc/default_eci_to_ecef.jl")
 include("./misc/extension_error.jl")
 include("./misc/find_crossing.jl")
 include("./misc/units.jl")

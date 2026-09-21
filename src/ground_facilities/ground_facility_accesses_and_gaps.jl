@@ -43,7 +43,7 @@ Those geodetic information are transformed to an ECEF vector using the function
 
     and it must return the position vector `r_i` represented in the ECEF at the instant `jd`
     [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.
-    (**Default**: `_ground_facility_default_eci_to_ecef`)
+    (**Default**: `_default_eci_to_ecef`)
 - `initial_time::Number`: Initial time of the analysis after the propagator epoch [s].
     (**Default** = 0)
 - `minimum_elevation::Number`: Minimum elevation angle for communication between the
@@ -128,7 +128,7 @@ function ground_facility_accesses(
     orbp::OrbitPropagator,
     vgf_wgs84::AbstractVector{T};
     duration::Number = 86400,
-    f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
+    f_eci_to_ecef::Function = _default_eci_to_ecef,
     initial_time::Number = 0,
     minimum_elevation::Number = 10 |> deg2rad,
     num_chunks::Integer = Threads.nthreads(),
@@ -400,13 +400,6 @@ end
 #                                    Private Functions                                     #
 ############################################################################################
 
-# Default function to convert `r_i` from the ECI reference frame to ECEF reference frame at
-# the instant `jd`.
-function _ground_facilities_default_eci_to_ecef(r_eci::AbstractVector, jd::Number)
-    D_ecef_eci = r_eci_to_ecef(TEME(), PEF(), jd)
-    return D_ecef_eci * r_eci
-end
-
 # Return a generator that contains the time partition of vector `vt` into `np` parts.
 #
 # This code was adapted from the one in the blog post:
@@ -443,7 +436,7 @@ function _ground_facility_access_chunk(
     orbp::OrbitPropagator,
     vt::StepRangeLen,
     vgf_wgs84::AbstractVector{T};
-    f_eci_to_ecef::Function = _ground_facilities_default_eci_to_ecef,
+    f_eci_to_ecef::Function = _default_eci_to_ecef,
     minimum_elevation::Number = 10 |> deg2rad,
     reduction::R = any,
 ) where {
