@@ -56,6 +56,8 @@
     @test isempty(gt) == true
 
     @test_throws ArgumentError ground_track(orbp; track_types = :unknown)
+    @test_throws ArgumentError ground_track(orbp; step = 0)
+    @test_throws ArgumentError ground_track(orbp; step = -10)
 
     # == Passage Separation in Low-Inclination Orbits ======================================
 

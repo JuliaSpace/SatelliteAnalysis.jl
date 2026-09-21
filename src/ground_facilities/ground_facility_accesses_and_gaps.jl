@@ -80,7 +80,8 @@ Those geodetic information are transformed to an ECEF vector using the function
 
 ## Throws
 
-- `ArgumentError`: If `time_unit` is not `:s`, `:min`, or `:h`.
+- `ArgumentError`: If `step` is not positive, or if `time_unit` is not `:s`, `:min`, or
+    `:h`.
 
 ## Examples
 
@@ -138,6 +139,8 @@ function ground_facility_accesses(
 ) where {
     T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}, R <: Function
 }
+
+    step > 0 || throw(ArgumentError("The step must be positive."))
 
     # Factor to convert the time from seconds to the selected unit. Notice that this
     # function also validates the input.
@@ -274,7 +277,8 @@ lasts for `duration` [s].
 
 ## Throws
 
-- `ArgumentError`: If `time_unit` is not `:s`, `:min`, or `:h`.
+- `ArgumentError`: If `step` is not positive, or if `time_unit` is not `:s`, `:min`, or
+    `:h`.
 
 ## Examples
 

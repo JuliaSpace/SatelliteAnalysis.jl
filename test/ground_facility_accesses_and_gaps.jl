@@ -142,6 +142,11 @@ end
         orbp, (0, 0, 0); duration = 86400, f_eci_to_ecef = gf_tod_to_pef, time_unit = :bad
     )
 
+    # -- Invalid Step ----------------------------------------------------------------------
+
+    @test_throws ArgumentError ground_facility_accesses(orbp, (0, 0, 0); step = 0)
+    @test_throws ArgumentError ground_facility_accesses(orbp, (0, 0, 0); step = -60)
+
     # == Facility Outside the Equator ======================================================
 
     # This test is used to verify the improvement provided by commit `43eea92`.
@@ -451,5 +456,10 @@ end
     @test_throws ArgumentError ground_facility_gaps(
         orbp, (0, 0, 0); duration = 86400, f_eci_to_ecef = gf_tod_to_pef, time_unit = :bad
     )
+
+    # -- Invalid Step ----------------------------------------------------------------------
+
+    @test_throws ArgumentError ground_facility_gaps(orbp, (0, 0, 0); step = 0)
+    @test_throws ArgumentError ground_facility_gaps(orbp, (0, 0, 0); step = -60)
 
 end

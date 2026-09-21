@@ -44,7 +44,8 @@ ground track.
 
 ## Throws
 
-- `ArgumentError`: If `track_types` is not `:all`, `:ascending`, or `:descending`.
+- `ArgumentError`: If `step` is not positive, or if `track_types` is not `:all`,
+    `:ascending`, or `:descending`.
 
 ## Examples
 
@@ -168,6 +169,8 @@ function ground_track(
 
         step = deg2rad(1) / ang_speed
     end
+
+    step > 0 || throw(ArgumentError("The step must be positive."))
 
     # == Compute the Ground Track ==========================================================
 

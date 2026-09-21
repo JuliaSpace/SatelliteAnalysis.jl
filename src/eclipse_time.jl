@@ -22,13 +22,13 @@ each day.
 
 - `num_days::Integer`: Number of days in which the analysis will be performed.
     (**Default** = 365)
-- `step::Number`: The step [s] in which the propagation will occur. Notice that this
-    function has a crossing estimation to accurately estimate the transition between the
-    regions, including those entirely inside one step, such as a penumbra passage between
-    the sunlight and the umbra. However, if this step is very large, we may miss a region if
-    the lighting condition is the same in two consecutive instants. If it is negative, it
-    will be selected as the time in which the mean anomaly advances 0.5°.
-    (**Default** = -1)
+- `step::Union{Nothing, Number}`: The step [s] in which the propagation will occur. Notice
+    that this function has a crossing estimation to accurately estimate the transition
+    between the regions, including those entirely inside one step, such as a penumbra
+    passage between the sunlight and the umbra. However, if this step is very large, we may
+    miss a region if the lighting condition is the same in two consecutive instants. If it
+    is `nothing`, it will be selected as the time in which the mean anomaly advances 0.5°.
+    (**Default** = `nothing`)
 - `time_unit::Symbol`: Select the unit in which the results will be generated. The possible
     values are:
     - `:s` for seconds (**Default**);
@@ -47,8 +47,8 @@ each day.
 
 ## Throws
 
-- `ArgumentError`: If `num_days` is lower than 1, if `step` is zero or not lower than the
-    orbital period, or if `time_unit` is not `:s`, `:min`, or `:h`.
+- `ArgumentError`: If `num_days` is lower than 1, if `step` is not positive or not lower
+    than the orbital period, or if `time_unit` is not `:s`, `:min`, or `:h`.
 
 ## Examples
 
@@ -101,7 +101,7 @@ Dict{Symbol, Dict{String, Symbol}} with 3 entries:
 function eclipse_time_summary(
     orbp::OrbitPropagator;
     num_days::Integer = 365,
-    step::Number = -1,
+    step::Union{Nothing, Number} = nothing,
     time_unit::Symbol = :s,
 )
     num_days < 1 && throw(ArgumentError("The number of days must be greater than 0."))
@@ -121,15 +121,18 @@ function eclipse_time_summary(
     # We need the orbit period because we will propagate one orbit per day.
     orb_period = orbital_period(mean_elements)
 
-    (iszero(step) || (step >= orb_period)) && throw(
+    # Check the propagation step we need to use. If the user did not specify the step, we
+    # select the time in which the mean anomaly advances 0.5°.
+    step′ = isnothing(step) ? orb_period * (one(orb_period) / 2) / 360 : step
+
+    (0 < step′ < orb_period) || throw(
         ArgumentError(
-            "The step must not be zero and must be lower than the orbital period ($orb_period s).",
+            "The step must be positive and lower than the orbital period ($orb_period s).",
         ),
     )
 
-    # Check the propagation step we need to use.
-    time_type = promote_type(typeof(orb_period), typeof(step))
-    Δt₀ = step < 0 ? time_type(orb_period * (one(orb_period) / 2) / 360) : time_type(step)
+    time_type = promote_type(typeof(orb_period), typeof(step′))
+    Δt₀ = time_type(step′)
 
     # Vector of the days in which the eclipse time will be computed.
     days = 0:1:(num_days - 1)

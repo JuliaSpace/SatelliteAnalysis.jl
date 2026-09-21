@@ -26,11 +26,13 @@ The following keywords are available:
 
 - `num_days::Number`: Number of days in which the analysis will be performed.
   (**Default** = 365)
-- `step::Number`: The step in which the propagation will occur. Notice that this function
-  has a crossing estimation to accurately estimate the transition between the regions.
-  However, if this step is very large, we may miss some small regions. If it is negative, it
-  will be selected as the time in which the mean anomaly advances 0.5°.
-  (**Default** = -1)
+- `step::Union{Nothing, Number}`: The step [s] in which the propagation will occur. Notice
+    that this function has a crossing estimation to accurately estimate the transition
+    between the regions, including those entirely inside one step, such as a penumbra
+    passage between the sunlight and the umbra. However, if this step is very large, we may
+    miss a region if the lighting condition is the same in two consecutive instants. If it
+    is `nothing`, it will be selected as the time in which the mean anomaly advances 0.5°.
+    (**Default** = `nothing`)
 - `time_unit::Symbol`: Select the unit in which the results will be generated. The possible
   values are:
     - `:s` for seconds (**Default**);

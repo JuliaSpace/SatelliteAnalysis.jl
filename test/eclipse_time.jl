@@ -94,6 +94,7 @@
 
     @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 0)
     @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, step = 0)
+    @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, step = -1)
     @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, step = 7000)
 
     # == Unknown Symbol ====================================================================
