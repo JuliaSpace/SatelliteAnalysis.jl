@@ -18,6 +18,13 @@
 
 export frozen_orbit
 
+# Cache with the default gravity model (EGM96), avoiding fetching and parsing the ICGEM file
+# at every call. The lock makes the lazy initialization thread-safe.
+const _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL =
+    Ref{Union{Nothing, AbstractGravityModel}}(nothing)
+
+const _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL_LOCK = ReentrantLock()
+
 """
     frozen_orbit(a::Number, i::Number; kwargs...) -> Float64, Float64
 
@@ -36,9 +43,8 @@ in **[1]**.
 - `gravity_model::Union{Nothing, AbstractGravityModel}`: Gravity model used to compute the
     frozen eccentricity. Refer to the object `AbstractGravityModel` of the package
     `SatelliteToolboxGravityModels.jl` for more information. If it is `nothing`, the system
-    will automatically fetch and load the EGM96 gravity model. However, loading a gravity
-    model can significantly decrease the performance. Thus, it is advisable to pass a
-    gravity model here.
+    will automatically fetch and load the EGM96 gravity model at the first call, keeping it
+    in memory for the next ones.
     (**Default** = `nothing`)
 - `max_degree`: Maximum gravity model degree used to compute the frozen eccentricity. If it
     is equal to or lower than 0, the maximum degree in `grav_model` will be used. Otherwise,
@@ -113,11 +119,7 @@ function frozen_orbit(
     )
 
     # Fetch EGM-96 gravity model if the user does not specify one.
-    if isnothing(gravity_model)
-        gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
-    else
-        gm = gravity_model
-    end
+    gm = isnothing(gravity_model) ? _frozen_orbit__default_gravity_model() : gravity_model
 
     gm_max_degree = GravityModels.maximum_degree(gm)
 
@@ -185,6 +187,23 @@ end
 ############################################################################################
 #                                    Private Functions                                     #
 ############################################################################################
+
+"""
+    _frozen_orbit__default_gravity_model() -> AbstractGravityModel
+
+Return the default gravity model used by [`frozen_orbit`](@ref) (EGM96). The model is loaded
+at the first call and kept in memory. This function is thread-safe.
+"""
+function _frozen_orbit__default_gravity_model()
+    return lock(_FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL_LOCK) do
+        if isnothing(_FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL[])
+            _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL[] =
+                GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
+        end
+
+        _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL[]
+    end
+end
 
 """
     _frozen_orbit__zonal_unnormalization_factor(::Val{:full}, l::Integer) -> Float64
