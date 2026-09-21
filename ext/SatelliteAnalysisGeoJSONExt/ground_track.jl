@@ -24,7 +24,7 @@ function SatelliteAnalysis.plot_ground_track(
     # Wrap the entire body in `with_theme` so that the plot calls also resolve their
     # attributes, such as the color cycle, using the SatelliteAnalysis.jl theme.
     return with_theme(SatelliteAnalysis.makie_theme(theme)) do
-        fig, ax = plot_world_map(; theme = theme, kwargs...)
+        fig, ax = _create_world_map(theme; kwargs...)
         ax.title = "Ground Track"
 
         plot_ground_track!(ax, gt)
