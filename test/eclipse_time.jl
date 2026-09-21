@@ -70,6 +70,24 @@
     @test colmetadata(df, :penumbra, "Unit") == :h
     @test colmetadata(df, :umbra, "Unit") == :h
 
+    # == Regions Inside One Step ===========================================================
+
+    # If the step is larger than the time the satellite stays in the penumbra, this region
+    # can be entirely inside one step. In this case, the algorithm must find both edges.
+    df_coarse = eclipse_time_summary(orbp; num_days = 5, step = 60)
+    df_fine   = eclipse_time_summary(orbp; num_days = 5, step = 1)
+
+    @test all(df_coarse.penumbra .> 15)
+    @test df_coarse.sunlight ≈ df_fine.sunlight atol = 1e-2
+    @test df_coarse.penumbra ≈ df_fine.penumbra atol = 1e-2
+    @test df_coarse.umbra    ≈ df_fine.umbra    atol = 1e-2
+
+    # == Invalid Inputs ====================================================================
+
+    @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 0)
+    @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, step = 0)
+    @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, step = 7000)
+
     # == Unknown Symbol ====================================================================
 
     @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, unit = :not_known)

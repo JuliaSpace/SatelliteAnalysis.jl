@@ -20,12 +20,14 @@ each day.
 
 # Keywords
 
-- `num_days::Number`: Number of days in which the analysis will be performed.
+- `num_days::Integer`: Number of days in which the analysis will be performed.
     (**Default** = 365)
-- `step::Number`: The step in which the propagation will occur. Notice that this function
-    has a crossing estimation to accurately estimate the transition between the regions.
-    However, if this step is very large, we may miss some small regions. If it is negative,
-    it will be selected as the time in which the mean anomaly advances 0.5°.
+- `step::Number`: The step [s] in which the propagation will occur. Notice that this
+    function has a crossing estimation to accurately estimate the transition between the
+    regions, including those entirely inside one step, such as a penumbra passage between
+    the sunlight and the umbra. However, if this step is very large, we may miss a region if
+    the lighting condition is the same in two consecutive instants. If it is negative, it
+    will be selected as the time in which the mean anomaly advances 0.5°.
     (**Default** = -1)
 - `unit::Symbol`: Select the unit in which the results will be generated. The possible
     values are:
@@ -45,7 +47,8 @@ each day.
 
 ## Throws
 
-- `ArgumentError`: If `unit` is not `:s`, `:m`, or `:h`.
+- `ArgumentError`: If `num_days` is lower than 1, if `step` is zero or not lower than the
+    orbital period, or if `unit` is not `:s`, `:m`, or `:h`.
 
 ## Examples
 
@@ -96,8 +99,10 @@ Dict{Symbol, Dict{String, Symbol}} with 3 entries:
 ```
 """
 function eclipse_time_summary(
-    orbp::OrbitPropagator; num_days::Number = 365, step::Number = -1, unit::Symbol = :s
+    orbp::OrbitPropagator; num_days::Integer = 365, step::Number = -1, unit::Symbol = :s
 )
+    num_days < 1 && throw(ArgumentError("The number of days must be greater than 0."))
+
     # Factor to convert the time from seconds to the selected unit. Notice that this
     # function also validates the input.
     time_factor = _time_unit_factor(unit)
@@ -112,6 +117,12 @@ function eclipse_time_summary(
 
     # We need the orbit period because we will propagate one orbit per day.
     orb_period = orbital_period(mean_elements)
+
+    (iszero(step) || (step >= orb_period)) && throw(
+        ArgumentError(
+            "The step must not be zero and must be lower than the orbital period ($orb_period s).",
+        ),
+    )
 
     # Check the propagation step we need to use.
     time_type = promote_type(typeof(orb_period), typeof(step))
@@ -147,31 +158,38 @@ function eclipse_time_summary(
 
             # Check if the state has changed.
             if new_state != old_state
-                # Refine to find the edge.
-                t_k₀ = t_k - Δt
-                t_k₁ = t_k
-                t_kc = find_crossing(
-                    _lighting_condition_crossing,
-                    t_k₀,
-                    t_k₁,
-                    true,
-                    false,
-                    orbp,
-                    d,
-                    s_i,
-                    old_state,
-                )
+                # Refine to find the edges. Notice that we can have more than one edge
+                # inside the step. For example, the satellite can cross the entire penumbra
+                # region when going from the sunlight to the umbra. Hence, after finding an
+                # edge, we must verify the state just after it and keep searching until we
+                # reach the state at the end of the step.
+                t_e     = t_k - Δt
+                state_e = old_state
 
-                # Times to be added in the old and new states.
-                Δts₀ = t_kc - t_k₀
-                Δts₁ = t_k₁ - t_kc
+                while state_e != new_state
+                    t_kc = find_crossing(
+                        _lighting_condition_crossing,
+                        t_e,
+                        t_k,
+                        true,
+                        false,
+                        orbp,
+                        d,
+                        s_i,
+                        state_e,
+                    )
 
+                    _accumulate(
+                        t_kc - t_e, state_e, d + 1, sunlight_time, penumbra_time, umbra_time
+                    )
+
+                    t_e     = t_kc
+                    state_e = _get_lighting_condition(orbp, t_kc, d, s_i)
+                end
+
+                # The remaining time in the step must be added to the new state.
                 _accumulate(
-                    Δts₀, old_state, d + 1, sunlight_time, penumbra_time, umbra_time
-                )
-
-                _accumulate(
-                    Δts₁, new_state, d + 1, sunlight_time, penumbra_time, umbra_time
+                    t_k - t_e, new_state, d + 1, sunlight_time, penumbra_time, umbra_time
                 )
 
                 # If not, just add the time step to the current state.

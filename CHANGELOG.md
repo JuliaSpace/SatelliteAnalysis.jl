@@ -161,6 +161,11 @@ Version 0.4.0
 - ![Bugfix][badge-bugfix] The function `frozen_orbit` was returning `NaN` for equatorial
   orbits. It now throws an `ArgumentError` if the inclination is not within the interval
   `(0, π)`.
+- ![Bugfix][badge-bugfix] The function `eclipse_time_summary` was not computing the penumbra
+  time if the satellite crossed the entire region inside one propagation step, adding this
+  time to the umbra. The algorithm now finds all the edges inside a step. Furthermore, the
+  function now throws an `ArgumentError` if `num_days` is lower than 1 or if `step` is zero
+  (which led to an infinite loop) or not lower than the orbital period.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to
