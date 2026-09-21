@@ -33,9 +33,10 @@ to **Makie.jl** documentation.
     facility markers. If it is `nothing`, the positions are estimated using the visibility
     circles.
     (**Default** = `nothing`)
-- `ground_facility_names::Union{Nothing, Vector{String}}`: The user can provide a vector of
-    `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
-    parameter is `nothing`, no ground facility name is added to the figure.
+- `ground_facility_names::Union{Nothing, AbstractVector{<:AbstractString}}`: The user can
+    provide a vector of strings with the length of `vgf_vc` to be plotted with the
+    visibility circles. If this parameter is `nothing`, no ground facility name is added to
+    the figure.
     (**Default** = `nothing`)
 - `theme::Union{Nothing, Symbol, Makie.Theme}`: Theme used to style the figure, which is
     applied locally. If it is a `Symbol`, it selects the variant of the theme created by the
@@ -110,9 +111,10 @@ visibility circle, which can be used, for example, to build a legend.
     facility markers. If it is `nothing`, the positions are estimated using the visibility
     circles.
     (**Default** = `nothing`)
-- `ground_facility_names::Union{Nothing, Vector{String}}`: The user can provide a vector of
-    `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
-    parameter is `nothing`, no ground facility name is added to the figure.
+- `ground_facility_names::Union{Nothing, AbstractVector{<:AbstractString}}`: The user can
+    provide a vector of strings with the length of `vgf_vc` to be plotted with the
+    visibility circles. If this parameter is `nothing`, no ground facility name is added to
+    the figure.
     (**Default** = `nothing`)
 
 All other `kwargs...` are passed to the function `lines!` that plots each visibility circle,

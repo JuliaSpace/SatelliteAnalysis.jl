@@ -13,7 +13,7 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles!(
     ax::Axis,
     vgf_vc::Vector{Vector{NTuple{2, T}}};
     ground_facilities::Union{Nothing, AbstractVector{<:_WGS84Position}} = nothing,
-    ground_facility_names::Union{Nothing, Vector{String}} = nothing,
+    ground_facility_names::Union{Nothing, AbstractVector{<:AbstractString}} = nothing,
     kwargs...,
 ) where {T <: Number}
     # Check inputs.
@@ -71,7 +71,7 @@ end
 function SatelliteAnalysis.plot_ground_facility_visibility_circles(
     vgf_vc::Vector{Vector{NTuple{2, T}}};
     ground_facilities::Union{Nothing, AbstractVector{<:_WGS84Position}} = nothing,
-    ground_facility_names::Union{Nothing, Vector{String}} = nothing,
+    ground_facility_names::Union{Nothing, AbstractVector{<:AbstractString}} = nothing,
     theme::Union{Nothing, Symbol, Makie.Theme} = :light,
     kwargs...,
 ) where {T <: Number}

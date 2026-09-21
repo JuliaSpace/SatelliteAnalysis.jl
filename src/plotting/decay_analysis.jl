@@ -51,13 +51,13 @@ keyword was not passed, is omitted from the panel.
 - `fontscale::Real`: Factor to uniformly scale every font size of the figure, useful when
     rendering at a size other than the default.
     (**Default**: 1)
-- `mission_name::Union{Nothing, String}`: Mission name rendered in uppercase above the plot
-    title. If it is `nothing`, no mission name is added to the figure.
+- `mission_name::Union{Nothing, AbstractString}`: Mission name rendered in uppercase above
+    the plot title. If it is `nothing`, no mission name is added to the figure.
     (**Default**: `nothing`)
 - `mono_ticklabels::Bool`: If `true`, the tick labels are rendered using a monospaced
     font.
     (**Default**: `false`)
-- `panel_width::Union{Nothing, Int}`: Width [px] of the column with the information panel
+- `panel_width::Union{Nothing, Real}`: Width [px] of the column with the information panel
     and the legend. If it is `nothing`, the width scales with the figure width.
     (**Default**: `nothing`)
 - `satellite_mass::Union{Nothing, Number}`: Satellite mass [kg] shown in the information
@@ -89,10 +89,10 @@ keyword was not passed, is omitted from the panel.
     annotation is added in the plot next to the reentry marker. It shows the estimated
     reentry date [UTC] when `show_dates` is `true` and the text "Reentry" otherwise.
     (**Default**: `true`)
-- `subtitle::Union{Nothing, String, Symbol}`: Subtitle rendered below the plot title. If
-    it is `:auto`, the subtitle shows the analysis timespan [UTC] when `show_dates` is
-    `true`; otherwise, no subtitle is added. If it is `nothing`, no subtitle is added to
-    the figure. Any other `Symbol` raises an `ArgumentError`.
+- `subtitle::Union{Nothing, AbstractString, Symbol}`: Subtitle rendered below the plot
+    title. If it is `:auto`, the subtitle shows the analysis timespan [UTC] when
+    `show_dates` is `true`; otherwise, no subtitle is added. If it is `nothing`, no subtitle
+    is added to the figure. Any other `Symbol` raises an `ArgumentError`.
     (**Default**: `:auto`)
 - `terminate_altitude::Union{Nothing, Number}`: Mean perigee altitude [m] that terminates
     the decay analysis, used to detect if a reentry happened. If it is `nothing`, the value
@@ -105,7 +105,7 @@ keyword was not passed, is omitted from the panel.
     figure uses the current Makie theme. In the last two cases, the elements that are not
     styled by the theme use the colors of the variant `:light`.
     (**Default**: `:light`)
-- `title::String`: Title of the plot.
+- `title::AbstractString`: Title of the plot.
     (**Default**: `"Orbital Decay Analysis"`)
 - `xlims::Union{Nothing, Tuple}`: Limits of the x-axis of the main plot. If it is
     `nothing`, the limits are computed automatically.

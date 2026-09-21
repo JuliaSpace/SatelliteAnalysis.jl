@@ -199,6 +199,17 @@ end
     @test fig isa Figure
     @test ax isa Axis
 
+    # The keywords with text must accept any string, and the panel width any real number.
+    fig, ax = plot_decay_analysis(
+        df;
+        mission_name = SubString("Amazonia-1 ", 1, 10),
+        panel_width  = 300.0,
+        subtitle     = SubString("Subtitle ", 1, 8),
+        title        = SubString("Title ", 1, 5)
+    )
+
+    @test ax.title[] == "Title"
+
     # The keyword `theme` also accepts a Makie theme, which is applied as it is, and
     # `nothing`, which keeps the current Makie theme.
     fig, ax = plot_decay_analysis(df; theme = Theme(; Axis = (; titlesize = 31,)))
@@ -379,6 +390,12 @@ end
 
     fig, ax = plot_ground_facility_visibility_circles(
         [gfv1, gfv2]; ground_facility_names = ["GF 1", "GF 2"]
+    )
+
+    @test fig isa Figure
+
+    fig, ax = plot_ground_facility_visibility_circles(
+        [gfv1, gfv2]; ground_facility_names = split("GF1 GF2")
     )
 
     @test fig isa Figure
