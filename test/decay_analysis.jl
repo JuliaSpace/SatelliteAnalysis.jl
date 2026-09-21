@@ -487,7 +487,7 @@ end
         space_indices       = si_const
     )
 
-    @test metadata(df, "Atmospheric Model")    == "Jacchia 1977 (STELA variant)"
+    @test metadata(df, "Atmospheric Model")    == "Jacchia 1977 (STELA)"
     @test metadata(df, "Space Indices Source") == "Constant $(si_const)"
     @test all(==(si_const), df.space_indices)
 
@@ -502,7 +502,7 @@ end
     ext   = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
 
     @test setup.atmospheric_model isa ext.Jacchia77StelaAtmosphericModel
-    @test setup.atmospheric_model_name == "Jacchia 1977 (STELA variant)"
+    @test setup.atmospheric_model_name == "Jacchia 1977 (STELA)"
     @test setup.space_indices === ext._decay_analysis__default_space_indices_kp
 
     # The wrapper must clamp the altitude to the validity range of the model, and the
