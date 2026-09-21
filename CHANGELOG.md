@@ -38,6 +38,12 @@ Version 0.4.0
   `NaN`s if the visibility circle crosses the meridian ±180°, avoiding a line across the
   entire map when plotting it. The previous behavior can be obtained using the new keyword
   `add_nans = false`.
+- ![Breaking][badge-breaking] The functions `plot_ground_track!` and
+  `plot_ground_facility_visibility_circles!` now return the created plots instead of
+  `nothing`, following the convention in **Makie.jl**. Furthermore, they do not select the
+  line width anymore, which is obtained from the theme of the figure, and they pass the
+  keywords to the function `lines!`, allowing the selection of attributes such as `color`,
+  `label`, and `linewidth`.
 - ![Feature][badge-feature] We added the function `decay_analysis` to estimate the orbital
   decay lifetime of a satellite considering averaged perturbations (zonal harmonics with a
   J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the
@@ -121,6 +127,8 @@ Version 0.4.0
 - ![Feature][badge-feature] The functions `sun_sync_orbit_semi_major_axis` and
   `sun_sync_orbit_inclination` now have the keyword `no_warnings`, as in
   `sun_sync_orbit_from_angular_velocity`.
+- ![Feature][badge-feature] We added the function `plot_world_map!`, which plots the country
+  polygons of the world map in an existing **Makie.jl** axis.
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were

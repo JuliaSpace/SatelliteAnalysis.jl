@@ -6,14 +6,13 @@
 
 function SatelliteAnalysis.plot_ground_track!(
     ax::Axis,
-    gt::Vector{NTuple{2, T}}
+    gt::Vector{NTuple{2, T}};
+    kwargs...
 ) where {T <: Number}
     gt_lat = first.(gt) .|> rad2deg
     gt_lon = last.(gt) .|> rad2deg
 
-    lines!(ax, gt_lon, gt_lat; linewidth = 2)
-
-    return nothing
+    return lines!(ax, gt_lon, gt_lat; kwargs...)
 end
 
 function SatelliteAnalysis.plot_ground_track(

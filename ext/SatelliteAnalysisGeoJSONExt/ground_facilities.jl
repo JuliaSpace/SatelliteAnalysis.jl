@@ -8,6 +8,7 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles!(
     ax::Axis,
     vgf_vc::Vector{Vector{NTuple{2, T}}};
     ground_facility_names::Union{Nothing, Vector{String}} = nothing,
+    kwargs...,
 ) where {T <: Number}
     # Check inputs.
     if !isnothing(ground_facility_names) &&
@@ -19,13 +20,16 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles!(
         )
     end
 
+    # Vector with the plots of the visibility circles, which is returned to the user.
+    plots = Lines[]
+
     # Plot the visibility circles.
-    for k in 1:length(vgf_vc)
-        gf_vc  = vgf_vc[k - 1 + begin]
+    for (k, gf_vc) in enumerate(vgf_vc)
         gf_lat = first.(gf_vc)
         gf_lon = last.(gf_vc)
 
-        vc = lines!(ax, gf_lon .|> rad2deg, gf_lat .|> rad2deg; linewidth = 2)
+        vc = lines!(ax, gf_lon .|> rad2deg, gf_lat .|> rad2deg; kwargs...)
+        push!(plots, vc)
 
         # We need to compute the vectors in the ECEF reference frame to obtain the ground
         # station position, which is computed by averaging them. Notice that we must neglect
@@ -52,7 +56,7 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles!(
         end
     end
 
-    return nothing
+    return plots
 end
 
 function SatelliteAnalysis.plot_ground_facility_visibility_circles(

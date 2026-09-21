@@ -95,10 +95,12 @@ function plot_ground_track(args...; kwargs...)
 end
 
 """
-    plot_ground_track!(ax:Axis, gt::Vector{NTuple{2, Number}}) -> Nothing
+    plot_ground_track!(ax::Axis, gt::Vector{NTuple{2, T}}; kwargs...) where {T <: Number} -> Lines
 
 Plot in the **Makie.jl** axis `ax` the ground track `gt` computed using the function
-[`ground_track`](@ref).
+[`ground_track`](@ref), returning the created plot, which can be used, for example, to
+build a legend. All the keywords `kwargs...` are passed to the function `lines!`, allowing
+the selection of attributes such as `color`, `label`, `linestyle`, and `linewidth`.
 
 !!! note
 
@@ -160,6 +162,6 @@ function plot_ground_track!(args...; kwargs...)
         "plot_ground_track!",
         "Makie.jl and GeoJSON.jl",
         "CairoMakie, GeoJSON",
-        "plot_ground_track!(ax::Axis, gt::Vector{NTuple{2, T}}) where {T <: Number}",
+        "plot_ground_track!(ax::Axis, gt::Vector{NTuple{2, T}}; kwargs...) where {T <: Number}",
     )
 end

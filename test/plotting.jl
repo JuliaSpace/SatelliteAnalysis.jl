@@ -318,6 +318,28 @@ end
 
     @test fig isa Figure
     @test ax isa Axis
+
+    # == In-Place Version ==================================================================
+
+    # The in-place version must return the plot, and it must pass the keywords to `lines!`.
+    fig = Figure()
+    ax  = Axis(fig[1, 1])
+
+    plt = plot_ground_track!(ax, gt; color = :red, label = "Ground Track", linewidth = 5)
+
+    @test plt isa Lines
+    @test plt.linewidth[] == 5
+    @test plt.label[] == "Ground Track"
+    @test length(ax.scene.plots) == 1
+
+    # The line width must not be fixed. Hence, it is obtained from the current theme.
+    plt = with_theme(Theme(; Lines = (; linewidth = 7,))) do
+        fig = Figure()
+        ax  = Axis(fig[1, 1])
+        plot_ground_track!(ax, gt)
+    end
+
+    @test plt.linewidth[] == 7
 end
 
 # == File: ./src/plotting/ground_facilities.jl =============================================
@@ -362,10 +384,32 @@ end
     @test fig isa Figure
     @test ax isa Axis
 
+    # == In-Place Version ==================================================================
+
+    # The in-place version must return the plots of the visibility circles, and it must
+    # pass the keywords to `lines!`.
+    fig = Figure()
+    ax  = Axis(fig[1, 1])
+
+    plts = plot_ground_facility_visibility_circles!(
+        ax, [gfv1, gfv2]; ground_facility_names = ["GF 1", "GF 2"], linewidth = 5
+    )
+
+    @test plts isa Vector{Lines}
+    @test length(plts) == 2
+    @test all(p -> p.linewidth[] == 5, plts)
+
+    # Two circles, two markers, and two labels.
+    @test length(ax.scene.plots) == 6
+
     # == Errors ============================================================================
 
     @test_throws ArgumentError plot_ground_facility_visibility_circles(
         [gfv1, gfv2]; ground_facility_names = ["GF 1", "GF 2", "GF 3"]
+    )
+
+    @test_throws ArgumentError plot_ground_facility_visibility_circles!(
+        ax, [gfv1, gfv2]; ground_facility_names = ["GF 1"]
     )
 end
 
@@ -375,6 +419,11 @@ end
     @test_throws(
         "The function `plot_world_map` is provided by a package extension.",
         plot_world_map(1)
+    )
+
+    @test_throws(
+        "The function `plot_world_map!` is provided by a package extension.",
+        plot_world_map!(1; theme = :dark)
     )
 end
 
@@ -394,6 +443,21 @@ end
     # == Errors ============================================================================
 
     @test_throws ArgumentError plot_world_map(; theme = :blue)
+
+    # == In-Place Version ==================================================================
+
+    # The in-place version must draw only the country polygons, returning the plot.
+    fig = Figure()
+    ax  = Axis(fig[1, 1]; title = "My Map")
+
+    plt = plot_world_map!(ax; theme = :dark, strokewidth = 3)
+
+    @test plt isa Poly
+    @test plt.strokewidth[] == 3
+    @test ax.title[] == "My Map"
+    @test length(ax.scene.plots) == 1
+
+    @test_throws ArgumentError plot_world_map!(ax; theme = :blue)
 
     # The keyword `theme` also accepts a Makie theme, which is applied as it is, and
     # `nothing`, which keeps the current Makie theme.

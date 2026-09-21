@@ -78,11 +78,12 @@ function plot_ground_facility_visibility_circles(args...; kwargs...)
 end
 
 """
-    plot_ground_facility_visibility_circles!(ax::Axis, vgf_vc::Vector{Vector{NTuple{2, Number}}}; kwargs...) -> Nothing
+    plot_ground_facility_visibility_circles!(ax::Axis, vgf_vc::Vector{Vector{NTuple{2, T}}}; kwargs...) where {T <: Number} -> Vector{Lines}
 
 Plot in the **Makie.jl** axis `ax` the ground facility visibility circles in the vector
 `vgf_vc`, where each element is computed using the function
-[`ground_facility_visibility_circle`](@ref).
+[`ground_facility_visibility_circle`](@ref). It returns a vector with the plot of each
+visibility circle, which can be used, for example, to build a legend.
 
 !!! note
 
@@ -101,6 +102,9 @@ Plot in the **Makie.jl** axis `ax` the ground facility visibility circles in the
     `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
     parameter is `nothing`, no ground facility name is added to the figure.
     (**Default** = `nothing`)
+
+All other `kwargs...` are passed to the function `lines!` that plots each visibility circle,
+allowing the selection of attributes such as `linestyle` and `linewidth`.
 
 # Extended Help
 

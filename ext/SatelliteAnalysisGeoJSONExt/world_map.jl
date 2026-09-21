@@ -16,6 +16,22 @@ function SatelliteAnalysis.plot_world_map(;
     end
 end
 
+function SatelliteAnalysis.plot_world_map!(
+    ax::Axis;
+    theme::Union{Nothing, Symbol, Makie.Theme} = :light,
+    kwargs...
+)
+    variant = _theme_variant(theme)
+
+    variant in (:dark, :light) || throw(
+        ArgumentError(
+            "Unknown theme variant `:$variant`. The available options are `:dark` and `:light`.",
+        ),
+    )
+
+    return _draw_world_map!(ax, variant; kwargs...)
+end
+
 ############################################################################################
 #                                    Private Functions                                     #
 ############################################################################################
@@ -66,14 +82,15 @@ function _create_world_map(variant::Symbol; size = (1450, 800), kwargs...)
 end
 
 """
-    _draw_world_map!(ax::Axis, variant::Symbol) -> Poly
+    _draw_world_map!(ax::Axis, variant::Symbol; kwargs...) -> Poly
 
 Draw the country polygons in the axis `ax` using the colors of the theme `variant` (`:light`
 or `:dark`), returning the created plot. The polygons are obtained from the file fetched by
 the function [`fetch_country_polygons`](@ref). Hence, if this file does not exist, the
-algorithm tries to download it.
+algorithm tries to download it. All the keywords `kwargs...` are passed to the function
+`poly!`, overriding the attributes selected by this function.
 """
-function _draw_world_map!(ax::Axis, variant::Symbol)
+function _draw_world_map!(ax::Axis, variant::Symbol; kwargs...)
     # Get the GeoJSON file with the countries.
     countries_filename = fetch_country_polygons(; force_download = false)
 
@@ -87,5 +104,6 @@ function _draw_world_map!(ax::Axis, variant::Symbol)
         color       = _COUNTRY_FILL_COLOR[variant],
         strokecolor = _COUNTRY_STROKE_COLOR[variant],
         strokewidth = 1,
+        kwargs...,
     )
 end
