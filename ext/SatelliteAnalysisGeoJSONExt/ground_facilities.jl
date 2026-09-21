@@ -28,12 +28,17 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles!(
         vc = lines!(ax, gf_lon .|> rad2deg, gf_lat .|> rad2deg; linewidth = 2)
 
         # We need to compute the vectors in the ECEF reference frame to obtain the ground
-        # station position, which is computed by averaging them.
-        vr_ecef = geodetic_to_ecef.(gf_lat, gf_lon, 0)
-        gf_ecef = sum(vr_ecef) / length(gf_vc)
-        gf_lat, gf_lon, ~ = ecef_to_geodetic(gf_ecef)
+        # station position, which is computed by averaging them. Notice that we must neglect
+        # the NaNs that indicate the discontinuities in the visibility circle.
+        valid_points = Iterators.filter(p -> !isnan(first(p)), gf_vc)
 
-        dot = scatter!(ax, gf_lon |> rad2deg, gf_lat |> rad2deg; color = vc.color)
+        gf_ecef =
+            sum(p -> geodetic_to_ecef(first(p), last(p), 0), valid_points) /
+            count(p -> !isnan(first(p)), gf_vc)
+
+        center_lat, center_lon, ~ = ecef_to_geodetic(gf_ecef)
+
+        dot = scatter!(ax, center_lon |> rad2deg, center_lat |> rad2deg; color = vc.color)
         translate!(dot, 0, 0, 10)
 
         if !isnothing(ground_facility_names)
@@ -41,7 +46,7 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles!(
                 ax,
                 ground_facility_names[k];
                 color    = vc.color,
-                position = (gf_lon |> rad2deg, gf_lat |> rad2deg),
+                position = (center_lon |> rad2deg, center_lat |> rad2deg),
             )
             translate!(label, 0, 0, 10)
         end

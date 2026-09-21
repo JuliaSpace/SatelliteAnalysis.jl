@@ -67,6 +67,34 @@ end
     @test gfv[6][1] ≈ gfv[2][1] atol = 1e-10
     @test gfv[6][2] ≈ gfv[2][2] atol = 1e-10
 
+    # == Visibility Circle Crossing the Meridian ±180° =====================================
+
+    # The longitude discontinuities must be marked by NaNs to improve plotting.
+    gf_wgs84 = (20 |> deg2rad, 175 |> deg2rad, 0)
+
+    gfv = ground_facility_visibility_circle(gf_wgs84, 7000e3; azimuth_step = 1 |> deg2rad)
+
+    ind_nans = findall(p -> isnan(p[1]), gfv)
+
+    @test length(ind_nans) == 2
+    @test all(isnan(gfv[k][2]) for k in ind_nans)
+
+    # The longitude difference between consecutive valid points must be small.
+    @test all(
+        isnan(gfv[k][2]) || isnan(gfv[k - 1][2]) || (abs(gfv[k][2] - gfv[k - 1][2]) < 0.1)
+        for k in 2:length(gfv)
+    )
+
+    # Without NaNs, the vector must contain exactly the same valid points.
+    gfv_no_nans = ground_facility_visibility_circle(
+        gf_wgs84, 7000e3; add_nans = false, azimuth_step = 1 |> deg2rad
+    )
+
+    @test gfv_no_nans == filter(p -> !isnan(p[1]), gfv)
+    @test maximum(
+        abs(gfv_no_nans[k][2] - gfv_no_nans[k - 1][2]) for k in 2:length(gfv_no_nans)
+    ) > 6
+
     # The satellite must be above the ground facility.
     @test_throws ArgumentError ground_facility_visibility_circle((0, 0, 0), 6000e3)
     @test_throws ArgumentError ground_facility_visibility_circle(

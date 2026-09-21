@@ -20,7 +20,11 @@ The ground facility is specified using a tuple with its WGS84 position:
 
 # Keywords
 
-- `azimuth_step::Number`: The step in the azimuth used to compute the visibility circle.
+- `add_nans::Bool`: If `true`, we add `NaN` if there is a discontinuity in the visibility
+    circle, which happens when it crosses the meridian ±180°, to improve plotting.
+    (**Default**: true)
+- `azimuth_step::Number`: The step in the azimuth [rad] used to compute the visibility
+    circle.
     (**Default**: 0.1 |> deg2rad)
 - `minimum_elevation::Number`: Minimum elevation angle for communication between the
     satellite and the ground facility [rad].
@@ -86,6 +90,7 @@ julia> lineplot(last.(gfv) .|> rad2deg, first.(gfv) .|> rad2deg; xlim = (-180, 1
 function ground_facility_visibility_circle(
     gf_wgs84::Tuple{T1, T2, T3},
     satellite_position_norm::Number;
+    add_nans::Bool = true,
     azimuth_step::Number = 0.1 |> deg2rad,
     minimum_elevation::Number = 10 |> deg2rad,
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
@@ -132,6 +137,13 @@ function ground_facility_visibility_circle(
         # intersection point.
         r_ecef      = ned_to_ecef(r_ned, gf_lat, gf_lon, gf_h; translate = true)
         lat, lon, ~ = ecef_to_geodetic(r_ecef)
+
+        # Check if we need to add NaNs to improve plotting, which happens when the longitude
+        # wraps.
+        if add_nans && !isempty(gf_visibility)
+            Δlon = lon - last(last(gf_visibility))
+            (abs(Δlon) > π) && push!(gf_visibility, (NaN, NaN))
+        end
 
         # Add to the result vector.
         push!(gf_visibility, (lat, lon))

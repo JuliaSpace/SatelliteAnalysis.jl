@@ -34,6 +34,10 @@ Version 0.4.0
   CairoMakie, GeoJSON`) instead of **GeoMakie.jl**, which was used only to read the GeoJSON
   file with the country polygons. Loading **GeoJSON.jl** is about 30x faster than loading
   **GeoMakie.jl**.
+- ![Breaking][badge-breaking] The function `ground_facility_visibility_circle` now adds
+  `NaN`s if the visibility circle crosses the meridian ±180°, avoiding a line across the
+  entire map when plotting it. The previous behavior can be obtained using the new keyword
+  `add_nans = false`.
 - ![Feature][badge-feature] We added the function `decay_analysis` to estimate the orbital
   decay lifetime of a satellite considering averaged perturbations (zonal harmonics with a
   J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the
