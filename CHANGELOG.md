@@ -18,6 +18,9 @@ Version 0.4.0
   units. The unit stored in the `DataFrame` metadata is also `:min`.
 - ![Breaking][badge-breaking] The deprecated keyword `pretify_rev_per_days` of
   `design_sun_sync_ground_repeating_orbit` was removed.
+- ![Breaking][badge-breaking] The column `rev_per_days` in the `DataFrame` returned by
+  `design_sun_sync_ground_repeating_orbit` was renamed to `revs_per_day`, and the keyword
+  `pretty_rev_per_days` was renamed to `pretty_revs_per_day`.
 - ![Feature][badge-feature] We added the function `decay_analysis` to estimate the orbital
   decay lifetime of a satellite considering averaged perturbations (zonal harmonics with a
   J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the
@@ -159,6 +162,9 @@ Version 0.4.0
   now filters the orbits by altitude before computing their properties and computes the
   geometry of the adjacent ground tracks only once per orbit. The design with an altitude
   interval of 100 km is about 3x faster.
+- ![Enhancement][badge-enhancement] The `DataFrame` returned by
+  `design_sun_sync_ground_repeating_orbit` now stores the description of the table and the
+  unit of each column using metadata, as in the other analyses.
 - ![Bugfix][badge-bugfix] The decay analysis passed the Julian date to the gravity model
   where it expects elapsed seconds from the J2000.0 epoch. The error was harmless for the
   default EGM96 model, whose coefficients are static, but it would produce wrong results

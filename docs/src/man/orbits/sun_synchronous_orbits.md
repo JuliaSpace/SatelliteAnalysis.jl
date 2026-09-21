@@ -301,7 +301,7 @@ This function returns a `DataFrame` with the following columns:
 - `altitude`: Orbit altitude above the Equator `(a - R0)`.
 - `inclination`: Orbit inclination.
 - `period`: Orbital period.
-- `rev_per_days`: If the keyword `pretty_rev_per_days` is `false`, this column contains
+- `revs_per_day`: If the keyword `pretty_revs_per_day` is `false`, this column contains
     `Tuple`s with the integer and rational parts of the number of revolutions per day.
     Otherwise, it contains a string with a pretty representation of the number of revolutions
     per day.
@@ -326,7 +326,7 @@ The following keywords are available:
 - `int_rev_per_day::Tuple`: `Tuple` with the integer parts of the number of revolutions per
     day to be analyzed.
     (**Default** = `(13, 14, 15, 16, 17)`)
-- `pretty_rev_per_days::Bool`: If `true`, the column with the revolutions per day will be
+- `pretty_revs_per_day::Bool`: If `true`, the column with the revolutions per day will be
     converted to a string with a pretty representation of this information.
     (**Default**: `true`)
 - `maximum_altitude::Union{Nothing, Number}`: Maximum altitude [m] of the orbits in the

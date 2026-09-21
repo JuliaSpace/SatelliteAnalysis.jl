@@ -20,7 +20,7 @@
     @test df[begin, :altitude] ≈ 4.272 (atol = 1e-3)
     @test df[begin, :inclination] ≈ 95.6949 (atol = 1e-4)
     @test df[begin, :period] ≈ 84.706 (atol = 1e-3)
-    @test df[begin, :rev_per_days] == "17"
+    @test df[begin, :revs_per_day] == "17"
     @test df[begin, :adjacent_gt_distance] ≈ 2327.845 (atol = 1e-3)
     @test df[begin, :adjacent_gt_angle] ≈ 169.1250 (atol = 1e-4)
 
@@ -28,9 +28,37 @@
     @test df[end, :altitude] ≈ 1257.115 (atol = 1e-3)
     @test df[end, :inclination] ≈ 100.7057 (atol = 1e-4)
     @test df[end, :period] ≈ 110.769 (atol = 1e-3)
-    @test df[end, :rev_per_days] == "13"
+    @test df[end, :revs_per_day] == "13"
     @test df[end, :adjacent_gt_distance] ≈ 2976.209 (atol = 1e-3)
     @test df[end, :adjacent_gt_angle] ≈ 91.7639 (atol = 1e-4)
+
+    # == Metadata ==========================================================================
+
+    @test metadata(df, "Description") ==
+        "Sun-synchronous, ground-repeating orbits with repetition between 1 and 1 days."
+
+    @test colmetadata(df, :semi_major_axis,      "Unit") == :km
+    @test colmetadata(df, :altitude,             "Unit") == :km
+    @test colmetadata(df, :inclination,          "Unit") == :deg
+    @test colmetadata(df, :period,               "Unit") == :min
+    @test colmetadata(df, :adjacent_gt_distance, "Unit") == :km
+    @test colmetadata(df, :adjacent_gt_angle,    "Unit") == :deg
+
+    # All the metadata must use the style `:note` to propagate through DataFrame
+    # transformations.
+    @test all(k -> metadata(df, k; style = true)[2] == :note, metadatakeys(df))
+    @test all(
+        colmetadata(df, col, k; style = true)[2] == :note for
+        (col, keys) in colmetadatakeys(df) for k in keys
+    )
+
+    df_units = design_sun_sync_ground_repeating_orbit(
+        1, 1; angle_unit = :rad, distance_unit = :m, time_unit = :s
+    )
+
+    @test colmetadata(df_units, :altitude,          "Unit") == :m
+    @test colmetadata(df_units, :adjacent_gt_angle, "Unit") == :rad
+    @test colmetadata(df_units, :period,            "Unit") == :s
 
     # == Altitude filter ===================================================================
 
@@ -43,7 +71,7 @@
     @test df[begin, :altitude] ≈ 752.847 (atol = 1e-3)
     @test df[begin, :inclination] ≈ 98.4106 (atol = 1e-4)
     @test df[begin, :period] ≈ 100.000 (atol = 1e-3)
-    @test df[begin, :rev_per_days] == "14 + ²/₅"
+    @test df[begin, :revs_per_day] == "14 + ²/₅"
     @test df[begin, :adjacent_gt_distance] ≈ 543.811 (atol = 1e-3)
     @test df[begin, :adjacent_gt_angle] ≈ 39.425 (atol = 1e-3)
 
@@ -52,9 +80,9 @@
         5;
         minimum_altitude = 750e3,
         maximum_altitude = 760e3,
-        pretty_rev_per_days = false,
+        pretty_revs_per_day = false,
     )
-    @test corrected[begin, :rev_per_days] == (14, 2 // 5)
+    @test corrected[begin, :revs_per_day] == (14, 2 // 5)
 
     # == Revolutions per day ===============================================================
 
@@ -63,7 +91,7 @@
         5;
         minimum_altitude = 750e3,
         maximum_altitude = 760e3,
-        pretty_rev_per_days = false,
+        pretty_revs_per_day = false,
     )
 
     @test size(df) == (1, 7)
@@ -71,7 +99,7 @@
     @test df[begin, :altitude] ≈ 752.847 (atol = 1e-3)
     @test df[begin, :inclination] ≈ 98.4106 (atol = 1e-4)
     @test df[begin, :period] ≈ 100.000 (atol = 1e-3)
-    @test df[begin, :rev_per_days] == (14, 2 // 5)
+    @test df[begin, :revs_per_day] == (14, 2 // 5)
     @test df[begin, :adjacent_gt_distance] ≈ 543.811 (atol = 1e-3)
     @test df[begin, :adjacent_gt_angle] ≈ 39.425 (atol = 1e-3)
 
@@ -138,7 +166,7 @@
     df = @test_logs design_sun_sync_ground_repeating_orbit(1, 1; int_rev_per_day = (5, 14))
 
     @test size(df) == (1, 7)
-    @test df[begin, :rev_per_days] == "14"
+    @test df[begin, :revs_per_day] == "14"
 
     df = @test_logs design_sun_sync_ground_repeating_orbit(1, 1; int_rev_per_day = (5,))
 

@@ -26,17 +26,18 @@ This function returns a `DataFrame` with the following columns:
 - `altitude`: Orbit altitude above the Equator `(a - R0)`.
 - `inclination`: Orbit inclination.
 - `period`: Orbital period.
-- `rev_per_days`: If the keyword `pretty_rev_per_days` is `false`, this column contains
+- `revs_per_day`: If the keyword `pretty_revs_per_day` is `false`, this column contains
     `Tuple`s with the integer and rational parts of the number of revolutions per day.
-    Otherwise, it contains a string with a pretty representation of the number of revolutions
-    per day.
+    Otherwise, it contains a string with a pretty representation of the number of
+    revolutions per day.
 - `adjacent_gt_distance`: Distance between two adjacent ground tracks at Equator.
 - `adjacent_gt_angle`: Angle between two adjacent ground tracks at Equator measured from the
     satellite position.
 
 !!! note
 
-    The units of those columns depend on the keywords.
+    The units of those columns depend on the keywords. The unit of each column is stored in
+    the `DataFrame` using the column metadata `Unit`.
 
 # Keywords
 
@@ -51,7 +52,7 @@ This function returns a `DataFrame` with the following columns:
 - `int_rev_per_day::Tuple`: `Tuple` with the integer parts of the number of revolutions per
     day to be analyzed.
     (**Default** = `(13, 14, 15, 16, 17)`)
-- `pretty_rev_per_days::Bool`: If `true`, the column with the revolutions per day will be
+- `pretty_revs_per_day::Bool`: If `true`, the column with the revolutions per day will be
     converted to a string with a pretty representation of this information.
     (**Default**: `true`)
 - `maximum_altitude::Union{Nothing, Number}`: Maximum altitude [m] of the orbits in the
@@ -89,7 +90,7 @@ function design_sun_sync_ground_repeating_orbit(
     distance_unit::Symbol = :km,
     eccentricity::Number = 0,
     int_rev_per_day::Tuple = (13, 14, 15, 16, 17),
-    pretty_rev_per_days::Bool = true,
+    pretty_revs_per_day::Bool = true,
     maximum_altitude::Union{Nothing, Number} = nothing,
     minimum_altitude::Union{Nothing, Number} = nothing,
     time_unit::Symbol = :min,
@@ -124,7 +125,7 @@ function design_sun_sync_ground_repeating_orbit(
         altitude             = Float64[],
         inclination          = Float64[],
         period               = Float64[],
-        rev_per_days         = pretty_rev_per_days ? String[] : Tuple{Int, Rational}[],
+        revs_per_day         = pretty_revs_per_day ? String[] : Tuple{Int, Rational}[],
         adjacent_gt_distance = Float64[],
         adjacent_gt_angle    = Float64[],
     )
@@ -203,7 +204,7 @@ function design_sun_sync_ground_repeating_orbit(
                         h * dunit,
                         i * angunit,
                         orb_period * tunit,
-                        pretty_rev_per_days ? _pretify_rev_per_days(int, num, den) :
+                        pretty_revs_per_day ? _pretty_revs_per_day(int, num, den) :
                         (int, num // den),
                         adjacent_gt_distance * dunit,
                         adjacent_gt_angle * angunit,
@@ -215,6 +216,22 @@ function design_sun_sync_ground_repeating_orbit(
 
     # Sort the `DataFrame` by the semi-major axis.
     sort!(df, :semi_major_axis)
+
+    # Add metadata to the `DataFrame`. The style `:note` makes the metadata propagate
+    # through DataFrame transformations.
+    metadata!(
+        df,
+        "Description",
+        "Sun-synchronous, ground-repeating orbits with repetition between $minimum_repetition and $maximum_repetition days.";
+        style = :note,
+    )
+
+    colmetadata!(df, :semi_major_axis,      "Unit", distance_unit; style = :note)
+    colmetadata!(df, :altitude,             "Unit", distance_unit; style = :note)
+    colmetadata!(df, :inclination,          "Unit", angle_unit;    style = :note)
+    colmetadata!(df, :period,               "Unit", time_unit;     style = :note)
+    colmetadata!(df, :adjacent_gt_distance, "Unit", distance_unit; style = :note)
+    colmetadata!(df, :adjacent_gt_angle,    "Unit", angle_unit;    style = :note)
 
     return df
 end
@@ -1120,7 +1137,7 @@ function _sun_sync_orbit__residues_and_jacobian(
     return f, J
 end
 
-function _pretify_rev_per_days(i::Int, num::Int, den::Int)
+function _pretty_revs_per_day(i::Int, num::Int, den::Int)
     if num == 0
         return string(i)
     else
