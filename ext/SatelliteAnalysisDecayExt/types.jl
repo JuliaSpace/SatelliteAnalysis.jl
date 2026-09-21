@@ -111,11 +111,14 @@ function (m::Jacchia77AtmosphericModel)(
     jd_utc::Number, lat::Number, lon::Number, h::Number, space_indices::NamedTuple
 )
     # The Jacchia 1977 model is only valid between 90 km and 2000 km, whereas the
-    # integrator can evaluate trial states outside this range (unphysical states near the
-    # decay end or apogees above 2000 km). Hence, we clamp the altitude to keep the model
-    # valid: the analysis terminates well above 90 km and the drag is negligible above
-    # 2000 km, so the clamping does not change the result.
-    h′ = clamp(h, 90.0e3, 2000.0e3)
+    # integrator can evaluate states outside this range (unphysical trial states near the
+    # decay end or apogees above 2000 km). The drag is negligible above 2000 km. Hence, we
+    # consider that the density is zero in this case.
+    h > 2000.0e3 && return 0.0
+
+    # The analysis terminates well above 90 km. Thus, clamping the altitude to keep the
+    # model valid does not change the result.
+    h′ = max(h, 90.0e3)
 
     atmos = AtmosphericModels.jacchia1977(
         jd_utc,
@@ -165,10 +168,14 @@ contain the fields:
 function (::Jr1971AtmosphericModel)(
     jd_utc::Number, lat::Number, lon::Number, h::Number, space_indices::NamedTuple
 )
-    # The Jacchia-Roberts 1971 model is only valid above 90 km, whereas the integrator can
-    # evaluate trial states with unphysical altitudes near the decay end. Hence, we clamp
-    # the altitude to keep the model valid: the analysis terminates well above 90 km, so
-    # the clamping does not change the result.
+    # The Jacchia-Roberts 1971 model is only valid between 90 km and 3000 km, whereas the
+    # integrator can evaluate states outside this range (unphysical trial states near the
+    # decay end or apogees above 3000 km). The drag is negligible above 3000 km. Hence, we
+    # consider that the density is zero in this case.
+    h > 3000.0e3 && return 0.0
+
+    # The analysis terminates well above 90 km. Thus, clamping the altitude to keep the
+    # model valid does not change the result.
     h′ = max(h, 90.0e3)
 
     atmos = AtmosphericModels.jr1971(

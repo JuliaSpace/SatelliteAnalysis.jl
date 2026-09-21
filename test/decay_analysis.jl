@@ -463,13 +463,15 @@ end
     @test all(60.0 .< f107_avgs .< 400.0)
     @test all(0.0 .<= kps .<= 9.0)
 
-    # The wrapper must clamp the altitude to the validity range of the model.
+    # The wrapper must clamp the altitude to the lower limit of the model and must return
+    # a null density above its upper limit.
     ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
     jac = ext.Jacchia77AtmosphericModel()
 
-    @test jac(jd₀, 0.0, 0.0, 300e3, si_const) > 0
-    @test jac(jd₀, 0.0, 0.0, 50e3,   si_const) == jac(jd₀, 0.0, 0.0, 90e3,   si_const)
-    @test jac(jd₀, 0.0, 0.0, 3000e3, si_const) == jac(jd₀, 0.0, 0.0, 2000e3, si_const)
+    @test jac(jd₀, 0.0, 0.0, 300e3,  si_const) > 0
+    @test jac(jd₀, 0.0, 0.0, 2000e3, si_const) > 0
+    @test jac(jd₀, 0.0, 0.0, 50e3,   si_const) == jac(jd₀, 0.0, 0.0, 90e3, si_const)
+    @test jac(jd₀, 0.0, 0.0, 2001e3, si_const) == 0
 end
 
 @testset "Jacchia 1977 STELA Variant Atmospheric Model" begin
@@ -524,8 +526,9 @@ end
     jac   = ext.Jacchia77AtmosphericModel()
 
     @test stela(jd₀, 0.0, 0.0, 300e3, si_const) > 0
-    @test stela(jd₀, 0.0, 0.0, 50e3,   si_const) == stela(jd₀, 0.0, 0.0, 90e3,   si_const)
-    @test stela(jd₀, 0.0, 0.0, 3000e3, si_const) == stela(jd₀, 0.0, 0.0, 2000e3, si_const)
+    @test stela(jd₀, 0.0, 0.0, 2000e3, si_const) > 0
+    @test stela(jd₀, 0.0, 0.0, 50e3,   si_const) == stela(jd₀, 0.0, 0.0, 90e3, si_const)
+    @test stela(jd₀, 0.0, 0.0, 2001e3, si_const) == 0
     @test stela(jd₀, 0.0, 0.0, 300e3, si_const) != jac(jd₀, 0.0, 0.0, 300e3, si_const)
 end
 
@@ -584,12 +587,46 @@ end
     @test all(isfinite, kps)
     @test all(0.0 .<= kps .<= 9.0)
 
-    # The wrapper must clamp the altitude to the validity range of the model.
+    # The wrapper must clamp the altitude to the lower limit of the model and must return
+    # a null density above its upper limit.
     ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
     jr = ext.Jr1971AtmosphericModel()
 
-    @test jr(jd₀, 0.0, 0.0, 300e3, si_const) > 0
-    @test jr(jd₀, 0.0, 0.0, 50e3,  si_const) == jr(jd₀, 0.0, 0.0, 90e3, si_const)
+    @test jr(jd₀, 0.0, 0.0, 300e3,  si_const) > 0
+    @test jr(jd₀, 0.0, 0.0, 1500e3, si_const) > 0
+    @test jr(jd₀, 0.0, 0.0, 50e3,   si_const) == jr(jd₀, 0.0, 0.0, 90e3, si_const)
+    @test jr(jd₀, 0.0, 0.0, 3001e3, si_const) == 0
+
+    # Hence, the analysis must work in orbits with apogee above the upper limit of the
+    # models, such as a geostationary transfer orbit.
+    orb_gto = KeplerianElements(
+        jd₀,
+        (2EARTH_EQUATORIAL_RADIUS + 250e3 + 35_786e3) / 2,
+        0.7285,
+        7.0   |> deg2rad,
+        0.0,
+        178.0 |> deg2rad,
+        0.0
+    )
+
+    for setup in (
+        SatelliteAnalysis._decay_analysis__jr1971_setup,
+        SatelliteAnalysis._decay_analysis__jacchia77_setup,
+        SatelliteAnalysis._decay_analysis__jacchia77_stela_setup,
+    )
+        df_gto = decay_analysis(
+            orb_gto;
+            satellite_mass      = 100.0,
+            satellite_mean_area = 1.0,
+            gravity_model       = gm,
+            setup(nothing)...,
+            space_indices       = si_const,
+            tf                  = 10 * 86400.0
+        )
+
+        @test df_gto[begin, :apogee_altitude] > 35_000
+        @test all(isfinite, df_gto.perigee_altitude)
+    end
 end
 
 @testset "Verbose Progress" begin
