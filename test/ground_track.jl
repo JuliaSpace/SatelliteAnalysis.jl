@@ -55,6 +55,33 @@
 
     @test isempty(gt) == true
 
+    # == Passage Separation in Low-Inclination Orbits ======================================
+
+    # If the inclination is lower than 45°, the latitude difference between the end of a
+    # passage and the beginning of the next one is lower than 90°. Hence, the passages must
+    # be separated by NaNs using the information that points were skipped. In this case,
+    # the latitude must be monotonic between two consecutive valid points.
+    orb_li = KeplerianElements(
+        jd₀, 7130.982e3, 0.001111, 30 |> deg2rad, 0, 90 |> deg2rad, 0
+    )
+    orbp_li = Propagators.init(Val(:J2), orb_li)
+
+    for (track_types, cmp) in ((:ascending, >), (:descending, <))
+        gt = ground_track(orbp_li; track_types = track_types)
+
+        @test count(p -> isnan(p[1]), gt) >= 13
+
+        @test all(
+            isnan(gt[k][1]) || isnan(gt[k - 1][1]) || cmp(gt[k][1], gt[k - 1][1]) for
+            k in 2:length(gt)
+        )
+
+        # Without NaNs, the vector must contain exactly the same valid points.
+        gt_no_nans = ground_track(orbp_li; track_types = track_types, add_nans = false)
+
+        @test gt_no_nans == filter(p -> !isnan(p[1]), gt)
+    end
+
     # The output element type follows promoted floating-point time inputs rather than being
     # fixed to Float64.
     gt = ground_track(orbp; step = big"1000", duration = big"1000")

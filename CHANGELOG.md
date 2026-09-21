@@ -127,6 +127,10 @@ Version 0.4.0
   `sun_sync_orbit_from_angular_velocity` had a wrong term (`cos²(i)` instead of `cos³(i)`).
   The algorithm was still converging to the correct solution because the term is
   proportional to J₂, but with a slightly lower convergence rate.
+- ![Bugfix][badge-bugfix] The function `ground_track` was not adding `NaN`s between two
+  consecutive passages when the keyword `track_types` was `:ascending` or `:descending` and
+  the orbit inclination was lower than 45°, leading to spurious lines when plotting the
+  ground track.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to

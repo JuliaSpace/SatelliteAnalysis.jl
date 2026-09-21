@@ -178,6 +178,10 @@ function ground_track(
     r_ecef = f_eci_to_ecef(r_i, epoch + t / 86400)
     lat_k_1, lon_k_1, ~ = ecef_to_geodetic(r_ecef)
 
+    # Flag indicating that at least one point was not added to the ground track since the
+    # last added one. In this case, the next added point belongs to another passage.
+    skipped = false
+
     for t in @view(vt[2:end])
         # Propagate the orbit and convert to ECEF.
         r_i, ~ = Propagators.propagate!(orbp, t)
@@ -193,23 +197,27 @@ function ground_track(
         if (track_types != current_type) && (track_types != :all)
             lat_k_1 = lat_k
             lon_k_1 = lon_k
+            skipped = !isempty(gt)
             continue
         end
 
         isempty(gt) && push!(gt, (T(lat_k_1), T(lon_k_1)))
 
-        # Check if we need to add NaNs to improve plotting.
+        # Check if we need to add NaNs to improve plotting. We have a discontinuity if this
+        # point belongs to another passage or if the longitude wrapped.
         if add_nans
             gt_k_1 = last(gt)
             Δlat = lat_k - first(gt_k_1)
             Δlon = lon_k - last(gt_k_1)
 
-            ((abs(Δlat) > π / 2) || (abs(Δlon) > π)) && push!(gt, (T(NaN), T(NaN)))
+            (skipped || (abs(Δlat) > π / 2) || (abs(Δlon) > π)) &&
+                push!(gt, (T(NaN), T(NaN)))
         end
 
         push!(gt, (T(lat_k), T(lon_k)))
         lat_k_1 = lat_k
         lon_k_1 = lon_k
+        skipped = false
     end
 
     return gt
