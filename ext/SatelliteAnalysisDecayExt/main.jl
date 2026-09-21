@@ -333,7 +333,10 @@ function _decay_analysis(
 
         perigee_end = aₑ * (1 - eₑ) - EARTH_EQUATORIAL_RADIUS
         apogee_end  = aₑ * (1 + eₑ) - EARTH_EQUATORIAL_RADIUS
-        reentered   = perigee_end <= terminate_altitude * (1 + 1e-6)
+
+        # The integration is only terminated by the callback that detects when the perigee
+        # altitude reaches the terminate altitude.
+        reentered = sol.retcode == ReturnCode.Terminated
 
         _finish_decay_progress!(progress, sol.t[end], perigee_end, apogee_end, reentered)
     end
