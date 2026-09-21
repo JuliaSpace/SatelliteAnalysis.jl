@@ -5,25 +5,28 @@
 ############################################################################################
 
 """
-    _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
+    _atmospheric_drag_and_solar_radiation_pressure_rates(
         jd_utc::T,
-        ā::T,
-        ē::T,
-        ī::T,
+        ā::T,
+        ē::T,
+        ī::T,
         Ω̄::T,
         ω̄::T,
+        f̄::T,
         p̄::T,
         h̄::T,
         η̄::T,
         rsun_tod::SVector{3, T},
         D_pef_tod::StaticMatrix{3, 3, T},
+        D_tod_pef::StaticMatrix{3, 3, T},
+        space_indices::NamedTuple,
         params::NamedTuple
-    ) where T<:Number -> SVector{6, T}, SVector{6, T}
+    ) where T <: Number -> SVector{6, T}, SVector{6, T}, T
 
-Compute averaged Gauss variation rates due to atmospheric drag and solar radiation pressure
-**[1]**. This routine calculates the averaged rates of change of the orbital elements under
-atmospheric drag using quadrature equally spaced in true anomaly and temporal weighting
-(`r²/h`).
+Compute the weighted Gauss variation rates due to the atmospheric drag and the solar
+radiation pressure **[1]** at the sampling point of the orbit-averaging quadrature with
+mean true anomaly `f̄` [rad]. The rates are multiplied by the temporal weighting (`r² / h`),
+which is also returned so that the caller can normalize the sums.
 
 The mean elements and the auxiliaries passed to this function must already be clamped to
 the physically meaningful region and derived consistently, as done by `_dynamics`.
@@ -31,142 +34,113 @@ the physically meaningful region and derived consistently, as done by `_dynamics
 # Arguments
 
 - `jd_utc::T`: Julian date [UTC] at which the rates are computed.
-- `ā::T`: Mean semi-major axis [m].
-- `ē::T`: Mean eccentricity [-].
-- `ī::T`: Mean inclination [rad].
+- `ā::T`: Mean semi-major axis [m].
+- `ē::T`: Mean eccentricity [-].
+- `ī::T`: Mean inclination [rad].
 - `Ω̄::T`: Mean right ascension of ascending node [rad].
 - `ω̄::T`: Mean argument of perigee [rad].
+- `f̄::T`: Mean true anomaly of the sampling point [rad], which must be in `[0, 2π)`.
 - `p̄::T`: Mean semi-latus rectum [m].
 - `h̄::T`: Mean specific angular momentum [m²/s].
 - `η̄::T`: Mean eccentricity factor `√(1 - ē²)` [-].
 - `rsun_tod::SVector{3, T}`: Sun position vector [m] in TOD frame.
 - `D_pef_tod::StaticMatrix{3, 3, T}`: DCM that rotates vectors from the TOD frame to the
     PEF frame at `jd_utc`.
+- `D_tod_pef::StaticMatrix{3, 3, T}`: DCM that rotates vectors from the PEF frame to the
+    TOD frame at `jd_utc`.
+- `space_indices::NamedTuple`: Space indices at `jd_utc` required by the atmospheric model.
 - `params::NamedTuple`: Named tuple containing environment parameters:
     - `atmospheric_model::Any`: Callable object that computes the atmospheric density
         [kg/m³] at a given location and time considering a set of space indices. It must
         have the signature
         `(jd_utc::Number, lat::Number, lon::Number, alt::Number, space_indices::NamedTuple) -> Number`.
-    - `num_sampling_points_per_orbit::Int`: Number of quadrature points for averaging.
     - `satellite_mass::Number`: Spacecraft mass [kg].
     - `satellite_mean_area::Number`: Effective cross-sectional area [m²].
     - `j2osc_prop::OrbitPropagatorJ2Osculating`: Pre-allocated J2 osculating propagator
         used for the mean-to-osculating conversion.
     - `C_d::Number`: Drag coefficient [-].
-    - `C_r::Number`: Reflectivity coefficient [-].
-    - `space_indices::Any`: Callable object that retrieves the space indices required by
-        the atmospheric model. It must have the signature
-        `space_indices(jd_utc::Number) -> NamedTuple`.
+    - `C_r::Number`: Solar radiation pressure coefficient [-].
 
 # Returns
 
-- `SVector{6, T}`: Averaged Gauss rates due to atmospheric drag.
-- `SVector{6, T}`: Averaged Gauss rates due to solar radiation pressure.
+- `SVector{6, T}`: Weighted Gauss rates due to atmospheric drag.
+- `SVector{6, T}`: Weighted Gauss rates due to solar radiation pressure.
+- `T`: Temporal weighting of the sampling point [s/rad].
 
 # References
 
 - **[1]** Battin, R. H. (1999). An Introduction to the Mathematics and Methods of
     Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
 """
-function _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
+function _atmospheric_drag_and_solar_radiation_pressure_rates(
     jd_utc::T,
-    ā::T,
-    ē::T,
-    ī::T,
+    ā::T,
+    ē::T,
+    ī::T,
     Ω̄::T,
     ω̄::T,
+    f̄::T,
     p̄::T,
     h̄::T,
     η̄::T,
     rsun_tod::SVector{3, T},
     D_pef_tod::StaticMatrix{3, 3, T},
+    D_tod_pef::StaticMatrix{3, 3, T},
+    space_indices::NamedTuple,
     params::NamedTuple
-) where T<:Number
+) where T <: Number
     atmospheric_model = params.atmospheric_model
     C_d               = params.C_d
     C_r               = params.C_r
-    N                 = params.num_sampling_points_per_orbit
     mass              = params.satellite_mass
     mean_area         = params.satellite_mean_area
     orbp              = params.j2osc_prop
 
-    # Resolve the space indices once per evaluation since `jd_utc` is constant here,
-    # avoiding one interpolation per sampling point.
-    space_indices = params.space_indices(jd_utc)
+    # The PEF frame rotates with the Earth, so the frame angular velocity must be accounted
+    # for when converting velocity vectors.
+    ω_pef = @SVector T[0, 0, EARTH_ANGULAR_SPEED]
 
-    # The rotation between TOD and PEF is computed once per right-hand-side evaluation in
-    # `_dynamics` and shared with this routine. The PEF frame rotates with the Earth, so
-    # the frame angular velocity must be accounted for when converting velocity vectors.
-    D_tod_pef = D_pef_tod'
-    ω_pef     = @SVector T[0, 0, EARTH_ANGULAR_SPEED]
+    # Position and velocity of the osculating orbit in TOD.
+    r_tod, v_tod = _mean_to_osculating_rv(ā, ē, ī, Ω̄, ω̄, f̄, orbp)
+    r² = dot(r_tod, r_tod)
+    r  = √r²
 
-    # Initialization.
-    ∂u_drag = @SVector zeros(T, 6)
-    ∂u_srp  = @SVector zeros(T, 6)
-    Wsum    = zero(T)
+    # Matrix to convert TOD to Hill frame.
+    D_hill_tod = _r_eci_to_hill(r_tod, v_tod)
 
-    # Quadrature in f ∈ [0, 2π) [rad].
-    for k in 0:(N - 1)
-        f̄k = 2π * k / N
+    # Position and velocity in PEF to compute the atmospheric drag acceleration.
+    r_pef = D_pef_tod * r_tod
+    v_pef = D_pef_tod * v_tod - ω_pef × r_pef
 
-        # Position and velocity of the osculating orbit in TOD.
-        rk_tod, vk_tod = _mean_to_osculating_rv(ā, ē, ī, Ω̄, ω̄, f̄k, orbp)
-        rk² = dot(rk_tod, rk_tod)
-        rk  = √rk²
+    # Drag acceleration in PEF.
+    adrag_pef = _atmospheric_drag_acceleration(
+        atmospheric_model, jd_utc, r_pef, v_pef, mean_area, mass, C_d, space_indices
+    )
 
-        # Matrix to convert TOD to Hill frame.
-        D_hill_tod = _r_eci_to_hill(rk_tod, vk_tod)
+    # Drag acceleration in TOD.
+    adrag_tod = D_tod_pef * adrag_pef
 
-        # Position and velocity in PEF to compute the atmospheric drag acceleration.
-        rk_pef = D_pef_tod * rk_tod
-        vk_pef = D_pef_tod * vk_tod - ω_pef × rk_pef
+    # Solar radiation pressure acceleration in TOD, gated by the Earth shadow at the
+    # sampling point: full acceleration under direct sunlight, half in the penumbra, and
+    # none in the umbra.
+    lc = lighting_condition(r_tod, rsun_tod)
+    ν  = lc == :sunlight ? T(1) : (lc == :penumbra ? T(1 // 2) : T(0))
 
-        # Drag acceleration in PEF.
-        adrag_pef = _atmospheric_drag_acceleration(
-            atmospheric_model,
-            jd_utc,
-            rk_pef,
-            vk_pef,
-            mean_area,
-            mass,
-            C_d,
-            space_indices
-        )
+    asrp_tod = ν * _solar_radiation_acceleration(r_tod, rsun_tod, mean_area, mass, C_r)
 
-        # Drag acceleration in TOD.
-        adrag_tod = D_tod_pef * adrag_pef
+    # Compute accelerations in Hill frame.
+    adrag_hill = D_hill_tod * adrag_tod
+    asrp_hill  = D_hill_tod * asrp_tod
 
-        # Solar radiation pressure acceleration in TOD, gated by the Earth shadow at
-        # the sampling point: full acceleration under direct sunlight, half in the
-        # penumbra, and none in the umbra.
-        lc = lighting_condition(rk_tod, rsun_tod)
-        ν  = lc == :sunlight ? T(1) : (lc == :penumbra ? T(1 // 2) : T(0))
-        asrp_tod =
-            ν * _solar_radiation_acceleration(rk_tod, rsun_tod, mean_area, mass, C_r)
+    # Gauss equations with mean parameters. The Kepler term is not added here because it is
+    # already accounted for in `_dynamics`, avoiding counting the mean motion multiple times
+    # in the mean anomaly rate.
+    A = _equinoctial_gauss_variational_matrices(ā, ē, ī, Ω̄, ω̄, f̄, r, p̄, h̄, η̄)
 
-        # Compute accelerations in Hill frame.
-        adrag_hill = D_hill_tod * adrag_tod
-        asrp_hill  = D_hill_tod * asrp_tod
+    # Temporal weighting.
+    w_t = r² / h̄
 
-        # Gauss equations with mean parameters. The Kepler term is not added here
-        # because it is already accounted for in `_dynamics`, avoiding counting the
-        # mean motion multiple times in the mean anomaly rate.
-        Ak = _equinoctial_gauss_variational_matrices(ā, ē, ī, Ω̄, ω̄, f̄k, rk, p̄, h̄, η̄)
-
-        # Temporal weighting.
-        w_t = rk² / h̄
-
-        ∂u_drag = ∂u_drag + w_t * (Ak * adrag_hill)
-        ∂u_srp  = ∂u_srp  + w_t * (Ak * asrp_hill)
-
-        Wsum += w_t
-    end
-
-    # Normalize. The sum of weights is strictly positive since `w_t = rk² / h̄ > 0`.
-    ∂u_drag = ∂u_drag / Wsum
-    ∂u_srp  = ∂u_srp  / Wsum
-
-    return ∂u_drag, ∂u_srp
+    return w_t * (A * adrag_hill), w_t * (A * asrp_hill), w_t
 end
 
 """

@@ -10,16 +10,18 @@
 Compute the time derivatives of the mean equinoctial orbital elements `u` at the time `t`
 [s] after the epoch using Gauss variational equations with averaged perturbations.
 
-This routine evaluates instantaneous forces on the mean-reference orbit for conservative
-perturbations (Earth gravity and third bodies) and adds temporally averaged rates for
-non-conservative perturbations (atmospheric drag and solar radiation pressure), together
-with closed-form J₂² rates.
+This routine averages the rates caused by the conservative perturbations (Earth gravity and
+third bodies) and by the non-conservative perturbations (atmospheric drag and solar
+radiation pressure) over one orbit, and adds the closed-form J₂² rates.
 
 !!! note
 
-    - Conservative perturbations are evaluated on the mean orbit at evenly spaced mean
-      anomalies.
-    - Non-conservative perturbations are added via averaged routines (drag and SRP).
+    - All the perturbations are averaged using a single quadrature with points equally
+      spaced in the true anomaly and the temporal weighting `r² / h`. Hence, the sampling
+      is denser near the perigee, where the perturbations are stronger.
+    - Conservative perturbations are evaluated on the mean orbit.
+    - Non-conservative perturbations are evaluated on the osculating orbit obtained from
+      the mean elements (see `_atmospheric_drag_and_solar_radiation_pressure_rates`).
     - Units must be consistent: meters, seconds, kilograms.
 
 # Arguments
@@ -81,21 +83,32 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
     D_pef_tod = r_eci_to_ecef(TOD(), PEF(), jd_utc)
     D_tod_pef = D_pef_tod'
 
-    # Initialization of averaged variation rates.
-    ∂C_avg = @SVector zeros(T, 6)
+    # Resolve the space indices once per evaluation since `jd_utc` is constant here,
+    # avoiding one interpolation per sampling point.
+    space_indices = params.space_indices(jd_utc)
+
+    # Initialization of the weighted sums of the variation rates.
+    ∂C_sum    = @SVector zeros(T, 6)
+    ∂u_drag   = @SVector zeros(T, 6)
+    ∂u_srp    = @SVector zeros(T, 6)
+    Wsum      = zero(T)
+    Wsum_drag = zero(T)
 
     N = params.num_sampling_points_per_orbit
 
+    # Quadrature in f ∈ [0, 2π) [rad]. The time average is obtained using the temporal
+    # weighting `dt = (r² / h) df`.
+    #
     # NOTE: Theoretically, we need to update the Moon and Sun positions at each sampling
     # point, but for efficiency, we assume they are constant over one orbit.
     for k in 0:(N - 1)
         # Sampling point along the mean orbit.
-        M̄k = 2π * k / N
-        f̄k = mean_to_true_anomaly(ē, M̄k)
+        f̄k = T(2π) * k / N
 
         # Position and velocity from mean orbital elements.
-        rk_tod, vk_tod = _coe_to_rv(ā, ē, ī, Ω̄, ω̄, f̄k)
-        rk = norm(rk_tod)
+        rk_tod, vk_tod = _coe_to_rv(ā, ē, ī, Ω̄, ω̄, f̄k)
+        rk² = dot(rk_tod, rk_tod)
+        rk  = √rk²
 
         rk_pef = D_pef_tod * rk_tod
 
@@ -115,34 +128,51 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
         # parameters).
         Ak = _equinoctial_gauss_variational_matrices(ā, ē, ī, Ω̄, ω̄, f̄k, rk, p̄, h̄, η̄)
 
+        # Temporal weighting.
+        w_t = rk² / h̄
+
         # Accumulation.
-        ∂C_avg = ∂C_avg + Ak * δak_hill
+        ∂C_sum += w_t * (Ak * δak_hill)
+        Wsum   += w_t
+
+        # Non-conservative perturbations at the same sampling point.
+        ∂u_drag_k, ∂u_srp_k, w_drag_k =
+            _atmospheric_drag_and_solar_radiation_pressure_rates(
+                jd_utc,
+                ā,
+                ē,
+                ī,
+                Ω̄,
+                ω̄,
+                f̄k,
+                p̄,
+                h̄,
+                η̄,
+                rsun_tod,
+                D_pef_tod,
+                D_tod_pef,
+                space_indices,
+                params
+            )
+
+        ∂u_drag   += ∂u_drag_k
+        ∂u_srp    += ∂u_srp_k
+        Wsum_drag += w_drag_k
     end
 
     # Average of the conservative perturbations plus the constant Kepler term of the
-    # mean longitude rate.
-    ∂C_total = ∂C_avg / N + @SVector T[0, n̄, 0, 0, 0, 0]
+    # mean longitude rate. The sum of weights is strictly positive since
+    # `w_t = rk² / h̄ > 0`.
+    ∂C_total = ∂C_sum / Wsum + @SVector T[0, n̄, 0, 0, 0, 0]
+
+    # Average of the non-conservative perturbations.
+    ∂u_drag = ∂u_drag / Wsum_drag
+    ∂u_srp  = ∂u_srp  / Wsum_drag
 
     # The J₂² rates are expressed in classical elements. Convert them to equinoctial
     # rates using the Jacobian of the transformation.
     Jec    = _classical_to_equinoctial_jacobian(ē, ī, Ω̄, ω̄)
     ∂u_J₂² = Jec * J₂²_variational_rates(ā, ē, ī, ω̄, μ, params.Re, params.J₂)
-
-    # Non-conservative perturbations (averaged)
-    ∂u_drag, ∂u_srp = _atmospheric_drag_and_solar_radiation_pressure_variational_rates(
-        jd_utc,
-        ā,
-        ē,
-        ī,
-        Ω̄,
-        ω̄,
-        p̄,
-        h̄,
-        η̄,
-        rsun_tod,
-        D_pef_tod,
-        params
-    )
 
     ∂C_total = ∂C_total + ∂u_drag + ∂u_srp + ∂u_J₂²
 
