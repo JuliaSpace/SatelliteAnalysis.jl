@@ -277,6 +277,12 @@ end
         (:warn,), sun_sync_orbit_inclination(7130.982e3, 0.05; max_iterations = 2)
     ))
     @test c == false
+
+    # The keyword `no_warnings` must suppress the warning.
+    a, c = @test_logs sun_sync_orbit_inclination(
+        7130.982e3, 0.05; max_iterations = 2, no_warnings = true
+    )
+    @test c == false
 end
 
 @testset "Function sun_sync_orbit_inclination [ERRORS]" begin
@@ -323,6 +329,17 @@ end
         sun_sync_orbit_semi_major_axis(98.410 |> deg2rad, 0.05; max_iterations = 2)
     ))
     @test c == false
+
+    # The keyword `no_warnings` must suppress all the warnings.
+    a, c = @test_logs sun_sync_orbit_semi_major_axis(
+        98.410 |> deg2rad, 0.05; max_iterations = 2, no_warnings = true
+    )
+    @test c == false
+
+    a, c = @test_logs sun_sync_orbit_semi_major_axis(
+        90.01 |> deg2rad; no_warnings = true
+    )
+    @test c == true
 
     # == Test When the Orbit Is Not Valid ==================================================
 

@@ -97,6 +97,9 @@ Version 0.4.0
   receives the ground facility position and its local vertical represented in the ECEF
   reference frame, which performs neither reference frame conversions nor trigonometric
   operations related to the ground facility.
+- ![Feature][badge-feature] The functions `sun_sync_orbit_semi_major_axis` and
+  `sun_sync_orbit_inclination` now have the keyword `no_warnings`, as in
+  `sun_sync_orbit_from_angular_velocity`.
 - ![Bugfix][badge-bugfix] The functions `ground_repeating_orbit_adjacent_track_angle` and
   `ground_repeating_orbit_adjacent_track_distance` were ignoring the keyword `we`, and the
   functions `design_sun_sync_ground_repeating_orbit` and `sun_sync_orbit_inclination` were

@@ -440,6 +440,8 @@ The algorithm here considers only the perturbation terms up to J₂.
 
 - `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
     (**Default** = 30)
+- `no_warnings::Bool`: If `true`, no warnings will be printed.
+    (**Default** = `false`)
 - `tolerance::Union{Nothing, Number}`: Residue tolerance to verify if the numerical method
     has converged. If it is `nothing`, `√eps(T)` will be used, where `T` is the internal
     type for the computations. Notice that the residue unit is [deg / day].
@@ -537,6 +539,7 @@ function sun_sync_orbit_semi_major_axis(
     i::T1,
     e::T2 = 0;
     max_iterations::Number = 30,
+    no_warnings::Bool = false,
     tolerance::Union{Nothing, Number} = nothing,
     # Constants.
     J2::Number = EGM_2008_J2,
@@ -654,7 +657,7 @@ function sun_sync_orbit_semi_major_axis(
         it += 1
     end
 
-    !converged && @warn("""
+    (!converged && !no_warnings) && @warn("""
         The algorithm to compute the Sun-synchronous orbit semi-major axis has not converged!
         Residue: $f₁ ° / day """)
 
@@ -662,7 +665,7 @@ function sun_sync_orbit_semi_major_axis(
     a = R₀ / (isqrt_ā * isqrt_ā)
 
     # Check if the orbit is valid.
-    (a * (1 - e) < R₀) &&
+    ((a * (1 - e) < R₀) && !no_warnings) &&
         @warn("The orbit is not valid because the perigee is inside the Earth.")
 
     return a, converged
@@ -686,6 +689,8 @@ The algorithm here considers only the perturbation terms up to J₂.
 
 - `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
     (**Default** = 30)
+- `no_warnings::Bool`: If `true`, no warnings will be printed.
+    (**Default** = `false`)
 - `tolerance::Union{Nothing, Number}`: Residue tolerance to verify if the numerical method
     has converged. If it is `nothing`, `√eps(T)` will be used, where `T` is the internal
     type for the computations. Notice that the residue unit is [deg / day].
@@ -779,6 +784,7 @@ function sun_sync_orbit_inclination(
     a::T1,
     e::T2 = 0;
     max_iterations::Number = 30,
+    no_warnings::Bool = false,
     tolerance::Union{Nothing, Number} = nothing,
     # Constants.
     J2::Number = EGM_2008_J2,
@@ -888,7 +894,7 @@ function sun_sync_orbit_inclination(
         it += 1
     end
 
-    !converged && @warn("""
+    (!converged && !no_warnings) && @warn("""
         The algorithm to compute the Sun-synchronous orbit inclination has not converged!
         Residue: $f₁ ° / day """)
 
