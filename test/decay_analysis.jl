@@ -225,6 +225,28 @@ end
     @test df_d.time ≈ df.time .* 365.25
     @test colmetadata(df_d, :time, "Unit") == :d
 
+    # == Default Number of Sampling Points =================================================
+
+    # The default number of sampling points per orbit must depend on the eccentricity.
+    ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
+
+    @test ext._decay_analysis__default_num_sampling_points(0.001) == 17
+    @test ext._decay_analysis__default_num_sampling_points(0.05)  == 33
+    @test ext._decay_analysis__default_num_sampling_points(0.29)  == 33
+    @test ext._decay_analysis__default_num_sampling_points(0.3)   == 65
+    @test ext._decay_analysis__default_num_sampling_points(0.7)   == 65
+
+    df_n17 = decay_analysis(
+        orb;
+        satellite_mass                = 100.0,
+        satellite_mean_area           = 1.0,
+        gravity_model                 = gm,
+        space_indices                 = si_const,
+        num_sampling_points_per_orbit = 17
+    )
+
+    @test df_n17[end, :date] == df[end, :date]
+
     # Invalid physical inputs must throw an error.
     for invalid_kwargs in (
         (; satellite_mass = 0.0),

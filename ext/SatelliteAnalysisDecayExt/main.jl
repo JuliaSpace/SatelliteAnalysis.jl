@@ -24,7 +24,7 @@ function SatelliteAnalysis.decay_analysis(
     atmospheric_model_name::Union{Nothing, String} = nothing,
     gravity_model::Union{AbstractGravityModel, Nothing} = nothing,
     input_type::Symbol = :mean,
-    num_sampling_points_per_orbit::Int = 17,
+    num_sampling_points_per_orbit::Union{Nothing, Int} = nothing,
     abstol::Number = 1e-6,
     C_d::Number = 2.2,
     C_r::Number = 1.25,
@@ -50,9 +50,10 @@ function SatelliteAnalysis.decay_analysis(
     satellite_mean_area >= 0 ||
         throw(ArgumentError("The satellite mean area must not be negative."))
 
-    num_sampling_points_per_orbit >= 1 || throw(
-        ArgumentError("The number of sampling points per orbit must be greater than 0.")
-    )
+    (isnothing(num_sampling_points_per_orbit) || (num_sampling_points_per_orbit >= 1)) ||
+        throw(
+            ArgumentError("The number of sampling points per orbit must be greater than 0.")
+        )
 
     C_d >= 0 || throw(ArgumentError("The drag coefficient must not be negative."))
 
@@ -86,6 +87,12 @@ function SatelliteAnalysis.decay_analysis(
     else
         orb
     end
+
+    # If the user did not select the number of sampling points per orbit, we must obtain it
+    # from the mean eccentricity.
+    num_sampling_points_per_orbit′ = isnothing(num_sampling_points_per_orbit) ?
+        _decay_analysis__default_num_sampling_points(orb′.e) :
+        num_sampling_points_per_orbit
 
     gm = if isnothing(gravity_model)
         if isnothing(_DEFAULT_GRAVITY_MODEL[])
@@ -162,7 +169,7 @@ function SatelliteAnalysis.decay_analysis(
         space_indices′;
         satellite_mass                = satellite_mass,
         satellite_mean_area           = satellite_mean_area,
-        num_sampling_points_per_orbit = num_sampling_points_per_orbit,
+        num_sampling_points_per_orbit = num_sampling_points_per_orbit′,
         abstol                        = abstol,
         atmospheric_model_name        = atmospheric_model_name′,
         space_indices_source          = space_indices_source,
@@ -497,6 +504,19 @@ function _default_f107(jd_utc::Number, index::Val, predicted::Val)
     jd₀ <= jd_utc <= jd₁ && return space_index(index, jd_utc)
 
     return space_index(predicted, jd_utc)
+end
+
+# Default number of sampling points per orbit used to average the perturbations given the
+# mean eccentricity `e`. The perturbations are concentrated near the perigee in eccentric
+# orbits, requiring more points. Those values keep the quadrature error of the lifetime
+# below 0.03% in the following reference cases compared to the result with 257 points: a
+# 300 km circular orbit (17 points), a 250 km x 2000 km orbit (e = 0.12, 33 points), and a
+# 250 km x 20000 km orbit (e = 0.60, 65 points). With 17 points, the errors in the last two
+# cases are 0.02% and 7.6%, respectively.
+function _decay_analysis__default_num_sampling_points(e::Number)
+    e < 0.05 && return 17
+    e < 0.30 && return 33
+    return 65
 end
 
 # Factor to convert the time in seconds to the unit `time_unit`, which can be `:s`, `:min`,

@@ -79,9 +79,12 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     `:osculating`, they are treated as osculating elements and converted to mean elements
     before the propagation. Any other symbol raises an `ArgumentError`.
     (**Default**: `:mean`)
-- `num_sampling_points_per_orbit::Int`: Number of sampling points used to average the
-    perturbations over one orbit.
-    (**Default**: 17)
+- `num_sampling_points_per_orbit::Union{Nothing, Int}`: Number of sampling points used to
+    average the perturbations over one orbit. The perturbations are concentrated near the
+    perigee in eccentric orbits, requiring more points. If it is `nothing`, the number is
+    selected using the mean eccentricity `e` at the beginning of the analysis: 17 if
+    `e < 0.05`, 33 if `e < 0.3`, or 65 otherwise.
+    (**Default**: `nothing`)
 - `abstol::Number`: Absolute tolerance of the numerical integration.
     (**Default**: 1e-6)
 - `C_d::Number`: Drag coefficient [-].
