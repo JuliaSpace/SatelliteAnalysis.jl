@@ -8,6 +8,33 @@
 
 # -- Function: frozen_orbit ----------------------------------------------------------------
 
+# Gravity model that wraps another model with fully normalized coefficients, providing its
+# zonal coefficients without normalization. It reports the normalization `coefficient_norm`,
+# allowing us to test all the conversions in `frozen_orbit`.
+struct FrozenOrbitTestGravityModel{T, M <: AbstractGravityModel{T}, N} <:
+       AbstractGravityModel{T}
+    model::M
+    coefficient_norm::N
+end
+
+function FrozenOrbitTestGravityModel(model::AbstractGravityModel{T}, norm) where {T}
+    return FrozenOrbitTestGravityModel{T, typeof(model), typeof(norm)}(model, norm)
+end
+
+function GravityModels.coefficients(
+    gm::FrozenOrbitTestGravityModel, degree::Int, order::Int, time::Number
+)
+    clm, slm = GravityModels.coefficients(gm.model, degree, order, time)
+    return clm * √(2degree + 1), slm * √(2degree + 1)
+end
+
+GravityModels.coefficient_norm(gm::FrozenOrbitTestGravityModel) = gm.coefficient_norm
+GravityModels.radius(gm::FrozenOrbitTestGravityModel) = GravityModels.radius(gm.model)
+
+function GravityModels.maximum_degree(gm::FrozenOrbitTestGravityModel)
+    return GravityModels.maximum_degree(gm.model)
+end
+
 @testset "Function frozen_orbit" begin
     # == Default ===========================================================================
 
@@ -64,4 +91,21 @@
     e, ω = frozen_orbit(7130.982e3, 98.410 |> deg2rad; gravity_model = jgm3)
     @test e ≈ 0.001163484769069545 atol = 1e-20
     @test ω == π / 2
+
+    # == Coefficient Normalizations ========================================================
+
+    # The result must not depend on how the gravity model normalizes its coefficients.
+    # Notice that the Schmidt quasi-normalization does not modify the zonal terms.
+    for coefficient_norm in (Val(:unnormalized), Val(:schmidt))
+        gm = FrozenOrbitTestGravityModel(jgm3, coefficient_norm)
+        e_n, ω_n = frozen_orbit(7130.982e3, 98.410 |> deg2rad; gravity_model = gm)
+
+        @test e_n ≈ e rtol = 1e-13
+        @test ω_n == ω
+    end
+
+    gm = FrozenOrbitTestGravityModel(jgm3, Val(:unknown))
+    @test_throws ArgumentError frozen_orbit(
+        7130.982e3, 98.410 |> deg2rad; gravity_model = gm
+    )
 end

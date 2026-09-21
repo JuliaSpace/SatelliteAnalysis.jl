@@ -122,6 +122,9 @@ Version 0.4.0
   gravity model.
 - ![Enhancement][badge-enhancement] The function `ground_facility_accesses` does not create
   and concatenate one `DataFrame` per chunk anymore, reducing the allocations.
+- ![Enhancement][badge-enhancement] The function `frozen_orbit` now supports gravity models
+  with fully normalized, Schmidt quasi-normalized, and unnormalized coefficients, and throws
+  an `ArgumentError` if the normalization is not known.
 - ![Bugfix][badge-bugfix] The decay analysis passed the Julian date to the gravity model
   where it expects elapsed seconds from the J2000.0 epoch. The error was harmless for the
   default EGM96 model, whose coefficients are static, but it would produce wrong results

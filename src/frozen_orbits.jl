@@ -122,9 +122,9 @@ function frozen_orbit(
     # Obtain the maximum `p` given the maximum degree.
     p_max = floor(Int, (max_degree - 1) / 2)
 
-    # If the coefficients are fully normalized, we must unormalize them because the theory
-    # in [2].
-    unnormalize = GravityModels.coefficient_norm(gm) == :full
+    # The theory in [2] requires unnormalized coefficients. Hence, we need the normalization
+    # of the coefficients in the gravity model to convert them.
+    coefficient_norm = GravityModels.coefficient_norm(gm)
 
     # We must using `BigInt` and `BigFloat` to compute for high degree.
     ab  = big(a)
@@ -145,10 +145,8 @@ function frozen_orbit(
         C_2p_0  = -(GravityModels.coefficients(gm, 2p, 0) |> first) |> big
         C_2p1_0 = -(GravityModels.coefficients(gm, 2p + 1, 0) |> first) |> big
 
-        if unnormalize
-            C_2p_0  *= √(4p + 1)
-            C_2p1_0 *= √(4p + 3)
-        end
+        C_2p_0  *= _frozen_orbit__zonal_unnormalization_factor(coefficient_norm, 2p)
+        C_2p1_0 *= _frozen_orbit__zonal_unnormalization_factor(coefficient_norm, 2p + 1)
 
         F_2p_0_p, ∂F_2p_0_p = _F_and_∂F_l0p(2p, p, ib)
         F_2p1_0_p, ~ = _F_and_∂F_l0p(2p + 1, p, ib)
@@ -177,6 +175,36 @@ end
 ############################################################################################
 #                                    Private Functions                                     #
 ############################################################################################
+
+"""
+    _frozen_orbit__zonal_unnormalization_factor(::Val{:full}, l::Integer) -> Float64
+    _frozen_orbit__zonal_unnormalization_factor(::Val{:schmidt}, l::Integer) -> Float64
+    _frozen_orbit__zonal_unnormalization_factor(::Val{:unnormalized}, l::Integer) -> Float64
+
+Return the factor that converts the zonal coefficient (order 0) of degree `l` to the
+unnormalized coefficient given the normalization used in the gravity model, which is
+returned by the function `GravityModels.coefficient_norm`.
+
+The factor of the full normalization is `√(2l + 1)` for the zonal terms, whereas the Schmidt
+quasi-normalization does not modify them.
+
+# Extended help
+
+## Throws
+
+- `ArgumentError`: If the normalization is not supported.
+"""
+_frozen_orbit__zonal_unnormalization_factor(::Val{:full}, l::Integer) = √(2l + 1)
+_frozen_orbit__zonal_unnormalization_factor(::Val{:schmidt}, l::Integer) = 1.0
+_frozen_orbit__zonal_unnormalization_factor(::Val{:unnormalized}, l::Integer) = 1.0
+
+function _frozen_orbit__zonal_unnormalization_factor(coefficient_norm, l::Integer)
+    return throw(
+        ArgumentError(
+            "The coefficient normalization `$coefficient_norm` of the gravity model is not supported.",
+        ),
+    )
+end
 
 """
     _F_and_∂F_l0p(l::Integer, p::Integer, i::Number) -> BigFloat, BigFloat
