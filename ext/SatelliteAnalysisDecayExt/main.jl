@@ -168,7 +168,7 @@ end
 
 function SatelliteAnalysis._decay_analysis__jacchia77_stela_setup(::Nothing)
     return (
-        atmospheric_model      = Jacchia77StelaAtmosphericModel(),
+        atmospheric_model      = Jacchia77AtmosphericModel(Val(:stela)),
         atmospheric_model_name = "Jacchia 1977 (STELA)",
         space_indices          = _decay_analysis__default_space_indices_kp,
     )

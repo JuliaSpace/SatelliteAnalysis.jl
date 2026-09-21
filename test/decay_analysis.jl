@@ -514,13 +514,13 @@ end
     setup = SatelliteAnalysis._decay_analysis__jacchia77_stela_setup(nothing)
     ext   = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
 
-    @test setup.atmospheric_model isa ext.Jacchia77StelaAtmosphericModel
+    @test setup.atmospheric_model === ext.Jacchia77AtmosphericModel(Val(:stela))
     @test setup.atmospheric_model_name == "Jacchia 1977 (STELA)"
     @test setup.space_indices === ext._decay_analysis__default_space_indices_kp
 
     # The wrapper must clamp the altitude to the validity range of the model, and the
     # variant must differ from the report formulation.
-    stela = ext.Jacchia77StelaAtmosphericModel()
+    stela = ext.Jacchia77AtmosphericModel(Val(:stela))
     jac   = ext.Jacchia77AtmosphericModel()
 
     @test stela(jd₀, 0.0, 0.0, 300e3, si_const) > 0
