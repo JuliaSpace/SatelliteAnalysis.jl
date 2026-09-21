@@ -189,52 +189,42 @@ function ground_facility_accesses(
         end
     end
 
-    # This variable stores the access information concatenation between all chunks.
-    concat_df = vcat(fetch.(tasks)...)
+    # Fetch the accesses computed in each chunk. The access beginnings and ends are
+    # represented in seconds since the propagator epoch.
+    chunk_accesses = fetch.(tasks)
 
-    # Now, we need to merge the information into the output `DataFrame`.
+    # == Merge the Accesses ================================================================
 
-    # Vector with the concatenation access information that possibly has duplicated
-    # information given the chunks division.
-    concat_vaccess_beg::Vector{DateTime} = concat_df.access_beginning
-    concat_vaccess_end::Vector{DateTime} = concat_df.access_end
+    Tt = eltype(vt)
 
-    # Vector with the fused access information, i.e., without duplicated information.
-    vaccess_beg = DateTime[]
-    vaccess_end = DateTime[]
+    vaccess_beg_s = Tt[]
+    vaccess_end_s = Tt[]
 
-    # Total number of accesses.
-    num_accesses = length(concat_vaccess_beg)
+    # Two consecutive chunks share the instant in their boundary. Hence, if a chunk ended
+    # during an access, and the next one started during an access, we have a single access
+    # divided into two chunks that must be merged.
+    previous_ended_visible = false
 
-    sizehint!(vaccess_beg, num_accesses)
-    sizehint!(vaccess_end, num_accesses)
+    for (vchunk_beg_s, vchunk_end_s, started_visible, ended_visible) in chunk_accesses
+        k₀ = firstindex(vchunk_beg_s)
 
-    @inbounds if num_accesses > 0
-        # The first access must always be added.
-        push!(vaccess_beg, concat_vaccess_beg[begin])
-
-        # Variable to store the candidate instant of the last access end.
-        last_access_end = concat_vaccess_end[begin]
-
-        for k in 1:(num_accesses - 1)
-            # If the last access end candidate is equal to the next access beginning, we
-            # need to merge this information. Hence, update the last access candidate and
-            # continue the loop. Otherwise, the candidate is actually the last access end.
-            if last_access_end == concat_vaccess_beg[k + begin]
-                last_access_end = concat_vaccess_end[k + begin]
-                continue
-            else
-                push!(vaccess_end, last_access_end)
-            end
-
-            # If we reach this position, we have a new access to consider.
-            push!(vaccess_beg, concat_vaccess_beg[k + begin])
-            last_access_end = concat_vaccess_end[k + begin]
+        if previous_ended_visible && started_visible && !isempty(vaccess_end_s)
+            vaccess_end_s[end] = vchunk_end_s[k₀]
+            k₀ += 1
         end
 
-        # The end of the last access should always be added.
-        push!(vaccess_end, last_access_end)
+        append!(vaccess_beg_s, @view(vchunk_beg_s[k₀:end]))
+        append!(vaccess_end_s, @view(vchunk_end_s[k₀:end]))
+
+        previous_ended_visible = ended_visible
     end
+
+    # Convert the access beginnings and ends to `DateTime`. Notice that all the conversions
+    # must use the same function to avoid inconsistencies caused by rounding.
+    dt₀ = julian2datetime(Propagators.epoch(orbp))
+
+    vaccess_beg = _gf_seconds_to_datetime.(dt₀, vaccess_beg_s)
+    vaccess_end = _gf_seconds_to_datetime.(dt₀, vaccess_end_s)
 
     # Compute the access duration and convert to the desired unit.
     vaccess_duration = Dates.value.(vaccess_end .- vaccess_beg) ./ 1000
@@ -333,17 +323,17 @@ function ground_facility_gaps(
     kwargs...,
 ) where {T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}}
 
-    # Get the epoch of the propagator.
-    jd₀ = Propagators.epoch(orbp)
-    dt₀ = jd_to_date(DateTime, jd₀) + Dates.Second(round(Int, initial_time))
+    # Compute the beginning and the end of the analysis. Notice that we must use the same
+    # function used to convert the access instants to avoid inconsistencies caused by
+    # rounding.
+    dt_epoch = julian2datetime(Propagators.epoch(orbp))
+
+    dt₀ = _gf_seconds_to_datetime(dt_epoch, initial_time)
+    dt₁ = _gf_seconds_to_datetime(dt_epoch, initial_time + duration)
 
     # Compute the list of ground facility accesses. All the other keywords are forwarded to
     # the function that computes the accesses.
     dfa = ground_facility_accesses(orbp, vgf_wgs84; duration, initial_time, kwargs...)
-
-    # Compute the last propagation instant.
-    jd₁ = jd₀ + (initial_time + duration) / 86400
-    dt₁ = jd_to_date(DateTime, jd₁)
 
     # Compute the gaps between accesses.
     vgap_beg = DateTime[]
@@ -497,10 +487,16 @@ function _ground_facility_access_chunk(
         return reduction(visibility)
     end
 
-    access_beg  = DateTime(now())
-    access_end  = DateTime(now())
-    vaccess_beg = DateTime[]
-    vaccess_end = DateTime[]
+    # Beginning of the current access and vectors with the beginning and the end of all the
+    # accesses in this chunk. All the values are in seconds since the propagator epoch.
+    Tt = eltype(vt)
+
+    access_beg_s  = first(vt)
+    vaccess_beg_s = Tt[]
+    vaccess_end_s = Tt[]
+
+    # Flag indicating whether the reduced visibility was `true` at the chunk beginning.
+    started_visible = false
 
     for k in vt
         # Check the initial state of the reduced visibility.
@@ -509,8 +505,9 @@ function _ground_facility_access_chunk(
         # Handle the initial case.
         if state == :initial
             if visible
-                access_beg = jd_to_date(DateTime, jd₀) + Dates.Second(round(Int, vt[begin]))
-                state = :visible
+                access_beg_s    = k
+                started_visible = true
+                state           = :visible
             else
                 state = :not_visible
             end
@@ -518,37 +515,33 @@ function _ground_facility_access_chunk(
             # Handle transitions.
         elseif (state == :not_visible) && visible
             # Refine to find the edge.
-            k₀ = k - Δt
-            k₁ = k
-            kc = find_crossing(f, k₀, k₁, false, true)
-
+            access_beg_s = find_crossing(f, k - Δt, k, false, true)
             state = :visible
-            access_beg = jd_to_date(DateTime, jd₀ + kc / 86400)
 
         elseif (state == :visible) && !visible
             # Refine to find the edge.
-            k₀ = k - Δt
-            k₁ = k
-            kc = find_crossing(f, k₀, k₁, true, false)
-
+            access_end_s = find_crossing(f, k - Δt, k, true, false)
             state = :not_visible
-            access_end = jd_to_date(DateTime, jd₀ + kc / 86400)
 
-            push!(vaccess_beg, access_beg)
-            push!(vaccess_end, access_end)
+            push!(vaccess_beg_s, access_beg_s)
+            push!(vaccess_end_s, access_end_s)
         end
     end
 
     # If the analysis finished during an access, then just add the end of the interval as
     # the end of the access.
-    if state == :visible
-        access_end = jd_to_date(DateTime, jd₀ + vt[end] / 86400)
-        push!(vaccess_beg, access_beg)
-        push!(vaccess_end, access_end)
+    ended_visible = state == :visible
+
+    if ended_visible
+        push!(vaccess_beg_s, access_beg_s)
+        push!(vaccess_end_s, last(vt))
     end
 
-    # Create the DataFrame and write the metadata.
-    df = DataFrame(:access_beginning => vaccess_beg, :access_end       => vaccess_end)
+    return vaccess_beg_s, vaccess_end_s, started_visible, ended_visible
+end
 
-    return df
+# Convert the instant `t` [s], measured from the epoch `dt₀`, to `DateTime` by rounding it to
+# the nearest millisecond.
+function _gf_seconds_to_datetime(dt₀::DateTime, t::Number)
+    return dt₀ + Dates.Millisecond(round(Int, 1000t))
 end

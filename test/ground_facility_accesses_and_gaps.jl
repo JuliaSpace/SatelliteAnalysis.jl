@@ -231,6 +231,38 @@ end
         f_eci_to_ecef = gf_tod_to_pef,
     )
     @test size(df, 2) == 3
+
+    # == Fractional Times and Independence of the Number of Chunks =========================
+
+    # The analysis begins during an access at an instant with a fractional number of
+    # seconds. Hence, the first access must begin exactly at the beginning of the analysis.
+    # Furthermore, the result must not depend on the number of chunks even if the chunk
+    # boundaries are inside the accesses, which always happens when every chunk has only two
+    # instants.
+    kwargs = (;
+        duration      = 86400,
+        f_eci_to_ecef = gf_tod_to_pef,
+        initial_time  = 37500.4,
+        step          = 30.5,
+    )
+
+    df₁ = ground_facility_accesses(orbp, (0, 0, 0); kwargs..., num_chunks = 1)
+
+    @test size(df₁, 1) >= 2
+    @test df₁.access_beginning[1] == DateTime("2021-01-01T10:25:00.400")
+    @test abs(df₁.access_end[1] - DateTime("2021-01-01T10:30:02.985")) < Millisecond(50)
+
+    for num_chunks in (2, 4, 7, 100, typemax(Int))
+        dfₙ = ground_facility_accesses(orbp, (0, 0, 0); kwargs..., num_chunks = num_chunks)
+        @test dfₙ == df₁
+    end
+
+    # The gaps must be consistent with the accesses.
+    dfg = ground_facility_gaps(orbp, (0, 0, 0); kwargs..., num_chunks = 4)
+
+    @test dfg.gap_beginning[1] == df₁.access_end[1]
+    @test dfg.gap_end[1] == df₁.access_beginning[2]
+    @test dfg.gap_end[end] == DateTime("2021-01-02T10:25:00.400")
 end
 
 @testset "Function ground_facility_gaps" begin

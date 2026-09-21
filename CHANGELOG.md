@@ -115,6 +115,8 @@ Version 0.4.0
   on the keyword `verbose`, sharing the solver specialization between the verbose and
   silent paths. The remaining first-call cost is dominated by loading the default EGM96
   gravity model.
+- ![Enhancement][badge-enhancement] The function `ground_facility_accesses` does not create
+  and concatenate one `DataFrame` per chunk anymore, reducing the allocations.
 - ![Bugfix][badge-bugfix] The decay analysis passed the Julian date to the gravity model
   where it expects elapsed seconds from the J2000.0 epoch. The error was harmless for the
   default EGM96 model, whose coefficients are static, but it would produce wrong results
@@ -139,6 +141,12 @@ Version 0.4.0
   `int_rev_per_day`. Those values are now skipped. Furthermore, the keyword `no_warnings` of
   `sun_sync_orbit_from_angular_velocity` was not suppressing the warning printed when the
   algorithm did not converge.
+- ![Bugfix][badge-bugfix] The functions `ground_facility_accesses` and
+  `ground_facility_gaps` were rounding the beginning of the analysis to an integer number of
+  seconds and could split a single access into two when using multiple chunks if
+  `initial_time` or `step` had a fractional part, making the result depend on the number of
+  threads. The accesses are now merged using the visibility state at the chunk boundaries,
+  and all instants are converted to `DateTime` by a single function.
 - ![Info][badge-info] We added a test that validates the averaged decay dynamics against a
   full osculating (Cowell) reference propagation, bounding the neglected couplings.
 - ![Info][badge-info] The plotting extension `SatelliteAnalysisPlottingExt` was renamed to
