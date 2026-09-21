@@ -152,6 +152,26 @@ end
     fig, ax = plot_decay_analysis(df; show_f107 = true, f107_getter = nothing)
 
     @test fig isa Figure
+
+    # Non-finite F10.7 values must be neglected when aligning the ticks of the twin axis.
+    # Notice that the function was never returning in this case.
+    num_rows = size(df, 1)
+    k = Ref(0)
+
+    fig, ax = plot_decay_analysis(
+        df;
+        show_f107       = true,
+        f107_getter     = si -> (k[] += 1) <= div(num_rows, 2) ? NaN : si.f107,
+        f107_avg_getter = nothing
+    )
+
+    @test fig isa Figure
+
+    fig, ax = plot_decay_analysis(
+        df; show_f107 = true, f107_getter = si -> NaN, f107_avg_getter = nothing
+    )
+
+    @test fig isa Figure
     @test ax isa Axis
 
     # A `DataFrame` without the metadata must still be plottable. In this case, the

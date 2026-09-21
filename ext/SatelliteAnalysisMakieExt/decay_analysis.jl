@@ -362,22 +362,32 @@ function SatelliteAnalysis.plot_decay_analysis(
             linkxaxes!(ax, ax_f107)
 
             # Align the twin axis ticks with the main axis grid using canonical values,
-            # keeping them aligned if the main axis limits or ticks change.
-            f107_min, f107_max = extrema(
+            # keeping them aligned if the main axis limits or ticks change. The data can
+            # have non-finite values (e.g., a getter that returns `NaN` if the index is not
+            # available), which must be neglected. If there is no finite value, we keep the
+            # automatic ticks of the twin axis.
+            f107_finite = Iterators.filter(
+                isfinite,
                 Iterators.flatten(x for x in (f107_daily, f107_avg) if !isnothing(x))
             )
 
-            onany(ax.finallimits, ax.yaxis.tickvalues) do main_limits, main_tickvalues
-                _align_twin_yticks!(ax_f107, main_limits, main_tickvalues, f107_min, f107_max)
-            end
+            if !isempty(f107_finite)
+                f107_min, f107_max = extrema(f107_finite)
 
-            _align_twin_yticks!(
-                ax_f107,
-                ax.finallimits[],
-                ax.yaxis.tickvalues[],
-                f107_min,
-                f107_max
-            )
+                onany(ax.finallimits, ax.yaxis.tickvalues) do main_limits, main_tickvalues
+                    _align_twin_yticks!(
+                        ax_f107, main_limits, main_tickvalues, f107_min, f107_max
+                    )
+                end
+
+                _align_twin_yticks!(
+                    ax_f107,
+                    ax.finallimits[],
+                    ax.yaxis.tickvalues[],
+                    f107_min,
+                    f107_max
+                )
+            end
         end
 
         # == Side Column: Information Panel and Legend =====================================
@@ -557,6 +567,11 @@ function _add_stat_card!(
     return nothing
 end
 
+# Maximum number of iterations to find the tick step of the twin axis in
+# `_align_twin_yticks!`. Each iteration increases the step to the next canonical value.
+# Hence, this number covers more than 60 orders of magnitude.
+const _TWIN_YTICKS_MAX_ITERATIONS = 200
+
 """
     _align_twin_yticks!(
         ax_twin::Axis,
@@ -606,7 +621,9 @@ function _align_twin_yticks!(
     s_twin = _canonical_step(D / m)
     u₁ = lo = hi = 0.0
 
-    while true
+    # The loop always ends for finite inputs because the step strictly increases. However,
+    # we limit the number of iterations to guarantee that this function never hangs.
+    for _ in 1:_TWIN_YTICKS_MAX_ITERATIONS
         # `u₁` is the twin axis tick at the first main axis tick: the largest multiple of
         # the tick step that keeps the lower limit below the data minimum.
         u₁ = s_twin * floor((data_min + (t₁ - ylo) * s_twin / s_main) / s_twin)
