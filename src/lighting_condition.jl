@@ -50,24 +50,29 @@ function lighting_condition(r_i::AbstractVector, s_i::AbstractVector)
         # This is the norm of the component perpendicular to the Sun direction.
         norm_Δ_i = sqrt(max(zero(projection), (r_i ⋅ r_i) - projection^2))
 
-        # Penumbra section [1].
-        xp = R₀ * norm_s_i / (Rs + R₀)
-        αp = asin(R₀ / xp)
+        # Penumbra section [1]. Notice that the sine of the penumbral cone angle is
+        # `R₀ / xp = (Rs + R₀) / norm_s_i`. Hence, we can compute its tangent without
+        # trigonometric functions.
+        xp     = R₀ * norm_s_i / (Rs + R₀)
+        sin_αp = (Rs + R₀) / norm_s_i
+        tan_αp = sin_αp / √(1 - sin_αp^2)
 
         # Location of the penumbral cone terminator at the projected spacecraft
         # location [1].
-        kp_i = (xp + norm_rs_i) * tan(αp)
+        kp_i = (xp + norm_rs_i) * tan_αp
 
         if norm_Δ_i > kp_i
             return :sunlight
         else
-            # Umbra section [1].
-            xu = R₀ * norm_s_i / (Rs - R₀)
-            αu = asin(R₀ / xu)
+            # Umbra section [1]. The sine of the umbral cone angle is
+            # `R₀ / xu = (Rs - R₀) / norm_s_i`.
+            xu     = R₀ * norm_s_i / (Rs - R₀)
+            sin_αu = (Rs - R₀) / norm_s_i
+            tan_αu = sin_αu / √(1 - sin_αu^2)
 
             # Location of the umbral cone terminator at the projected spacecraft
             # location [1].
-            ep_i = (xu - norm_rs_i) * tan(αu)
+            ep_i = (xu - norm_rs_i) * tan_αu
 
             if norm_Δ_i < ep_i
                 return :umbra

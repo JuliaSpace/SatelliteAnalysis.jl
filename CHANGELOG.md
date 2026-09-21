@@ -144,6 +144,9 @@ Version 0.4.0
   `ground_facility_gaps` now compute the position and the local vertical of each ground
   facility only once instead of at every propagation instant. The access computation is
   about 3.5x faster in an analysis with 20 ground facilities.
+- ![Enhancement][badge-enhancement] The function `lighting_condition` does not use
+  trigonometric functions anymore, being about 3.7x faster if the position is behind the
+  Earth.
 - ![Bugfix][badge-bugfix] The decay analysis passed the Julian date to the gravity model
   where it expects elapsed seconds from the J2000.0 epoch. The error was harmless for the
   default EGM96 model, whose coefficients are static, but it would produce wrong results
