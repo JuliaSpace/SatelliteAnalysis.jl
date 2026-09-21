@@ -460,8 +460,10 @@ function SatelliteAnalysis.plot_decay_analysis(
                 tellwidth = false,
             )
 
-            # Tighten the gap between the mission name and the plot title.
-            rowgap!(fig.layout, 1, 4)
+            # Tighten the gap between the mission name and the plot title. Notice that the
+            # gap indices take into account the layout offset created by the row 0. Hence,
+            # the gap between the rows 0 and 1 has index 0.
+            rowgap!(fig.layout, 0, 4)
         end
 
         return fig, ax
