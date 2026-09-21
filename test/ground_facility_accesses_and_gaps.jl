@@ -107,7 +107,7 @@ end
     # -- Minutes ---------------------------------------------------------------------------
 
     df = ground_facility_accesses(
-        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :min
+        orbp, (0, 0, 0); duration = 86400, f_eci_to_ecef = gf_tod_to_pef, time_unit = :min
     )
 
     @test size(df) == (2, 3)
@@ -123,7 +123,7 @@ end
     # -- Hours -----------------------------------------------------------------------------
 
     df = ground_facility_accesses(
-        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :h
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, time_unit = :h
     )
 
     @test size(df) == (2, 3)
@@ -139,7 +139,7 @@ end
     # -- Unknown Symbol --------------------------------------------------------------------
 
     @test_throws ArgumentError ground_facility_accesses(
-        orbp, (0, 0, 0); duration = 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :unknown
+        orbp, (0, 0, 0); duration = 86400, f_eci_to_ecef = gf_tod_to_pef, time_unit = :bad
     )
 
     # == Facility Outside the Equator ======================================================
@@ -399,7 +399,7 @@ end
     # -- Minutes ---------------------------------------------------------------------------
 
     df = ground_facility_gaps(
-        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :min
+        orbp, (0, 0, 0); duration = 86400, f_eci_to_ecef = gf_tod_to_pef, time_unit = :min
     )
 
     @test size(df) == (3, 3)
@@ -424,7 +424,7 @@ end
     # -- Hours -----------------------------------------------------------------------------
 
     df = ground_facility_gaps(
-        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :h
+        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, time_unit = :h
     )
 
     @test size(df) == (3, 3)
@@ -449,7 +449,7 @@ end
     # -- Unknown Symbol --------------------------------------------------------------------
 
     @test_throws ArgumentError ground_facility_gaps(
-        orbp, (0, 0, 0); duration = 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :unknown
+        orbp, (0, 0, 0); duration = 86400, f_eci_to_ecef = gf_tod_to_pef, time_unit = :bad
     )
 
 end

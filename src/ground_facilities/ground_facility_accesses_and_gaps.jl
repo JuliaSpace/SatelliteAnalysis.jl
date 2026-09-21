@@ -62,7 +62,7 @@ Those geodetic information are transformed to an ECEF vector using the function
     tuning to accurately obtain the access time. However, if an access is lower than the
     step, it can be neglected.
     (**Default** = 60)
-- `unit::Symbol`: Select the unit in which the duration will be computed. The possible
+- `time_unit::Symbol`: Select the unit in which the duration will be computed. The possible
     values are:
     - `:s` for seconds (**Default**);
     - `:min` for minutes; or
@@ -80,7 +80,7 @@ Those geodetic information are transformed to an ECEF vector using the function
 
 ## Throws
 
-- `ArgumentError`: If `unit` is not `:s`, `:min`, or `:h`.
+- `ArgumentError`: If `time_unit` is not `:s`, `:min`, or `:h`.
 
 ## Examples
 
@@ -109,7 +109,7 @@ julia> ground_facility_accesses(orbp, (0, 0, 0))
    1 │ 2024-01-01T10:20:03.136  2024-01-01T10:30:02.971   599.835
    2 │ 2024-01-01T22:49:55.910  2024-01-01T22:59:23.470   567.56
 
-julia> ground_facility_accesses(orbp, (0, 0, 0); unit = :min)
+julia> ground_facility_accesses(orbp, (0, 0, 0); time_unit = :min)
 2×3 DataFrame
  Row │ access_beginning         access_end               duration 
      │ DateTime                 DateTime                 Float64  
@@ -134,14 +134,14 @@ function ground_facility_accesses(
     num_chunks::Integer = Threads.nthreads(),
     reduction::R = any,
     step::Number = 60,
-    unit::Symbol = :s,
+    time_unit::Symbol = :s,
 ) where {
     T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}, R <: Function
 }
 
     # Factor to convert the time from seconds to the selected unit. Notice that this
     # function also validates the input.
-    time_factor = _time_unit_factor(unit)
+    time_factor = _time_unit_factor(time_unit)
 
     # Time vector of the analysis.
     vt = float(initial_time):float(step):float(initial_time + duration)
@@ -248,7 +248,7 @@ function ground_facility_accesses(
 
     # The style `:note` makes the metadata propagate through DataFrame transformations.
     metadata!(df, "Description", "Accesses to the ground facilities."; style = :note)
-    colmetadata!(df, :duration, "Unit", unit; style = :note)
+    colmetadata!(df, :duration, "Unit", time_unit; style = :note)
 
     return df
 end
@@ -274,7 +274,7 @@ lasts for `duration` [s].
 
 ## Throws
 
-- `ArgumentError`: If `unit` is not `:s`, `:min`, or `:h`.
+- `ArgumentError`: If `time_unit` is not `:s`, `:min`, or `:h`.
 
 ## Examples
 
@@ -304,7 +304,7 @@ julia> ground_facility_gaps(orbp, (0, 0, 0))
    2 │ 2024-01-01T10:30:02.971  2024-01-01T22:49:55.910  44392.9
    3 │ 2024-01-01T22:59:23.470  2024-01-02T00:00:00       3636.53
 
-julia> ground_facility_gaps(orbp, (0, 0, 0); unit = :min)
+julia> ground_facility_gaps(orbp, (0, 0, 0); time_unit = :min)
 3×3 DataFrame
  Row │ gap_beginning            gap_end                  duration 
      │ DateTime                 DateTime                 Float64  
@@ -325,13 +325,13 @@ function ground_facility_gaps(
     vgf_wgs84::AbstractVector{T};
     duration::Number = 86400,
     initial_time::Number = 0,
-    unit::Symbol = :s,
+    time_unit::Symbol = :s,
     kwargs...,
 ) where {T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}}
 
     # Factor to convert the time from seconds to the selected unit. Notice that this
     # function also validates the input.
-    time_factor = _time_unit_factor(unit)
+    time_factor = _time_unit_factor(time_unit)
 
     # Compute the beginning and the end of the analysis. Notice that we must use the same
     # function used to convert the access instants to avoid inconsistencies caused by
@@ -391,7 +391,7 @@ function ground_facility_gaps(
 
     # The style `:note` makes the metadata propagate through DataFrame transformations.
     metadata!(dfg, "Description", "Gaps to the ground facilities."; style = :note)
-    colmetadata!(dfg, :duration, "Unit", unit; style = :note)
+    colmetadata!(dfg, :duration, "Unit", time_unit; style = :note)
 
     return dfg
 end

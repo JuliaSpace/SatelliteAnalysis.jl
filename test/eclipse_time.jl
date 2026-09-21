@@ -48,7 +48,7 @@
 
     # == Minutes ===========================================================================
 
-    df = eclipse_time_summary(orbp; num_days = 5, unit = :min)
+    df = eclipse_time_summary(orbp; num_days = 5, time_unit = :min)
 
     @test size(df) == (5, 4)
 
@@ -64,7 +64,7 @@
 
     # == Hours =============================================================================
 
-    df = eclipse_time_summary(orbp; num_days = 5, unit = :h)
+    df = eclipse_time_summary(orbp; num_days = 5, time_unit = :h)
 
     @test size(df) == (5, 4)
 
@@ -98,5 +98,5 @@
 
     # == Unknown Symbol ====================================================================
 
-    @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, unit = :not_known)
+    @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, time_unit = :bad)
 end

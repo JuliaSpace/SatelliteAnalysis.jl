@@ -21,6 +21,9 @@ Version 0.4.0
 - ![Breaking][badge-breaking] The column `rev_per_days` in the `DataFrame` returned by
   `design_sun_sync_ground_repeating_orbit` was renamed to `revs_per_day`, and the keyword
   `pretty_rev_per_days` was renamed to `pretty_revs_per_day`.
+- ![Breaking][badge-breaking] The keyword `unit` of the functions `eclipse_time_summary`,
+  `ground_facility_accesses`, and `ground_facility_gaps` was renamed to `time_unit`, which
+  is the name used by the other functions.
 - ![Feature][badge-feature] We added the function `decay_analysis` to estimate the orbital
   decay lifetime of a satellite considering averaged perturbations (zonal harmonics with a
   J₂² correction, third bodies, atmospheric drag, and solar radiation pressure gated by the

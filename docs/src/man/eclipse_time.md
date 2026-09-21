@@ -31,7 +31,7 @@ The following keywords are available:
   However, if this step is very large, we may miss some small regions. If it is negative, it
   will be selected as the time in which the mean anomaly advances 0.5°.
   (**Default** = -1)
-- `unit::Symbol`: Select the unit in which the results will be generated. The possible
+- `time_unit::Symbol`: Select the unit in which the results will be generated. The possible
   values are:
     - `:s` for seconds (**Default**);
     - `:min` for minutes; or
@@ -39,9 +39,9 @@ The following keywords are available:
 
 The function returns a `DataFrame` with three columns:
 
-- `sunlight`: Total sunlight time per orbit at each day [`unit`].
-- `penumbra`: Total penumbra time per orbit at each day [`unit`].
-- `umbra`: Total umbra time per orbit at each day [`unit`].
+- `sunlight`: Total sunlight time per orbit at each day [`time_unit`].
+- `penumbra`: Total penumbra time per orbit at each day [`time_unit`].
+- `umbra`: Total umbra time per orbit at each day [`time_unit`].
 
 The unit of each column is stored in the `DataFrame` using metadata.
 
@@ -79,7 +79,7 @@ Now, we can use the function `eclipse_time_summary` to obtain the eclipse time i
 for each day of the year:
 
 ```@repl eclipse_time
-df = eclipse_time_summary(orbp; unit = :min)
+df = eclipse_time_summary(orbp; time_unit = :min)
 ```
 
 Finally, we can use the `DataFrame` to analyze the result. For example, the maximum eclipse

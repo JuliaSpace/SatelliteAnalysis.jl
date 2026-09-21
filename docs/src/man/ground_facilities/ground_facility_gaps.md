@@ -54,7 +54,7 @@ ground_facility_gaps(
     [(-(15 + 33 / 60) |> deg2rad, -(56 + 04 / 60) |> deg2rad, 0)];
     duration = 1 * 86400,
     minimum_elevation = 5 |> deg2rad,
-    unit = :min
+    time_unit = :min
 )
 ```
 
@@ -78,7 +78,7 @@ ground_facility_gaps(
     duration = 1 * 86400,
     f_eci_to_ecef = f_eci_to_ecef,
     minimum_elevation = 5 |> deg2rad,
-    unit = :min
+    time_unit = :min
 )
 ```
 
@@ -95,7 +95,7 @@ ground_facility_gaps(
     ];
     duration = 1 * 86400,
     minimum_elevation = 5 |> deg2rad,
-    unit = :min
+    time_unit = :min
 )
 ```
 
@@ -114,6 +114,6 @@ ground_facility_gaps(
     duration = 1 * 86400,
     minimum_elevation = 5 |> deg2rad,
     reduction = v -> (&)(v...),
-    unit = :min
+    time_unit = :min
 )
 ```

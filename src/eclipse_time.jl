@@ -29,7 +29,7 @@ each day.
     the lighting condition is the same in two consecutive instants. If it is negative, it
     will be selected as the time in which the mean anomaly advances 0.5°.
     (**Default** = -1)
-- `unit::Symbol`: Select the unit in which the results will be generated. The possible
+- `time_unit::Symbol`: Select the unit in which the results will be generated. The possible
     values are:
     - `:s` for seconds (**Default**);
     - `:min` for minutes; or
@@ -38,9 +38,9 @@ each day.
 # Returns
 
 - `DataFrame`: The function returns a `DataFrame` with three columns:
-    - `sunlight`: Total sunlight time per orbit at each day [`unit`].
-    - `penumbra`: Total penumbra time per orbit at each day [`unit`].
-    - `umbra`: Total umbra time per orbit at each day [`unit`].
+    - `sunlight`: Total sunlight time per orbit at each day [`time_unit`].
+    - `penumbra`: Total penumbra time per orbit at each day [`time_unit`].
+    - `umbra`: Total umbra time per orbit at each day [`time_unit`].
     The unit of each column is stored in the `DataFrame` using metadata.
 
 # Extended Help
@@ -48,7 +48,7 @@ each day.
 ## Throws
 
 - `ArgumentError`: If `num_days` is lower than 1, if `step` is zero or not lower than the
-    orbital period, or if `unit` is not `:s`, `:min`, or `:h`.
+    orbital period, or if `time_unit` is not `:s`, `:min`, or `:h`.
 
 ## Examples
 
@@ -80,7 +80,7 @@ julia> df = eclipse_time_summary(orbp; num_days = 5)
    4 │ 2021-01-04   3975.74   20.4758  2003.79
    5 │ 2021-01-05   3976.94   20.5022  2002.55
 
-julia> df = eclipse_time_summary(orbp; num_days = 5, unit = :min)
+julia> df = eclipse_time_summary(orbp; num_days = 5, time_unit = :min)
 5×4 DataFrame
  Row │ date        sunlight  penumbra  umbra
      │ Date        Float64   Float64   Float64
@@ -99,13 +99,16 @@ Dict{Symbol, Dict{String, Symbol}} with 3 entries:
 ```
 """
 function eclipse_time_summary(
-    orbp::OrbitPropagator; num_days::Integer = 365, step::Number = -1, unit::Symbol = :s
+    orbp::OrbitPropagator;
+    num_days::Integer = 365,
+    step::Number = -1,
+    time_unit::Symbol = :s,
 )
     num_days < 1 && throw(ArgumentError("The number of days must be greater than 0."))
 
     # Factor to convert the time from seconds to the selected unit. Notice that this
     # function also validates the input.
-    time_factor = _time_unit_factor(unit)
+    time_factor = _time_unit_factor(time_unit)
 
     jd₀ = Propagators.epoch(orbp)
     dt₀ = julian2datetime(jd₀)
@@ -230,9 +233,9 @@ function eclipse_time_summary(
         df, "Description", "Eclipse time PER ORBIT computed at each day."; style = :note
     )
 
-    colmetadata!(df, :sunlight, "Unit", unit; style = :note)
-    colmetadata!(df, :penumbra, "Unit", unit; style = :note)
-    colmetadata!(df, :umbra,    "Unit", unit; style = :note)
+    colmetadata!(df, :sunlight, "Unit", time_unit; style = :note)
+    colmetadata!(df, :penumbra, "Unit", time_unit; style = :note)
+    colmetadata!(df, :umbra,    "Unit", time_unit; style = :note)
 
     return df
 end
