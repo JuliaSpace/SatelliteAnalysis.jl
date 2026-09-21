@@ -589,9 +589,9 @@ function sun_sync_orbit_semi_major_axis(
     k₁ = -(3 // 2) * J₂ * √μ * cos_i / (kR₀ * β⁴)
     k₂ = +(3 // 4) * J₂ * (2 - 3sin_i^2) / β³
 
-    # If `k₁` is negative, Ω̇ will be also be negative. Hence, it is impossible to find a
+    # If `k₁` is not positive, Ω̇ will not be positive. Hence, it is impossible to find a
     # Sun-synchronous orbit.
-    k₁ < 0 && throw(
+    k₁ <= 0 && throw(
         ArgumentError(
             "It is not possible to find a Sun-synchronous orbit with the selected parameters (i = $(rad2deg(i))°, e = $e).",
         ),

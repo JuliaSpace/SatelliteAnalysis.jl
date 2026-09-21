@@ -349,4 +349,8 @@ end
 @testset "Function sun_sync_orbit_semi_major_axis [ERRORS]" begin
     @test_throws ArgumentError sun_sync_orbit_semi_major_axis(0.5, 1.1)
     @test_throws ArgumentError sun_sync_orbit_semi_major_axis(0.5, -0.01)
+
+    # There is no Sun-synchronous orbit if the inclination is not higher than 90°.
+    @test_throws ArgumentError sun_sync_orbit_semi_major_axis(π / 2)
+    @test_throws ArgumentError sun_sync_orbit_semi_major_axis(80 |> deg2rad)
 end
