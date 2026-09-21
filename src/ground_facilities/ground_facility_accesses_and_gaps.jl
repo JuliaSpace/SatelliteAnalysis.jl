@@ -383,7 +383,11 @@ function ground_facility_gaps(
     duration .*= time_factor
 
     # Create the DataFrame and write the metadata.
-    dfg = DataFrame(:gap_beginning => vgap_beg, :gap_end       => vgap_end, :duration      => duration)
+    dfg = DataFrame(
+        :gap_beginning => vgap_beg,
+        :gap_end       => vgap_end,
+        :duration      => duration,
+    )
 
     # The style `:note` makes the metadata propagate through DataFrame transformations.
     metadata!(dfg, "Description", "Gaps to the ground facilities."; style = :note)
@@ -544,8 +548,8 @@ function _ground_facility_access_chunk(
     return vaccess_beg_s, vaccess_end_s, started_visible, ended_visible
 end
 
-# Convert the instant `t` [s], measured from the epoch `dt₀`, to `DateTime` by rounding it to
-# the nearest millisecond.
+# Convert the instant `t` [s], measured from the epoch `dt₀`, to `DateTime` by rounding it
+# to the nearest millisecond.
 function _gf_seconds_to_datetime(dt₀::DateTime, t::Number)
     return dt₀ + Dates.Millisecond(round(Int, 1000t))
 end
