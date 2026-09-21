@@ -102,7 +102,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
         # Conservative perturbations in TOD.
         δak_tod =
             (D_tod_pef * _perturbational_gravity_acceleration(
-                gm, jd_utc, rk_pef; μ = μ, P = params.gravity_P, dP = params.gravity_dP
+                gm, jd_utc, rk_pef; μ = μ, workspace = params.gravity_workspace
             )) +
             _point_mass_acceleration(rk_tod, rsun_tod, _μ_SUN) +
             _point_mass_acceleration(rk_tod, rmoon_tod, _μ_MOON)

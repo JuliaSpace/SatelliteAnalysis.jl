@@ -224,11 +224,13 @@ function _decay_analysis(
         KeplerianElements(0.0, ā, ē, ī, Ω̄, ω̄, mean_to_true_anomaly(ē, M̄))
     )
 
-    # Pre-allocate the Legendre buffers used by the gravity model, avoiding two matrix
-    # allocations per acceleration evaluation. The size supports the maximum degree 7 used
-    # by `_perturbational_gravity_acceleration`.
-    gravity_P  = Matrix{Float64}(undef, 8, 8)
-    gravity_dP = Matrix{Float64}(undef, 8, 8)
+    # Pre-allocate the gravity model workspace, avoiding the buffer allocations at every
+    # acceleration evaluation. It supports the maximum degree 7 and order 0 used by
+    # `_perturbational_gravity_acceleration`. The element type must be the one obtained by
+    # promoting the model coefficients with the state type (`Float64`).
+    gravity_workspace = GravityModels.Workspace(
+        gm; max_degree = 7, max_order = 0, T = _gravity_workspace_type(gm)
+    )
 
     # Hoist the gravity model constants used by the hot loop out of the right-hand side.
     μ  = GravityModels.gravity_constant(gm)
@@ -236,9 +238,9 @@ function _decay_analysis(
     J₂ = -first(GravityModels.coefficients(gm, 2, 0)) * √5
 
     # NOTE: `params` carries per-call mutable workspaces: the propagator `j2osc_prop` and
-    # the gravity model buffers `gravity_P` and `gravity_dP`. Hence, the assembled ODE
-    # problem must not be shared across concurrent solves. Every call to `decay_analysis`
-    # builds fresh workspaces, keeping the public API thread-safe.
+    # the gravity model workspace `gravity_workspace`. Hence, the assembled ODE problem
+    # must not be shared across concurrent solves. Every call to `decay_analysis` builds
+    # fresh workspaces, keeping the public API thread-safe.
     params = (
         satellite_mean_area           = satellite_mean_area,
         satellite_mass                = satellite_mass,
@@ -251,8 +253,7 @@ function _decay_analysis(
         μ                             = μ,
         Re                            = Re,
         J₂                            = J₂,
-        gravity_P                     = gravity_P,
-        gravity_dP                    = gravity_dP,
+        gravity_workspace             = gravity_workspace,
         jd₀_utc                       = orb.t,
         j2osc_prop                    = j2osc_prop,
         terminate_altitude            = terminate_altitude,
@@ -474,6 +475,12 @@ function _default_f107(jd_utc::Number, index::Val, predicted::Val)
     jd₀ <= jd_utc <= jd₁ && return space_index(index, jd_utc)
 
     return space_index(predicted, jd_utc)
+end
+
+# Element type of the gravity model workspace: the promotion between the type of the
+# coefficients in the gravity model `gm` and the state type (`Float64`).
+function _gravity_workspace_type(::AbstractGravityModel{Tm}) where {Tm <: Number}
+    return promote_type(float(Tm), Float64)
 end
 
 function _cb_altitude_condition(u, t, integrator)

@@ -90,14 +90,10 @@ perturbational part.
     analytic central term. If it is `nothing`, the value is queried from the gravity
     model.
     (**Default**: `nothing`)
-- `P::Union{Nothing, AbstractMatrix}`: Optional matrix with at least
-    `(max_degree + 1) × (max_degree + 1)` elements to store the Legendre coefficients,
-    reducing the allocations. If it is `nothing`, the matrix is allocated at every call.
-    (**Default**: `nothing`)
-- `dP::Union{Nothing, AbstractMatrix}`: Optional matrix with at least
-    `(max_degree + 1) × (max_degree + 1)` elements to store the Legendre coefficient
-    derivatives, reducing the allocations. If it is `nothing`, the matrix is allocated at
-    every call.
+- `workspace::Union{Nothing, GravityModels.Workspace}`: Workspace created with
+    `GravityModels.Workspace` supporting at least `max_degree` and `max_order`, which
+    removes the allocations of the gravity model evaluation. If it is `nothing`, the
+    buffers are allocated at every call.
     (**Default**: `nothing`)
 
 # Returns
@@ -112,8 +108,7 @@ function _perturbational_gravity_acceleration(
     max_degree::Int = 7,
     max_order::Int = 0,
     μ::Union{Nothing, Number} = nothing,
-    P::Union{Nothing, AbstractMatrix} = nothing,
-    dP::Union{Nothing, AbstractMatrix} = nothing,
+    workspace::Union{Nothing, GravityModels.Workspace} = nothing,
 )
     # The gravity model API expects the time as the number of elapsed seconds from the
     # J2000.0 epoch, which is only used by models with time-variable coefficients.
@@ -126,8 +121,7 @@ function _perturbational_gravity_acceleration(
         Δt_j2000;
         max_degree = max_degree,
         max_order = max_order,
-        P = P,
-        dP = dP
+        workspace = workspace
     )
 
     # Central term (degree 0, order 0), computed analytically as -μ r / r³ to avoid a
