@@ -132,19 +132,18 @@ function SatelliteAnalysis.decay_analysis(
         space_indices
     end
 
-    is_default_space_indices =
-        (space_indices′ === _decay_analysis__default_space_indices) ||
-        (space_indices′ === _decay_analysis__default_space_indices_kp)
-
-    space_indices_source = if space_indices′ === _decay_analysis__default_space_indices
-        "Default (Obs. + Pred.)"
-    elseif space_indices′ === _decay_analysis__default_space_indices_kp
-        "Default (Adj. + Pred.)"
-    elseif space_indices isa NamedTuple
-        "Constant $(space_indices)"
-    else
-        "User function"
-    end
+    # Description of the space indices source and flag indicating whether it is one of the
+    # default sources, which require the initialization of the space indices.
+    space_indices_source, is_default_space_indices =
+        if space_indices′ === _decay_analysis__default_space_indices
+            "Default (Obs. + Pred.)", true
+        elseif space_indices′ === _decay_analysis__default_space_indices_kp
+            "Default (Adj. + Pred.)", true
+        elseif space_indices isa NamedTuple
+            "Constant $(space_indices)", false
+        else
+            "User function", false
+        end
 
     # The default space index functions require the remote data sets provided by
     # SpaceIndices.jl. Notice that if the user calls `SpaceIndices.destroy()` after this
