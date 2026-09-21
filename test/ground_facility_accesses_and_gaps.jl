@@ -131,7 +131,7 @@ end
     # -- Unknown Symbol --------------------------------------------------------------------
 
     @test_throws ArgumentError ground_facility_accesses(
-        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :unknown
+        orbp, (0, 0, 0); duration = 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :unknown
     )
 
     # == Facility Outside the Equator ======================================================
@@ -197,7 +197,11 @@ end
         ),
         min_level = Logging.Debug,
         df = ground_facility_accesses(
-            orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, num_chunks = 1
+            orbp,
+            (0, 0, 0);
+            duration      = 1 * 86400,
+            f_eci_to_ecef = gf_tod_to_pef,
+            num_chunks    = 1,
         )
     )
 
@@ -213,7 +217,11 @@ end
         ),
         min_level = Logging.Debug,
         df = ground_facility_accesses(
-            orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, num_chunks = 2
+            orbp,
+            (0, 0, 0);
+            duration      = 1 * 86400,
+            f_eci_to_ecef = gf_tod_to_pef,
+            num_chunks    = 2,
         )
     )
 
@@ -425,7 +433,7 @@ end
     # -- Unknown Symbol --------------------------------------------------------------------
 
     @test_throws ArgumentError ground_facility_gaps(
-        orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :unknown
+        orbp, (0, 0, 0); duration = 86400, f_eci_to_ecef = gf_tod_to_pef, unit = :unknown
     )
 
 end
