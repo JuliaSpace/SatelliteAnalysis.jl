@@ -197,7 +197,23 @@ end
         ),
         min_level = Logging.Debug,
         df = ground_facility_accesses(
-            orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef
+            orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, num_chunks = 1
+        )
+    )
+
+    @test_logs(
+        (
+            :debug,
+            """
+            Computing ground facility accesses using 2 chunks:
+
+            Chunk 1: 2021-01-01T00:00:00.000 -- 2021-01-01T12:01:00.000
+            Chunk 2: 2021-01-01T12:01:00.000 -- 2021-01-02T00:00:00.000
+            """,
+        ),
+        min_level = Logging.Debug,
+        df = ground_facility_accesses(
+            orbp, (0, 0, 0); duration = 1 * 86400, f_eci_to_ecef = gf_tod_to_pef, num_chunks = 2
         )
     )
 
