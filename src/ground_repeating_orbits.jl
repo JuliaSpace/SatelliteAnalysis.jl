@@ -66,38 +66,14 @@ function ground_repeating_orbit_adjacent_track_angle(
     m0::Number = GM_EARTH,
     we::Number = EARTH_ANGULAR_SPEED,
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
-    T   = float(promote_type(T1, T2, T3))
-    R₀  = T(R0)
-    ω_e = T(we)
-
-    # Compute the orbital period [s].
-    ΔT = orbital_period(
-        a, e, i; perturbation = perturbation, J2 = J2, J4 = J4, R0 = R0, m0 = m0
-    )
-
-    # Compute the RAAN time derivative [rad / s].
-    ∂Ω_∂t = raan_time_derivative(
-        a, e, i; perturbation = perturbation, J2 = J2, J4 = J4, m0 = m0, R0 = R0
-    )
+    T  = float(promote_type(T1, T2, T3))
+    R₀ = T(R0)
 
     # Angle between one ground track and the middle of the region between the two adjacent
-    # tracks in the Equator [rad]. This angle is measured from the Earth's center.
-    θ = T(ΔT) * (ω_e - ∂Ω_∂t) / T(orbit_cycle) / 2
-    sin_θ, cos_θ = sincos(θ)
-    cot_θ = cos_θ / sin_θ
-
-    # We need to compute the angle between one ground track and the middle of the region
-    # between the two adjacent tracks measured from the Earth's center (β). Thus, first we
-    # need to find the ground trace inclination [rad], which is a composition between the
-    # Earth's rotation rate and the satellite speed.
-    i_gt = ground_track_inclination(
-        a, e, i; J2 = J2, J4 = J4, R0 = R0, m0 = m0, perturbation = perturbation, we = we
+    # tracks measured from the Earth's center [rad].
+    β = _ground_repeating_orbit__adjacent_track_half_angle(
+        a, e, i, orbit_cycle; perturbation, J2, J4, R0, m0, we
     )
-
-    sin_i_gt, cos_i_gt = sincos(i_gt)
-    cot_i_gt = cos_i_gt / sin_i_gt
-
-    β = acot(cot_θ * sin_i_gt + cot_i_gt * cos_i_gt / sin_θ)
 
     # Compute the angle between the two ground tracks measured from the satellite. `a` is an
     # auxiliary distance and `γ` is the angle we are looking for.
@@ -163,8 +139,59 @@ function ground_repeating_orbit_adjacent_track_distance(
     m0::Number = GM_EARTH,
     we::Number = EARTH_ANGULAR_SPEED,
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
+    T  = float(promote_type(T1, T2, T3))
+    R₀ = T(R0)
+
+    # Angle between one ground track and the middle of the region between the two adjacent
+    # tracks measured from the Earth's center [rad].
+    β = _ground_repeating_orbit__adjacent_track_half_angle(
+        a, e, i, orbit_cycle; perturbation, J2, J4, R0, m0, we
+    )
+
+    # Distance between two adjacent tracks on the Earth's surface.
+    d = 2β * R₀
+
+    return d
+end
+
+############################################################################################
+#                                    Private Functions                                     #
+############################################################################################
+
+"""
+    _ground_repeating_orbit__adjacent_track_half_angle(a::T1, e::T2, i::T3, orbit_cycle::Integer; kwargs...) where {T1 <: Number, T2 <: Number, T3 <: Number} -> T
+
+Compute the angle [rad] between one ground track and the middle of the region between two
+adjacent ground tracks at the Equator, measured from the Earth's center, in a ground
+repeating orbit. The orbit is described by its semi-major axis `a` [m], eccentricity `e`
+[-], inclination `i` [rad], and orbit cycle `orbit_cycle` [day]. Notice that this angle is
+measured perpendicularly to the ground tracks.
+
+The type `T` is obtained by promoting `T1`, `T2`, and `T3` to a float-pointing number.
+
+# Keywords
+
+- `perturbation::Symbol`: Symbol to select the perturbation terms that will be used. It can
+    be `:J0`, `:J2`, or `:J4`.
+- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
+- `J2::Number`: J₂ perturbation term.
+- `J4::Number`: J₄ perturbation term.
+- `R0::Number`: Earth's equatorial radius [m].
+- `we::Number`: Earth's angular speed [rad / s].
+"""
+function _ground_repeating_orbit__adjacent_track_half_angle(
+    a::T1,
+    e::T2,
+    i::T3,
+    orbit_cycle::Integer;
+    perturbation::Symbol,
+    J2::Number,
+    J4::Number,
+    R0::Number,
+    m0::Number,
+    we::Number,
+) where {T1 <: Number, T2 <: Number, T3 <: Number}
     T   = float(promote_type(T1, T2, T3))
-    R₀  = T(R0)
     ω_e = T(we)
 
     # Compute the orbital period [s].
@@ -196,8 +223,5 @@ function ground_repeating_orbit_adjacent_track_distance(
 
     β = acot(cot_θ * sin_i_gt + cot_i_gt * cos_i_gt / sin_θ)
 
-    # Distance between two adjacent tracks on the Earth's surface.
-    d = 2β * R₀
-
-    return d
+    return β
 end
