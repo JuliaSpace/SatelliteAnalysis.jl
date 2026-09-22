@@ -3,12 +3,10 @@ module SatelliteAnalysis
 using Dates
 using Downloads
 using LinearAlgebra
-using Logging
 using PrettyNumbers
 using Reexport
 using Scratch
 using StaticArrays
-using Statistics
 
 @reexport using DataFrames
 @reexport using ReferenceFrameRotations
