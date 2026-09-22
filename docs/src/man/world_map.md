@@ -10,28 +10,20 @@ using SatelliteAnalysis
 
 **SatelliteAnalysis.jl** has a built-in algorithm to plot the World Map provided that the
 user loaded **GeoJSON.jl** and one of the **Makie.jl** backends. This empty plot can be
-used to add analysis on top of it. We can create it using the function:
+used to add analysis on top of it. We can create it using the function `plot_world_map`:
 
-```julia
-plot_world_map(; kwargs...) -> Figure, Axis
+```@docs; canonical = false
+plot_world_map
 ```
 
-It returns a **Makie.jl** `Figure` and `Axis` with the World map. The figure is styled with
-the theme obtained from the function `SatelliteAnalysis.makie_theme`, selected by the
-keyword `theme`, which can be `:light` (default) or `:dark`. All other `kwargs...` are
-passed to the function `Figure`.
-
-!!! note
-
-    This function plots the countries' borders in the created figure using the file with the
-    country polygons fetched with the function [`fetch_country_polygons`](@ref). Hence, if
-    this file does not exist, the algorithm tries to download it.
+```@docs; canonical = false
+plot_world_map!
+```
 
 ```@repl world_map
 using GeoJSON, CairoMakie
 
-fig, ax = plot_world_map()
-fig
+fig, ax = plot_world_map();
 ```
 
 ```@setup world_map
