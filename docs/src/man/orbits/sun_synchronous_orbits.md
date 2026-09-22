@@ -207,7 +207,7 @@ df = design_sun_sync_ground_repeating_orbit(
     minimum_altitude = 650e3,
     maximum_altitude = 800e3
 )
-show(df; crop = :none)
+show(df; allcols = true, allrows = true)
 ```
 
 !!! info
