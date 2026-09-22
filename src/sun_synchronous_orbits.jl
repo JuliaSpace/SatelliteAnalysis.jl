@@ -347,6 +347,8 @@ The user can verify some internal information of the solver by turning on the de
 logs:
 
 ```julia-repl
+julia> using Logging
+
 julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
            sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad)
        end
@@ -529,6 +531,8 @@ The user can verify some internal information of the solver by turning on the de
 logs:
 
 ```julia-repl
+julia> using Logging
+
 julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
            sun_sync_orbit_semi_major_axis(98.41064163374567 |> deg2rad)
        end
@@ -778,6 +782,8 @@ The user can verify some internal information of the solver by turning on the de
 logs:
 
 ```julia-repl
+julia> using Logging
+
 julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
            sun_sync_orbit_inclination(7130.982e3)
        end
