@@ -8,72 +8,12 @@ CurrentModule = SatelliteAnalysis
 using SatelliteAnalysis
 ```
 
-We can use the function:
+We can compute the accesses of a satellite to a set of ground facilities using the
+function `ground_facility_accesses`:
 
-```julia
-ground_facility_accesses(orbp, [(WGS84)]; kwargs...) -> DataFrame
+```@docs; canonical = false
+ground_facility_accesses
 ```
-
-to compute the accesses of a satellite with orbit propagator `orbp` (see `Propagators.init`)
-to the ground facilities defined in the vector `[(WGS84)]`. The analysis interval begins in
-the propagator epoch plus `initial_time` and lasts for `duration` [s], where both are
-keywords.
-
-The ground facilities are specified using a vector of tuples with three numbers:
-
-```julia
-Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}
-```
-
-containing the WGS84 position of each ground facility `[(WGS84)]`:
-
-```text
-(latitude [rad], longitude [rad], altitude [m])
-```
-
-Those geodetic information are transformed to an ECEF vector using the function
-`geodetic_to_ecef`.
-
-The following keywords are available:
-
-- `duration::Number`: Duration of the analysis [s].
-    (**Default** = 86400)
-- `f_eci_to_ecef::Function`: Function to convert the orbit propagator position represented
-    in the Earth-centered inertial (ECI) reference frame to the Earth-centered, Earth-fixed
-    (ECEF) reference frame. The signature must be
-
-    `f_eci_to_ecef(r_i::AbstractVector, jd::Number) -> AbstractVector`
-
-    and it must return the position vector `r_i` represented in the ECEF at the instant `jd`
-    [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.
-    (**Default**: `_default_eci_to_ecef`)
-- `initial_time::Number`: Initial time of the analysis after the propagator epoch [s].
-    (**Default** = 0)
-- `minimum_elevation::Number`: Minimum elevation angle for communication between the
-    satellite and the ground facilities [rad].
-    (**Default** = 10°)
-- `reduction::Function`: A function that receives a boolean vector with the visibility
-    between the satellite and each ground facility. It must return a boolean value
-    indicating if the access must be computed or not. This is useful to merge access time
-    between two or more facilities.
-    (**Default** = `v -> |(v...)` *i.e.* compute the access if at least one ground
-    facilities is visible)
-- `step::Number`: The step [s] used to propagate the orbit. Notice that we perform a cross
-    tuning to accurately obtain the access time. However, if an access is lower than the
-    step, it can be neglected.
-    (**Default** = 60)
-- `time_unit::Symbol`: Select the unit in which the duration will be computed. The possible
-    values are:
-    - `:s` for seconds (**Default**);
-    - `:min` for minutes; or
-    - `:h` for hours.
-
-This function returns a `DataFrame` with three columns:
-
-- `access_beginning`: Time of the access beginning [UTC] encoded using `DateTime`.
-- `access_end`: Time of the access end [UTC] encoded using `DateTime`.
-- `duration`: Duration of the access [s].
-  The unit of the column `duration` is stored in the `DataFrame` using metadata.
 
 ## Examples
 
