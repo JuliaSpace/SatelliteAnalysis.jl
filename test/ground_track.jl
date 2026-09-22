@@ -59,6 +59,29 @@
     @test_throws ArgumentError ground_track(orbp; step = 0)
     @test_throws ArgumentError ground_track(orbp; step = -10)
 
+    # == Keywords initial_time and f_eci_to_ecef ===========================================
+
+    # The ground track computed from `initial_time` must be equal to the corresponding part
+    # of the ground track computed from the epoch.
+    gt_ref = ground_track(orbp; step = 500, duration = 3000, add_nans = false)
+    gt_ini = ground_track(
+        orbp; step = 500, duration = 2000, initial_time = 1000, add_nans = false
+    )
+
+    @test length(gt_ini) == 5
+    @test all(gt_ini[k] == gt_ref[k + 2] for k in 1:5)
+
+    # A user-defined conversion from ECI to ECEF must be used. If it is the identity, the
+    # longitude drifts with respect to the default conversion, but the latitude is almost
+    # the same.
+    gt_id = ground_track(
+        orbp; step = 500, duration = 3000, add_nans = false, f_eci_to_ecef = (r, jd) -> r
+    )
+
+    @test length(gt_id) == length(gt_ref)
+    @test all(abs(gt_id[k][1] - gt_ref[k][1]) < 0.01 for k in eachindex(gt_ref))
+    @test !all(abs(gt_id[k][2] - gt_ref[k][2]) < 0.01 for k in eachindex(gt_ref))
+
     # == Passage Separation in Low-Inclination Orbits ======================================
 
     # If the inclination is lower than 45°, the latitude difference between the end of a
