@@ -29,7 +29,7 @@ Considering only terms up to ``J_2``, which is the dominant effect, the RAAN tim
 is:
 
 ```math
-\frac{d\Omega}{dt} = -\frac{2}{3} J_2 \left(\frac{R_0}{p_0}\right)^2 \bar{n} \cos i_0\ ,
+\frac{d\Omega}{dt} = -\frac{3}{2} J_2 \left(\frac{R_0}{p_0}\right)^2 \bar{n} \cos i_0\ ,
 ```
 
 where ``R_0`` is the Earth's Equatorial radius, ``i_0`` is the orbit inclination, ``p_0 =
@@ -54,7 +54,7 @@ Finally, we can design a Sun-synchronous orbit by selecting the semi-major axis 
 inclination that leads to:
 
 ```math
-\frac{d\Omega}{dt} = 0.9856473598947981^\circ / s\ .
+\frac{d\Omega}{dt} = 0.9856473598947981^\circ / \text{day}\ .
 ```
 
 ## Designing Sun-Synchronous Orbits from Angular Velocity
@@ -80,50 +80,16 @@ inclination that leads to a Sun-synchronous orbit by numerically solving the sys
 
 ```math
 \begin{aligned}
-  \frac{d\Omega}{dt}(a_0, i_0) &= 0.9856473598947981^\circ / s\ , \\
-  \bar{n}(a_0, i_0) &= n_d\ .
+  \frac{d\Omega}{dt}(a_0, i_0) &= 0.9856473598947981^\circ / \text{day}\ , \\
+  \omega_o(a_0, i_0) &= n_d\ .
 \end{aligned}
 ```
 
-The function:
+We can use the function `sun_sync_orbit_from_angular_velocity`:
 
-```julia
-sun_sync_orbit_from_angular_velocity(angvel::T1, e::T2 = 0; kwargs...) where {T1 <: Number, T2 <: Number} -> T, T, Bool
+```@docs; canonical = false
+sun_sync_orbit_from_angular_velocity
 ```
-
-computes the Sun-synchronous orbit semi-major axis [m] and inclination [rad] given the
-angular velocity `angvel` [rad / s] and the orbit eccentricity `e` [ ]. If the latter is
-omitted, the orbit is considered circular, _i.e._, `e = 0`.
-
-The algorithm here considers only the perturbation terms up to ``J_2``.
-
-!!! note
-    Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
-    float-pointing number `T`.
-
-The following keywords are available:
-
-- `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
-    (**Default** = 3)
-- `no_warnings::Bool`: If `true`, no warnings will be printed.
-    (**Default** = `false`)
-- `tolerance::Union{Nothing, NTuple{2, Number}}`: Residue tolerances to verify if the
-    numerical method has converged. If it is `nothing`, `(√eps(T), √eps(T))` will be used,
-    where `T` is the internal type for the computations. Notice that the residue function
-    `f₁` unit is [deg / day], whereas the `f₂` unit is [deg / min].
-    (**Default** = 1e-18)
-- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
-    (**Default** = `GM_EARTH`)
-- `J2::Number`: J₂ perturbation term.
-    (**Default** = `EGM_2008_J2`)
-- `R0::Number`: Earth's equatorial radius [m].
-    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
-
-It returns:
-
-- `T`: Semi-major axis [m].
-- `T`: Inclination [rad].
-- `Bool`: `true` if the Newton-Raphson algorithm converged, or `false` otherwise.
 
 ### Example
 
@@ -143,45 +109,14 @@ Given a desired semi-major axis ``a_d``, we can compute the inclination that tur
 into a Sun-synchronous one by solving numerically:
 
 ```math
-\frac{d\Omega}{dt}(a_d, i_0) = 0.9856473598947981^\circ / s\ .
+\frac{d\Omega}{dt}(a_d, i_0) = 0.9856473598947981^\circ / \text{day}\ .
 ```
 
-The function:
+We can use the function `sun_sync_orbit_inclination`:
 
-```julia
-sun_sync_orbit_inclination(a::T1, e::T2 = 0; kwargs...) where {T1 <: Number, T2 <: Number} -> T, Bool
+```@docs; canonical = false
+sun_sync_orbit_inclination
 ```
-
-computes the inclination [rad] of the Sun-synchronous orbit with semi-major axis `a` [m] and
-the eccentricity `e` [ ]. If the latter is omitted, the orbit is considered circular, i.e.,
-`e = 0`.
-
-The algorithm here considers only the perturbation terms up to ``J_2``.
-
-!!! note
-    Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
-    float-pointing number `T`.
-
-The following keywords are available:
-
-- `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
-    (**Default** = 30)
-- `tolerance::Union{Nothing, Number}`: Residue tolerance to verify if the numerical method
-    has converged. If it is `nothing`, `√eps(T)` will be used, where `T` is the internal
-    type for the computations. Notice that the residue unit is [deg / day].
-    (**Default** = nothing)
-- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
-    (**Default** = `GM_EARTH`)
-- `J2::Number`: J₂ perturbation term.
-    (**Default** = `EGM_2008_J2`)
-- `R0::Number`: Earth's equatorial radius [m].
-    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
-
-It returns:
-
-- `T`: Inclination [rad] of the Sun-synchronous orbit with semi-major axis `a` and
-    eccentricity `e`.
-- `Bool`: `true` if the Newton-Raphson algorithm converged, or `false` otherwise.
 
 ### Example
 
@@ -200,46 +135,14 @@ Given a desired inclination ``i_d``, we can compute the semi-major axis that tur
 into a Sun-synchronous one by solving numerically:
 
 ```math
-\frac{d\Omega}{dt}(a_0, i_d) = 0.9856473598947981^\circ / s\ .
+\frac{d\Omega}{dt}(a_0, i_d) = 0.9856473598947981^\circ / \text{day}\ .
 ```
 
-The function:
+We can use the function `sun_sync_orbit_semi_major_axis`:
 
-```julia
-sun_sync_orbit_semi_major_axis(i::T1, e::T2 = 0; kwargs...) where {T1 <: Number, T2 <: Number} -> T, Bool
-
+```@docs; canonical = false
+sun_sync_orbit_semi_major_axis
 ```
-
-compute the semi-major axis [m] of the Sun-synchronous orbit with inclination `i` [rad] and
-the eccentricity `e` [ ]. If the latter is omitted, the orbit is considered circular, i.e.,
-`e = 0`.
-
-The algorithm here considers only the perturbation terms up to ``J_2``.
-
-!!! note
-    Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
-    float-pointing number `T`.
-
-The following keywords are available:
-
-- `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
-    (**Default** = 30)
-- `tolerance::Union{Nothing, Number}`: Residue tolerance to verify if the numerical method
-    has converged. If it is `nothing`, `√eps(T)` will be used, where `T` is the internal
-    type for the computations. Notice that the residue unit is [deg / day].
-    (**Default** = nothing)
-- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
-    (**Default** = `GM_EARTH`)
-- `J2::Number`: J₂ perturbation term.
-    (**Default** = `EGM_2008_J2`)
-- `R0::Number`: Earth's equatorial radius [m].
-    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
-
-It returns:
-
-- `T`: Semi-major axis [m] of the Sun-synchronous orbit with inclination `i` and
-    eccentricity `e`.
-- `Bool`: `true` if the Newton-Raphson algorithm converged, or `false` otherwise.
 
 ### Example
 
@@ -264,7 +167,7 @@ R_d = I + \frac{N}{D}\ ,
 
 where ``R_d`` is the number of revolutions per day, and ``I, N, D \in \mathbb{N}``. If the
 greatest common divisor of ``N`` and ``D`` is one, the ground track of such an orbit repeats
-after ``NI + D`` revolutions, or ``D`` solar days.
+after ``ID + N`` revolutions, or ``D`` solar days.
 
 If an orbit has ``R_d`` revolutions per solar day, we can compute its angular velocity as
 follows:
@@ -278,76 +181,19 @@ system:
 
 ```math
 \begin{aligned}
-  \frac{d\Omega}{dt}(a_0, i_0) &= 0.9856473598947981^\circ / s\ , \\
-  \bar{n}(a_0, i_0) &= R_d \frac{2\pi}{86400}\ ,
+  \frac{d\Omega}{dt}(a_0, i_0) &= 0.9856473598947981^\circ / \text{day}\ , \\
+  \omega_o(a_0, i_0) &= R_d \frac{2\pi}{86400}\ ,
 \end{aligned}
 ```
 
 using the same method we described in the Section [Designing Sun-Synchronous Orbits from
 Angular Velocity](@ref).
 
-The function:
+We can use the function `design_sun_sync_ground_repeating_orbit`:
 
-```julia
-design_sun_sync_ground_repeating_orbit(minimum_repetition::Int, maximum_repetition::Int; kwargs...) -> DataFrame
+```@docs; canonical = false
+design_sun_sync_ground_repeating_orbit
 ```
-
-lists all the Sun-synchronous, ground-repeating orbits whose repetition period is
-in the interval `[minimum_repetition, maximum_repetition]` days.
-
-This function returns a `DataFrame` with the following columns:
-
-- `semi_major_axis`: Orbit semi-major axis.
-- `altitude`: Orbit altitude above the Equator `(a - R0)`.
-- `inclination`: Orbit inclination.
-- `period`: Orbital period.
-- `revs_per_day`: If the keyword `pretty_revs_per_day` is `false`, this column contains
-    `Tuple`s with the integer and rational parts of the number of revolutions per day.
-    Otherwise, it contains a string with a pretty representation of the number of revolutions
-    per day.
-- `adjacent_gt_distance`: Distance between two adjacent ground tracks at Equator.
-- `adjacent_gt_angle`: Angle between two adjacent ground tracks at Equator measured from the
-    satellite position.
-
-!!! note
-
-    The units of those columns depend on the keywords.
-
-The following keywords are available:
-
-- `angle_unit::Symbol`: Unit for all the angles in the output `DataFrame`.  It can be `:deg`
-    for degrees or `:rad` for radians.
-    (**Default**: `:deg`)
-- `distance_unit::Symbol`: The unit for all the distances in the output `DataFrame`. It can
-    be `:m` for meters or `:km` for kilometers.
-    (**Default**: `:km`)
-- `eccentricity::Number`: Orbit eccentricity.
-    (**Default**: 0)
-- `int_rev_per_day::Tuple`: `Tuple` with the integer parts of the number of revolutions per
-    day to be analyzed.
-    (**Default** = `(13, 14, 15, 16, 17)`)
-- `pretty_revs_per_day::Bool`: If `true`, the column with the revolutions per day will be
-    converted to a string with a pretty representation of this information.
-    (**Default**: `true`)
-- `maximum_altitude::Union{Nothing, Number}`: Maximum altitude [m] of the orbits in the
-    output `DataFrame`. If it is `nothing`, the algorithm will not apply a higher limit to
-    the orbital altitude.
-    (**Default** = `nothing`)
-- `minimum_altitude::Union{Nothing, Number}`: Minimum altitude [m] of the orbits in the
-    output `DataFrame`. If it is `nothing`, the algorithm will not apply a lower limit to
-    the orbital altitude.
-    (**Default** = `nothing`)
-- `time_unit::Symbol`: Unit for all the time values in the output `DataFrame`.  It can be
-    `:s` for seconds, `:min` for minutes, or `:h` for hours.
-    (**Default** = `:h`)
-- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
-    (**Default** = `GM_EARTH`)
-- `J2::Number`: J₂ perturbation term.
-    (**Default** = `EGM_2008_J2`)
-- `R0::Number`: Earth's equatorial radius [m].
-    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
-- `we::Number`: Earth's angular speed [rad / s].
-    (**Default**: `EARTH_ANGULAR_SPEED`)
 
 ### Example
 
