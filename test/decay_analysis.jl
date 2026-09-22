@@ -182,7 +182,10 @@ end
 
     # == Orbit State Vector ================================================================
 
-    # A state vector is treated as an osculating state by default.
+    # A state vector is treated as an osculating state by default. Notice that the elements
+    # obtained from the state vector differ from `orb` by round-off errors, which can lead to
+    # a slightly different integration path near the reentry. Hence, we verify the initial
+    # mean elements tightly, and the lifetime with the same tolerance of the other tests.
     sv = convert(OrbitStateVector, orb)
 
     df_sv = decay_analysis(
@@ -193,8 +196,17 @@ end
         space_indices       = si_const
     )
 
+    ke_sv  = df_sv[begin, :mean_elements]
+    ke_osc = df_osc[begin, :mean_elements]
+
+    @test ke_sv.a ≈ ke_osc.a atol = 1e-4
+    @test ke_sv.e ≈ ke_osc.e atol = 1e-12
+    @test ke_sv.i ≈ ke_osc.i atol = 1e-12
+    @test ke_sv.Ω ≈ ke_osc.Ω atol = 1e-12
+    @test ke_sv.ω ≈ ke_osc.ω atol = 1e-12
+
     lifetime_sv = datetime2julian(df_sv[end, :date]) - jd₀
-    @test lifetime_sv ≈ lifetime_osc rtol = 1e-6
+    @test lifetime_sv ≈ lifetime_osc rtol = 1e-3
 
     df_sv = decay_analysis(
         sv;
@@ -205,8 +217,16 @@ end
         input_type          = :mean
     )
 
+    ke_sv = df_sv[begin, :mean_elements]
+
+    @test ke_sv.a ≈ orb.a atol = 1e-4
+    @test ke_sv.e ≈ orb.e atol = 1e-12
+    @test ke_sv.i ≈ orb.i atol = 1e-12
+    @test ke_sv.Ω ≈ orb.Ω atol = 1e-12
+    @test ke_sv.ω ≈ orb.ω atol = 1e-12
+
     lifetime_sv = datetime2julian(df_sv[end, :date]) - jd₀
-    @test lifetime_sv ≈ lifetime rtol = 1e-6
+    @test lifetime_sv ≈ lifetime rtol = 1e-3
 
     # Inputs with an invalid type must throw an error that describes the valid call.
     @test_throws "the valid call is" decay_analysis(
