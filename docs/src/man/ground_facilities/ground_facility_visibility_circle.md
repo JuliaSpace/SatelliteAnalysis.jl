@@ -8,30 +8,12 @@ CurrentModule = SatelliteAnalysis
 using SatelliteAnalysis
 ```
 
-We can use the function:
+We can compute the visibility circle of a ground facility using the function
+`ground_facility_visibility_circle`:
 
-```julia
-ground_facility_visibility_circle(gf_wgs84::Tuple, satellite_position_norm::Number; kwargs...) -> Vector{NTuple{2, Float64}}
+```@docs; canonical = false
+ground_facility_visibility_circle
 ```
-
-to compute the ground facility visibility circle from the position `gf_wgs84` (WGS84) to a
-satellite in which its distance from the Earth's center is `satellite_position_norm` [m]. It
-returns a vector of `NTuple{2, Float64}` where the first element is the latitude [rad] and
-the second is the longitude [rad] of each point in the visibility circle.
-
-The ground facility is specified using a tuple with its WGS84 position:
-
-```text
-(latitude [rad], longitude [rad], altitude [m])
-```
-
-The following keywords are available:
-
-- `azimuth_step::Number`: The step in the azimuth used to compute the visibility circle.
-    (**Default**: `0.1 |> deg2rad`)
-- `minimum_elevation::Number`: Minimum elevation angle for communication between the
-    satellite and the ground facility [rad].
-    (**Default**: `10 |> deg2rad`)
 
 !!! note
 
@@ -121,51 +103,13 @@ together with a [Makie.jl](https://docs.makie.org/stable/) backend, an extension
 and adds the possibility to plot the ground facility visibility circle. In this case, the
 following functions are available:
 
-```julia
-plot_ground_facility_visibility_circles(vgf_vc::Vector{Vector{NTuple{2, Number}}}; kwargs...) -> Figure, Axis
+```@docs; canonical = false
+plot_ground_facility_visibility_circles
 ```
 
-It plots the ground facility visibility circles in the vector `vgf_vc`, where each element
-is computed using the function [`ground_facility_visibility_circle`](@ref). It returns the
-objects `Figure` and `Axis` used to plot the data. For more information, please refer to
-[Makie.jl](https://docs.makie.org/stable/) documentation.
-
-The following keywords are available:
-
-- `ground_facility_names::Union{Nothing, Vector{String}}`: The user can provide a vector of
-    `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
-    parameter is `nothing`, no ground facility name is added to the figure.
-    (**Default** = `nothing`)
-- `theme::Symbol`: Theme variant used to style the figure, applied locally through the
-    function `SatelliteAnalysis.makie_theme`. It can be `:light` or `:dark`.
-    (**Default**: `:light`)
-
-All other `kwargs...` are passed to the function [`plot_world_map`](@ref).
-
-!!! note
-
-    This function plots the countries' borders in the created figure using the file with the
-    country polygons fetched with the function [`fetch_country_polygons`](@ref). Hence, if
-    this file does not exist, the algorithm tries to download it.
-
-```julia
-plot_ground_facility_visibility_circles!(ax::Axis, vgf_vc::Vector{Vector{NTuple{2, Number}}}; kwargs...) -> Nothing
+```@docs; canonical = false
+plot_ground_facility_visibility_circles!
 ```
-
-It plots in the [Makie.jl](https://docs.makie.org/stable/) axis `ax` the ground facility
-visibility circles in the vector `vgf_vc`, where each element is computed using the function
-[`ground_facility_visibility_circle`](@ref).
-
-The following keywords are available:
-
-- `ground_facility_names::Union{Nothing, Vector{String}}`: The user can provide a vector of
-    `String`s with the length of `vgf_vc` to be plotted with the visibility circles. If this
-    parameter is `nothing`, no ground facility name is added to the figure.
-    (**Default** = `nothing`)
-
-The user can use this function to plot the ground facility visibility circle on top of an
-existing figure. Since it draws into an existing axis, it does not apply the theme provided
-by the function `SatelliteAnalysis.makie_theme`.
 
 ### Example
 
