@@ -100,9 +100,8 @@ function beta_angle(orb::KeplerianElements, Δjd::Number; perturbation::Symbol =
 
     # Compute the unit vector aligned with the orbit normal `n` represented in the TOD
     # reference frame.
-    sin_i, cos_i = sincos(orb.i)
-    sin_Ω, cos_Ω = sincos(Ω)
-    n̄_tod = @SVector [sin_i * sin_Ω, -sin_i * cos_Ω, cos_i]
+    D_tod_o = angle_to_dcm(-orb.i, -Ω, :XZ)
+    n̄_tod   = D_tod_o * @SVector([0, 0, 1])
 
     # Compute the Sun position at `jd` represented in the TOD reference frame.
     s_mod     = sun_position_mod(jd)
