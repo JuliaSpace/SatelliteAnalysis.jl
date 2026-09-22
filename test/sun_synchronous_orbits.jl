@@ -215,6 +215,16 @@ end
     ))
     @test c == false
 
+    # A loose tolerance must lead to a less accurate result without warnings.
+    a_ref, i_ref, ~ = sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad)
+    a, i, c = @test_logs sun_sync_orbit_from_angular_velocity(
+        0.06 |> deg2rad; tolerance = (1, 1)
+    )
+    @test c == true
+    @test a ≈ a_ref rtol = 1e-2
+    @test i ≈ i_ref rtol = 1e-2
+    @test !isapprox(a, a_ref; rtol = 1e-12)
+
     # The keyword `no_warnings` must suppress all the warnings.
     a, i, c = @test_logs sun_sync_orbit_from_angular_velocity(
         0.06 |> deg2rad; max_iterations = 3, no_warnings = true
@@ -306,6 +316,13 @@ end
     ))
     @test c == false
 
+    # A loose tolerance must lead to a less accurate result without warnings.
+    i_ref, ~ = sun_sync_orbit_inclination(7130.982e3, 0.05)
+    i, c = @test_logs sun_sync_orbit_inclination(7130.982e3, 0.05; tolerance = 1e-2)
+    @test c == true
+    @test i ≈ i_ref rtol = 1e-3
+    @test !isapprox(i, i_ref; rtol = 1e-12)
+
     # The keyword `no_warnings` must suppress the warning.
     a, c = @test_logs sun_sync_orbit_inclination(
         7130.982e3, 0.05; max_iterations = 2, no_warnings = true
@@ -357,6 +374,15 @@ end
         sun_sync_orbit_semi_major_axis(98.410 |> deg2rad, 0.05; max_iterations = 2)
     ))
     @test c == false
+
+    # A loose tolerance must lead to a less accurate result without warnings.
+    a_ref, ~ = sun_sync_orbit_semi_major_axis(98.410 |> deg2rad, 0.05)
+    a, c = @test_logs sun_sync_orbit_semi_major_axis(
+        98.410 |> deg2rad, 0.05; tolerance = 1e-2
+    )
+    @test c == true
+    @test a ≈ a_ref rtol = 1e-3
+    @test !isapprox(a, a_ref; rtol = 1e-12)
 
     # The keyword `no_warnings` must suppress all the warnings.
     a, c = @test_logs sun_sync_orbit_semi_major_axis(
