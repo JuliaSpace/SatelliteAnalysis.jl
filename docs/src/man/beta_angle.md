@@ -20,30 +20,11 @@ receives in a particular orbit.
 </div>
 ```
 
-We can compute the beta angle of an orbit using the function:
+We can compute the beta angle of an orbit using the function `beta_angle`:
 
-```julia
-beta_angle(orb::KeplerianElements{Tepoch, T}, Δjd::Number; kwargs...) -> Float64
+```@docs; canonical = false
+beta_angle
 ```
-
-This function computes the beta angle [rad] for the orbit `orb` after `Δjd` days from its
-epoch.
-
-The algorithm was obtained from **[1]**.
-
-!!! note
-    It is expected that the input elements are represented in the TOD reference frame. If it
-    is not the case, they can be converted using the function `orb_eci_to_eci` of
-    **SatelliteToolboxTransformations.jl**.
-
-The following keywords are available:
-
-- `perturbation::Symbol`: Select the perturbation terms that must be used when propagating
-  the right ascencion of the ascending node. The possible values are:
-    - `:J0`: Consider a Keplerian orbit.
-    - `:J2`: Consider the perturbation terms up to J₂.
-    - `:J4`: Consider the perturbation terms J₂, J₂², and J₄.
-    (**Default**: `:J2`)
 
 ## Examples
 
