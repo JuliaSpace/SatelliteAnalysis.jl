@@ -19,7 +19,7 @@ the algorithm stops.
 
 !!! note
 
-    The output type `T` is obtained by the type of `(t₁ + t₂) / 2`.
+    The output type `T` is obtained by the type of `(t₀ + t₁) / 2`.
 
 # Examples
 

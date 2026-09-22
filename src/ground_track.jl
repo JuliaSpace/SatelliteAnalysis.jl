@@ -19,7 +19,7 @@ ground track.
 - `add_nans::Bool`: If `true`, we add `NaN` if there is a discontinuity in the ground track
     to improve plotting.
     (**Default**: true)
-- `duration::Number`: Duration of the analysis.
+- `duration::Number`: Duration of the analysis [s].
     (**Default**: 86400)
 - `initial_time::Number`: Initial time regarding the orbit propagator `orbp` epoch [s].
     (**Default**: 0)
@@ -238,7 +238,7 @@ end
 
 """
     ground_track_inclination(a::Number, e::Number, i::Number; kwargs...) -> T
-    ground_track_inclination(orb::Orbit{Tepoch, T}); kwargs...) where {Tepoch <: Number, T <: Number} -> T
+    ground_track_inclination(orb::Orbit{Tepoch, T}; kwargs...) where {Tepoch <: Number, T <: Number} -> T
 
 Compute the ground track inclination at the Equator [rad] in an orbit with semi-major axis
 `a` [m], eccentricity `e` [ ], and inclination `i` [rad]. The orbit can also be specified by
@@ -315,14 +315,14 @@ julia> orb = KeplerianElements(
            π / 2,
            0
        )
-KeplerianElements{Float64, Float64}:
-           Epoch :    2.45922e6 (2021-01-01T00:00:00)
- Semi-major axis : 7130.98     km
-    Eccentricity :    0.001111
-     Inclination :   98.41     °
-            RAAN :   78.4021   °
- Arg. of Perigee :   90.0      °
-    True Anomaly :    0.0      °
+KeplerianElements{TrueAnomaly, Float64, Float64}:
+  Epoch             : 2.45922e6 (2021-01-01T00:00:00)
+  Semi-Major Axis   : 7130.982 km
+  Eccentricity      : 0.001111
+  Inclination       : 98.41°
+  RA of Asc. Node   : 78.40205742°
+  Arg. of Periapsis : 90.0°
+  True Anomaly      : 0.0°
 
 julia> ground_track_inclination(orb) |> rad2deg
 102.30052101658998

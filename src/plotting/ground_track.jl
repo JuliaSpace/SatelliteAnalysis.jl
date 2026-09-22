@@ -59,14 +59,14 @@ julia> orb = KeplerianElements(
            π / 2,
            0
        )
-KeplerianElements{Float64, Float64}:
-           Epoch :    2.45922e6 (2021-01-01T00:00:00)
- Semi-major axis : 7130.98     km
-    Eccentricity :    0.001111
-     Inclination :   98.405    °
-            RAAN :   78.4021   °
- Arg. of Perigee :   90.0      °
-    True Anomaly :    0.0      °
+KeplerianElements{TrueAnomaly, Float64, Float64}:
+  Epoch             : 2.45922e6 (2021-01-01T00:00:00)
+  Semi-Major Axis   : 7130.982 km
+  Eccentricity      : 0.001111
+  Inclination       : 98.405°
+  RA of Asc. Node   : 78.40205742°
+  Arg. of Periapsis : 90.0°
+  True Anomaly      : 0.0°
 
 julia> orbp = Propagators.init(Val(:J2), orb)
 OrbitPropagatorJ2{Float64, Float64}:
@@ -132,14 +132,14 @@ julia> orb = KeplerianElements(
            π / 2,
            0
        )
-KeplerianElements{Float64, Float64}:
-           Epoch :    2.45922e6 (2021-01-01T00:00:00)
- Semi-major axis : 7130.98     km
-    Eccentricity :    0.001111
-     Inclination :   98.405    °
-            RAAN :   78.4021   °
- Arg. of Perigee :   90.0      °
-    True Anomaly :    0.0      °
+KeplerianElements{TrueAnomaly, Float64, Float64}:
+  Epoch             : 2.45922e6 (2021-01-01T00:00:00)
+  Semi-Major Axis   : 7130.982 km
+  Eccentricity      : 0.001111
+  Inclination       : 98.405°
+  RA of Asc. Node   : 78.40205742°
+  Arg. of Periapsis : 90.0°
+  True Anomaly      : 0.0°
 
 julia> orbp = Propagators.init(Val(:J2), orb)
 OrbitPropagatorJ2{Float64, Float64}:

@@ -37,7 +37,8 @@ each day.
 
 # Returns
 
-- `DataFrame`: The function returns a `DataFrame` with three columns:
+- `DataFrame`: The function returns a `DataFrame` with four columns:
+    - `date`: Date of the analysis [UTC] encoded using `Date`.
     - `sunlight`: Total sunlight time per orbit at each day [`time_unit`].
     - `penumbra`: Total penumbra time per orbit at each day [`time_unit`].
     - `umbra`: Total umbra time per orbit at each day [`time_unit`].

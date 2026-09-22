@@ -252,7 +252,7 @@ The algorithm here considers only the perturbation terms up to J₂.
 
 # Keywords
 
-- `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
+- `max_iterations::Integer`: Maximum number of iterations in the Newton-Raphson method.
     (**Default** = 30)
 - `no_warnings::Bool`: If `true`, no warnings will be printed.
     (**Default** = `false`)
@@ -357,7 +357,7 @@ julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
 │   Residues :
 │     f₁ = 1.9706966881670205 ° / day
 │     f₂ = 0.004266929859281898 ° / min
-└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:394
+└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 ┌ Debug: Iteration #2
 │   Estimation :
 │     a  = 7128.856266265137 km
@@ -365,7 +365,7 @@ julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
 │   Residues :
 │     f₁ = -0.0073785260175135425 ° / day
 │     f₂ = -0.0016144146737784304 ° / min
-└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:394
+└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 ┌ Debug: Iteration #3
 │   Estimation :
 │     a  = 7130.983594940013 km
@@ -373,7 +373,7 @@ julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
 │   Residues :
 │     f₁ = -6.549620124363109e-6 ° / day
 │     f₂ = -2.6066638092459016e-7 ° / min
-└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:394
+└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 ┌ Debug: Iteration #4
 │   Estimation :
 │     a  = 7130.983932846698 km
@@ -381,7 +381,7 @@ julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
 │   Residues :
 │     f₁ = 8.290634845309341e-11 ° / day
 │     f₂ = -2.2648549702353193e-14 ° / min
-└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:394
+└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 (7.130983932846816e6, 1.7175898375139984, true)
 ```
 
@@ -455,7 +455,7 @@ The algorithm here considers only the perturbation terms up to J₂.
 
 # Keywords
 
-- `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
+- `max_iterations::Integer`: Maximum number of iterations in the Newton-Raphson method.
     (**Default** = 30)
 - `no_warnings::Bool`: If `true`, no warnings will be printed.
     (**Default** = `false`)
@@ -535,15 +535,15 @@ julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
 ┌ Debug: Iteration #1
 │   Estimation : 7130.981820550704 km
 │   Residue    : 0.0005989504045072862 ° / day
-└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:559
+└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 ┌ Debug: Iteration #2
 │   Estimation : 7130.982250931794 km
 │   Residue    : -2.081337784770338e-7 ° / day
-└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:559
+└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 ┌ Debug: Iteration #3
 │   Estimation : 7130.982250931845 km
 │   Residue    : -2.4312691616901194e-14 ° / day
-└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:559
+└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 (7.130982250931845e6, true)
 ```
 
@@ -704,7 +704,7 @@ The algorithm here considers only the perturbation terms up to J₂.
 
 # Keywords
 
-- `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
+- `max_iterations::Integer`: Maximum number of iterations in the Newton-Raphson method.
     (**Default** = 30)
 - `no_warnings::Bool`: If `true`, no warnings will be printed.
     (**Default** = `false`)
@@ -777,18 +777,18 @@ julia> sun_sync_orbit_inclination(7130.982e3, 0.001111)
 The user can verify some internal information of the solver by turning on the debugging
 logs:
 
-```julia
+```julia-repl
 julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
            sun_sync_orbit_inclination(7130.982e3)
        end
 ┌ Debug: Iteration #1
 │   Estimation : 98.41064059121584 °
 │   Residue    : 0.0005992085524891833 ° / day
-└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:686
+└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 ┌ Debug: Iteration #2
 │   Estimation : 98.41064059082426 °
 │   Residue    : -4.556321986370904e-11 ° / day
-└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl:686
+└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 (1.7175896973066611, true)
 ```
 
@@ -948,7 +948,7 @@ absolute value of the returned inclination cosine is not larger than 1.
 
 # Keywords
 
-- `max_iterations::Number`: Maximum number of iterations in the Newton-Raphson method.
+- `max_iterations::Integer`: Maximum number of iterations in the Newton-Raphson method.
 - `tolerance::Union{Nothing, NTuple{2, Number}}`: Residue tolerances to verify if the
     numerical method has converged. If it is `nothing`, `(√eps(T), √eps(T))` will be used.
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].

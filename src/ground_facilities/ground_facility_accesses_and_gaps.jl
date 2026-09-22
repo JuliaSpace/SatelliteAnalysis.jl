@@ -49,7 +49,7 @@ Those geodetic information are transformed to an ECEF vector using the function
 - `minimum_elevation::Number`: Minimum elevation angle for communication between the
     satellite and the ground facilities [rad].
     (**Default** = 10°)
-- `num_chunks::Number`: Number of chunks the algorithm will divide the time vector to
+- `num_chunks::Integer`: Number of chunks the algorithm will divide the time vector to
     compute the accesses.
     (**Default** = `Threads.nthreads()`)
 - `reduction::Function`: A function that receives a boolean vector with the visibility
@@ -73,7 +73,7 @@ Those geodetic information are transformed to an ECEF vector using the function
 - `DataFrame`: The function returns a `DataFrame` with three columns:
     - `access_beginning`: Time of the access beginning [UTC] encoded using `DateTime`.
     - `access_end`: Time of the access end [UTC] encoded using `DateTime`.
-    - `duration`: Duration of the access [s].
+    - `duration`: Duration of the access [`time_unit`].
     The unit of the column `duration` is stored in the `DataFrame` using metadata.
 
 # Extended Help
@@ -270,7 +270,7 @@ lasts for `duration` [s].
 - `DataFrame`: The function returns a `DataFrame` with three columns:
     - `gap_beginning`: Time of the gap beginning [UTC] encoded using `DateTime`.
     - `gap_end`: Time of the gap end [UTC] encoded using `DateTime`.
-    - `duration`: Duration of the gap [s].
+    - `duration`: Duration of the gap [`time_unit`].
     The unit of the column `duration` is stored in the `DataFrame` using metadata.
 
 # Extended Help

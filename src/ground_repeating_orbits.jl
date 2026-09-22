@@ -13,11 +13,11 @@ export ground_repeating_orbit_adjacent_track_angle
 export ground_repeating_orbit_adjacent_track_distance
 
 """
-    ground_repeating_orbit_adjacent_track_angle(a::T1, e::T2, i::T3, orbit_cycle::Integer; kwargs...) where {T1 <: Number, T2 <: Number, T3 <: Number}
+    ground_repeating_orbit_adjacent_track_angle(a::T1, e::T2, i::T3, orbit_cycle::Integer; kwargs...) where {T1 <: Number, T2 <: Number, T3 <: Number} -> T
 
 Compute the adjacent track angle [rad] at Equator in a ground repeating orbit measured from
 the satellite position. The orbit is described by its semi-major axis `a` [m], eccentricity
-[ ], inclination `i` [rad], and orbit cycle `orbit_cycle` [day].
+`e` [ ], inclination `i` [rad], and orbit cycle `orbit_cycle` [day].
 
 !!! warning
 

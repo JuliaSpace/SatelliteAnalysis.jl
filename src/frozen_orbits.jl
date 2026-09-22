@@ -46,10 +46,10 @@ in **[1]**.
     will automatically fetch and load the EGM96 gravity model at the first call, keeping it
     in memory for the next ones.
     (**Default** = `nothing`)
-- `max_degree`: Maximum gravity model degree used to compute the frozen eccentricity. If it
-    is equal to or lower than 0, the maximum degree in `grav_model` will be used. Otherwise,
-    if it is lower than 3 or higher than the `grav_model` maximum degree, it will be clamped
-    accordingly.
+- `max_degree::Int`: Maximum gravity model degree used to compute the frozen eccentricity.
+    If it is equal to or lower than 0, the maximum degree in `gravity_model` will be used.
+    Otherwise, if it is lower than 3 or higher than the `gravity_model` maximum degree, it
+    will be clamped accordingly.
     (**Default** = 53)
 
 # References
@@ -263,7 +263,7 @@ function _F_and_∂F_l0p(l::Integer, p::Integer, sin_i::BigFloat, cos_i::BigFloa
     sin²_i = sin_i * sin_i
 
     # `k_t` is the summation term of `F_l0p(i)` for a specific `t`. We will compute those
-    # terms interactively. The equation for `k_t` is:
+    # terms iteratively. The equation for `k_t` is:
     #
     #                              (2l - 2t)!
     #  k_t =  ───────────────────────────────────────────────────── ⋅ sin(i)^(l - 2t) ⋅ (-1)^{p - t - k} .
@@ -271,11 +271,11 @@ function _F_and_∂F_l0p(l::Integer, p::Integer, sin_i::BigFloat, cos_i::BigFloa
     #
     # Thus, if we divide `k_t` / `k_{t - 1}` we get:
     #
-    #    k_t         4 ⋅ (p - t + 1) ⋅ (l - p - t + 1)
+    #    k_t         2 ⋅ (p - t + 1) ⋅ (l - p - t + 1)
     #  ───────── = - ───────────────────────────────── .
     #  k_{t - 1}       t ⋅ (2l - 2t + 1) ⋅ sin(i)^2
     #
-    #  Finally, we can compute `k_t` interactively using:
+    #  Finally, we can compute `k_t` iteratively using:
     #
     #          2 ⋅ (p - t + 1) ⋅ (l - p - t + 1)
     #  k_t = - ───────────────────────────────── ⋅ k_{t - 1} ,

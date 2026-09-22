@@ -12,9 +12,10 @@
 export beta_angle
 
 """
-    beta_angle(orb::KeplerianElements{Tepoch, T}, Δjd::Number; kwargs...) -> Float64
+    beta_angle(orb::KeplerianElements, Δjd::Number; kwargs...) -> T
 
-Compute the beta angle [rad] for the orbit `orb` after `Δjd` days from its epoch.
+Compute the beta angle [rad] for the orbit `orb` after `Δjd` days from its epoch. The
+output type `T` is obtained by promoting the types of the orbit elements and `Δjd`.
 
 The algorithm was obtained from **[1]**.
 
@@ -103,7 +104,7 @@ function beta_angle(orb::KeplerianElements, Δjd::Number; perturbation::Symbol =
     sin_Ω, cos_Ω = sincos(Ω)
     n̄_tod = @SVector [sin_i * sin_Ω, -sin_i * cos_Ω, cos_i]
 
-    # Compute the Sun position at noon (UT) represented in the TOD reference frame.
+    # Compute the Sun position at `jd` represented in the TOD reference frame.
     s_mod     = sun_position_mod(jd)
     D_tod_mod = r_eci_to_eci(MOD(), jd, TOD(), jd)
     s̄_tod     = D_tod_mod * s_mod / norm(s_mod)

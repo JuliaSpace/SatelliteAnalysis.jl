@@ -14,8 +14,8 @@ export is_ground_facility_visible
 
 Check if the satellite with position vector `sat_r_e` (ECEF) is inside the visibility circle
 of a ground facility with latitude `gf_lat` [rad], longitude `gf_lon` [rad], altitude `gf_h`
-(WGS-84) or ECEF position `gf_r_e` [m]. The algorithm considers that the ground station has
-visibility to the satellite if its elevation angle is larger than `θ` [rad].
+[m] (WGS-84) or ECEF position `gf_r_e` [m]. The algorithm considers that the ground station
+has visibility to the satellite if its elevation angle is larger than `θ` [rad].
 
 The user can also pass the satellite position represented in the NED (North-East-Down)
 reference frame `sat_r_ned` [m] at the ground station location, which increases the
