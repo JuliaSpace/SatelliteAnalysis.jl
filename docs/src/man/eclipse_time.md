@@ -12,40 +12,12 @@ The eclipse time is the period the satellite does not receive sunlight due to th
 shadow. This information is paramount for mission design since it directly interferes in the
 power and thermal subsystems.
 
-We can compute the eclipse time of a satellite using the function:
+We can compute the eclipse time of a satellite using the function
+`eclipse_time_summary`:
 
-```julia
-eclipse_time_summary(orbp::OrbitPropagator; kwargs...) -> DataFrame
+```@docs; canonical = false
+eclipse_time_summary
 ```
-
-This function computes the eclipse time summary for the orbit propagator `orbp`. The summary
-is computed as the total time the object stays in the sunlight, penumbra, and umbra regions
-per orbit at each day. The algorithm was adapted from **[1]**.
-
-The following keywords are available:
-
-- `num_days::Number`: Number of days in which the analysis will be performed.
-  (**Default** = 365)
-- `step::Union{Nothing, Number}`: The step [s] in which the propagation will occur. Notice
-    that this function has a crossing estimation to accurately estimate the transition
-    between the regions, including those entirely inside one step, such as a penumbra
-    passage between the sunlight and the umbra. However, if this step is very large, we may
-    miss a region if the lighting condition is the same in two consecutive instants. If it
-    is `nothing`, it will be selected as the time in which the mean anomaly advances 0.5°.
-    (**Default** = `nothing`)
-- `time_unit::Symbol`: Select the unit in which the results will be generated. The possible
-  values are:
-    - `:s` for seconds (**Default**);
-    - `:min` for minutes; or
-    - `:h` for hours.
-
-The function returns a `DataFrame` with three columns:
-
-- `sunlight`: Total sunlight time per orbit at each day [`time_unit`].
-- `penumbra`: Total penumbra time per orbit at each day [`time_unit`].
-- `umbra`: Total umbra time per orbit at each day [`time_unit`].
-
-The unit of each column is stored in the `DataFrame` using metadata.
 
 !!! note
 
