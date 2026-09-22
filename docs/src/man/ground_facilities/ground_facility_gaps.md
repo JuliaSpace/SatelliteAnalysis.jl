@@ -8,25 +8,12 @@ CurrentModule = SatelliteAnalysis
 using SatelliteAnalysis
 ```
 
-We can use the function:
+We can compute the gaps between the accesses of a satellite to a set of ground facilities
+using the function `ground_facility_gaps` (see also [Ground Facility Accesses](@ref)):
 
-```julia
-ground_facility_gaps(orbp, args...; duration::Number = 86400, initial_time::Number = 0, kwargs...) -> DataFrame
+```@docs; canonical = false
+ground_facility_gaps
 ```
-
-to compute the gaps between the accesses of ground facilities. The arguments and keywords
-are the same as the ones used in the function [`ground_facility_accesses`](@ref) (see
-[Ground Facility Accesses](@ref)).
-
-Notice that the gap analysis starts in the orbit propagator epoch plus `initial_time` and
-lasts for `duration` [s].
-
-This function returns a `DataFrame` with three columns:
-
-- `access_beginning`: Time of the access beginning [UTC] encoded using `DateTime`.
-- `access_end`: Time of the access end [UTC] encoded using `DateTime`.
-- `duration`: Duration of the access [s].
-  The unit of the column `duration` is stored in the `DataFrame` using metadata.
 
 ## Examples
 
