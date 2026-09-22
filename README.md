@@ -32,11 +32,11 @@ extension that is loaded automatically when a Makie backend is available:
 using CairoMakie   # Or GLMakie, WGLMakie, etc.
 using SatelliteAnalysis
 
-set_theme!(makie_theme(:dark))   # Use makie_theme() for the light variant.
+set_theme!(SatelliteAnalysis.makie_theme(:dark))   # Use `makie_theme()` for light.
 scatter(rand(100))
 ```
 
-The function `makie_palette` returns the categorical palette used by the theme, and the
+The function `SatelliteAnalysis.makie_palette` returns the categorical palette used by the theme, and the
 keywords `fontscale` and `mono_ticklabels` adjust the font sizes and the tick label font.
 See the [documentation][docs-makie-url] for a gallery and the complete API reference.
 
