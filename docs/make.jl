@@ -22,7 +22,10 @@ makedocs(;
         ],
         "Ground Track" => "man/ground_track.md",
         "Makie Theme" => "man/makie_theme.md",
-        "Orbits" => ["Sun Synchronous Orbits" => "man/orbits/sun_synchronous_orbits.md"],
+        "Orbits" => [
+            "Ground Repeating Orbits" => "man/orbits/ground_repeating_orbits.md",
+            "Sun Synchronous Orbits" => "man/orbits/sun_synchronous_orbits.md",
+        ],
         "World Map" => "man/world_map.md",
         "Library" => "lib/library.md",
     ],
