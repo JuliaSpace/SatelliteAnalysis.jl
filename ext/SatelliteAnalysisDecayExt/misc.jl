@@ -5,79 +5,80 @@
 ############################################################################################
 
 """
-    _classical_to_equinoctial(
-        a::T,
-        e::T,
-        i::T,
-        Ω::T,
-        ω::T,
-        M::T
-    ) where T<:Number -> SVector{6, T}
+    _state_to_alternate_equinoctial(u::AbstractVector{T}, epoch::Number) where {T <: Number} -> AlternateEquinoctialElements
 
-Compute the equinoctial orbital elements from the classical orbital elements **[1]**:
+Convert the state vector `u = [a, ψ, e_x, e_y, i_x, i_y]` of the numerical integration to the
+alternate equinoctial elements of **SatelliteToolboxBase.jl** with the Julian Day `epoch`
+[UTC]. The elements are the same, but stored in a different order: `h = e_y`, `k = e_x`,
+`p = i_y`, `q = i_x`, and `mean_longitude = ψ`.
 
-- `a::T`: Semi-major axis [m].
-- `e::T`: Eccentricity (0 ≤ e < 1) [-].
-- `i::T`: Inclination [rad].
-- `Ω::T`: Right Ascension of Ascending Node [rad].
-- `ω::T`: Argument of Perigee [rad].
-- `M::T`: Mean Anomaly [rad].
-
-# Returns
-
-- `SVector{6, T}`: Equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`.
-
-# Extended help
-
-## References
-
-- **[1]** Battin, R. H. (1999). An Introduction to the Mathematics and Methods of
-    Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
+The adaptive integrator can evaluate trial stages with unphysical states. If the
+inclination elements satisfy `i_x² + i_y² > 1`, which does not represent an orbit, they are
+scaled to the unit circle so that the conversion to Keplerian elements remains finite,
+allowing the error control to reject the step.
 """
-function _classical_to_equinoctial(a::T, e::T, i::T, Ω::T, ω::T, M::T) where {T <: Number}
-    ψ = M + Ω + ω
-    ξ = Ω + ω
+function _state_to_alternate_equinoctial(
+    u::AbstractVector{T}, epoch::Number
+) where {T <: Number}
+    a, ψ, e_x, e_y, i_x, i_y = u
 
-    sin_ξ, cos_ξ = sincos(ξ)
-    sin_Ω, cos_Ω = sincos(Ω)
-    sin_io2      = sin(i / 2)
+    sin_io2 = hypot(i_x, i_y)
 
-    e_x = e * cos_ξ
-    e_y = e * sin_ξ
-    i_x = sin_io2 * cos_Ω
-    i_y = sin_io2 * sin_Ω
+    if sin_io2 > 1
+        i_x /= sin_io2
+        i_y /= sin_io2
+    end
 
-    return @SVector [a, ψ, e_x, e_y, i_x, i_y]
+    return AlternateEquinoctialElements(epoch, a, e_y, e_x, i_y, i_x, ψ)
 end
 
 """
-    _coe_to_rv(
-        a::T,
-        e::T,
-        i::T,
-        Ω::T,
-        ω::T,
-        f::T
-    ) where T <: Number -> SVector{3, T}, SVector{3, T}
+    _state_to_keplerian(u::AbstractVector{T}, epoch::Number) where {T <: Number} -> KeplerianElements{MeanAnomaly}
 
-Compute position and velocity vectors from Classical Orbital Elements:
-
-- `a::T`: Semi-major axis [m].
-- `e::T`: Eccentricity (0 ≤ e < 1) [-].
-- `i::T`: Inclination [rad].
-- `Ω::T`: Right Ascension of Ascending Node [rad].
-- `ω::T`: Argument of Perigee [rad].
-- `f::T`: True Anomaly [rad].
-
-# Returns
-
-- `SVector{3, T}`: Position vector in ECI frame [m].
-- `SVector{3, T}`: Velocity vector in ECI frame [m/s].
+Convert the state vector `u = [a, ψ, e_x, e_y, i_x, i_y]` of the numerical integration to
+Keplerian elements storing the mean anomaly with the Julian Day `epoch` [UTC]. The angles
+are returned in the interval `[0, 2π)` [rad], and the eccentricity is not clamped, so the
+returned value is faithful to the input. Consumers that require `e > 0` must clamp it
+themselves.
 """
-function _coe_to_rv(a::T, e::T, i::T, Ω::T, ω::T, f::T) where {T <: Number}
-    ke = KeplerianElements(0.0, a, e, i, Ω, ω, f)
+function _state_to_keplerian(u::AbstractVector{T}, epoch::Number) where {T <: Number}
+    aee = _state_to_alternate_equinoctial(u, epoch)
+    return convert(KeplerianElements{MeanAnomaly}, aee)
+end
 
-    return kepler_to_rv(ke)
+"""
+    _keplerian_to_state(ke::KeplerianElements{Tanomaly, Tepoch, T}) where {Tanomaly, Tepoch, T} -> SVector{6, T}
+
+Convert the Keplerian elements `ke`, with any anomaly type, to the state vector
+`u = [a, ψ, e_x, e_y, i_x, i_y]` of the numerical integration (see
+[`_state_to_alternate_equinoctial`](@ref)).
+"""
+function _keplerian_to_state(
+    ke::KeplerianElements{Tanomaly, Tepoch, T}
+) where {Tanomaly <: AbstractAnomaly, Tepoch <: Number, T <: Number}
+    aee = convert(AlternateEquinoctialElements, ke)
+
+    return SVector{6, T}(
+        aee.semi_major_axis, aee.mean_longitude, aee.k, aee.h, aee.q, aee.p
+    )
+end
+
+"""
+    _state_apsis_altitudes(u::AbstractVector{T}) where {T <: Number} -> T, T
+
+Compute the mean perigee and apogee altitudes [m] above the Earth's equatorial radius from
+the state vector `u = [a, ψ, e_x, e_y, i_x, i_y]` of the numerical integration. Only the
+semi-major axis and the eccentricity are required. Hence, this function avoids the full
+conversion to Keplerian elements in the callbacks of the integration.
+"""
+function _state_apsis_altitudes(u::AbstractVector{T}) where {T <: Number}
+    a = u[1]
+    e = hypot(u[3], u[4])
+
+    perigee_altitude = a * (1 - e) - T(EARTH_EQUATORIAL_RADIUS)
+    apogee_altitude  = a * (1 + e) - T(EARTH_EQUATORIAL_RADIUS)
+
+    return perigee_altitude, apogee_altitude
 end
 
 """
@@ -148,70 +149,6 @@ function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where {T <
     ]
 
     return J
-end
-
-"""
-    _equinoctial_to_classical(
-        eq::AbstractVector{T}
-    ) where T <: Number -> NTuple{6, T}
-
-Convert the equinoctial elements `eq` to classical orbital elements (COE) **[1]**. The
-input `eq` is a vector of equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`,
-where:
-
-- `a`    [m]   Semi-major axis
-- `ψ`    [rad] Mean longitude
-- `e_x`  [-]   Eccentricity vector component along cos(Ω+ω)
-- `e_y`  [-]   Eccentricity vector component along sin(Ω+ω)
-- `i_x`  [-]   Inclination half-angle component along cos(Ω)
-- `i_y`  [-]   Inclination half-angle component along sin(Ω)
-
-This routine ensures proper normalization of angles and handles potential singularities in
-eccentricity and inclination.
-
-!!! note
-
-    - Inclination is reconstructed from half-angle parameters `(i_x, i_y)`.
-    - All angular quantities are normalized to the range `[0, 2π)` [rad].
-    - The eccentricity is not clamped, so the returned value is faithful to the input.
-      Consumers that require `e > 0` must clamp it themselves.
-
-# Returns
-
-- `T`: Semi-major axis [m].
-- `T`: Eccentricity [-].
-- `T`: Inclination [rad].
-- `T`: Right ascension of ascending node [rad].
-- `T`: Argument of perigee [rad].
-- `T`: Mean anomaly [rad].
-
-# Extended help
-
-## References
-
-- **[1]** Battin, R. H. (1999). An Introduction to the Mathematics and Methods of
-    Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
-"""
-function _equinoctial_to_classical(eq::AbstractVector{T}) where {T <: Number}
-    # Unpack.
-    a, ψ, e_x, e_y, i_x, i_y = eq
-
-    e = √(e_x^2 + e_y^2)
-
-    i_half_sq = clamp(i_x^2 + i_y^2, 0, 1)
-    i = 2asin(√i_half_sq)
-
-    Ω = atan(i_y, i_x)
-    ξ = atan(e_y, e_x)
-
-    Ω = mod(Ω, 2π)
-    ξ = mod(ξ, 2π)
-    ω = mod(ξ - Ω, 2π)
-    M = mod(ψ - ξ, 2π)
-
-    a, e, i, Ω, ω, M = _normalize_classical_elements(a, e, i, Ω, ω, M)
-
-    return a, e, i, Ω, ω, M
 end
 
 """
@@ -400,35 +337,4 @@ function _normalize_classical_elements(
     M_norm = mod(M, 2π)
 
     return a_norm, e_norm, i_norm, Ω_norm, ω_norm, M_norm
-end
-
-"""
-    _r_eci_to_hill(
-        r_eci::AbstractVector{T},
-        v_eci::AbstractVector{T}
-    ) where T <: Number -> SMatrix{3, 3, T}
-
-Compute the Direction Cosine Matrix (DCM) from an Earth Centered Inertial (ECI) frame to the
-Hill frame (also known as the RTN or RSW frame), given the satellite position [m] and
-satellite velocity [m/s] in the ECI reference frame.
-
-The Hill frame is defined as follows:
-
-- X-axis: along the radial direction (from Earth to satellite).
-- Y-axis: along the along-track direction (in the direction of motion).
-- Z-axis: along the cross-track direction (perpendicular to the orbital plane).
-"""
-function _r_eci_to_hill(
-    r_eci::AbstractVector{T}, v_eci::AbstractVector{T}
-) where {T <: Number}
-    r̄_eci = normalize(r_eci)
-    h_eci = cross(r_eci, v_eci)
-    h̄_eci = normalize(h_eci)
-    θ̄_eci = cross(h̄_eci, r̄_eci)
-
-    return @SMatrix [
-        r̄_eci[1] r̄_eci[2] r̄_eci[3]
-        θ̄_eci[1] θ̄_eci[2] θ̄_eci[3]
-        h̄_eci[1] h̄_eci[2] h̄_eci[3]
-    ]
 end

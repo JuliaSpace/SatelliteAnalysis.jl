@@ -53,7 +53,8 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where {T <: Number}
     jd_utc  = jd₀_utc + t / 86400.0
 
     # Unpack mean orbital elements.
-    ā, ē, ī, Ω̄, ω̄, _ = _equinoctial_to_classical(u)
+    ke = _state_to_keplerian(u, jd_utc)
+    ā, ē, ī, Ω̄, ω̄ = ke.a, ke.e, ke.i, ke.Ω, ke.ω
 
     # Clamp the mean elements to a physically meaningful region. The adaptive integrator
     # can evaluate trial stages with unphysical states (e.g. e > 1) near the decay end.
@@ -107,7 +108,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where {T <: Number}
         f̄k = T(2π) * k / N
 
         # Position and velocity from mean orbital elements.
-        rk_tod, vk_tod = _coe_to_rv(ā, ē, ī, Ω̄, ω̄, f̄k)
+        rk_tod, vk_tod = kepler_to_rv(KeplerianElements(jd_utc, ā, ē, ī, Ω̄, ω̄, f̄k))
         rk² = dot(rk_tod, rk_tod)
         rk = √rk²
 
@@ -124,7 +125,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where {T <: Number}
             _point_mass_acceleration(rk_tod, rmoon_tod, _μ_MOON)
 
         # Perturbations acceleration in Hill frame
-        Dk_hill_tod = _r_eci_to_hill(rk_tod, vk_tod)
+        Dk_hill_tod = r_eci_to_hill(DCM, rk_tod, vk_tod)
         δak_hill    = Dk_hill_tod * δak_tod
 
         # Instantaneous Gauss equations for the equinoctial elements (with mean

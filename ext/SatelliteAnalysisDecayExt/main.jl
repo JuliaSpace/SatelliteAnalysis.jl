@@ -245,7 +245,7 @@ function _decay_analysis(
 
     # The state is a static vector with an out-of-place right-hand side, removing the
     # per-step state allocations of the numerical integration.
-    u₀ = _classical_to_equinoctial(ā, ē, ī, Ω̄, ω̄, M̄)
+    u₀ = _keplerian_to_state(orb)
 
     # Force a homogeneous time span even if the user passes an integer `tf`.
     tspan = (0.0, Float64(tf))
@@ -332,10 +332,7 @@ function _decay_analysis(
     end
 
     if !isnothing(progress)
-        aₑ, eₑ, _, _, _, _ = _equinoctial_to_classical(sol.u[end])
-
-        perigee_end = aₑ * (1 - eₑ) - EARTH_EQUATORIAL_RADIUS
-        apogee_end  = aₑ * (1 + eₑ) - EARTH_EQUATORIAL_RADIUS
+        perigee_end, apogee_end = _state_apsis_altitudes(sol.u[end])
 
         # The integration is only terminated by the callback that detects when the perigee
         # altitude reaches the terminate altitude.
@@ -355,19 +352,16 @@ function _decay_analysis(
     perigee_altitude = Vector{Float64}(undef, num_points)
 
     @inbounds for k in 1:num_points
-        aₖ, eₖ, iₖ, Ωₖ, ωₖ, Mₖ = _equinoctial_to_classical(sol.u[k])
-
         jdₖ = orb.t + sol.t[k] / 86400
 
         date[k] = julian2datetime(jdₖ)
         time[k] = sol.t[k]
 
-        # The state already contains the mean anomaly. Hence, we store it directly,
-        # avoiding solving Kepler's equation for every point.
-        mean_elements[k] = KeplerianElements{MeanAnomaly}(jdₖ, aₖ, eₖ, iₖ, Ωₖ, ωₖ, Mₖ)
+        # The state already contains the mean anomaly. Hence, the conversion does not solve
+        # Kepler's equation.
+        mean_elements[k] = _state_to_keplerian(sol.u[k], jdₖ)
 
-        apogee_altitude[k]  = aₖ * (1 + eₖ) - EARTH_EQUATORIAL_RADIUS
-        perigee_altitude[k] = aₖ * (1 - eₖ) - EARTH_EQUATORIAL_RADIUS
+        perigee_altitude[k], apogee_altitude[k] = _state_apsis_altitudes(sol.u[k])
     end
 
     # Record the space indices used by the dynamics at each instant. A comprehension is
@@ -528,13 +522,11 @@ function _gravity_workspace_type(::AbstractGravityModel{Tm}) where {Tm <: Number
 end
 
 function _cb_altitude_condition(u, t, integrator)
-    a_mean, e_mean, _, _, _, _ = _equinoctial_to_classical(u)
-
     # Terminate on the perigee altitude of the mean orbit. This condition is a smooth,
     # monotonically decreasing function of the mean elements, whereas the instantaneous
     # altitude oscillates between the perigee and apogee altitudes within a single
     # integrator step, which can make the callback root finder miss the crossing.
-    perigee_altitude = a_mean * (1 - e_mean) - EARTH_EQUATORIAL_RADIUS
+    perigee_altitude, ~ = _state_apsis_altitudes(u)
 
     return perigee_altitude - integrator.p.terminate_altitude
 end

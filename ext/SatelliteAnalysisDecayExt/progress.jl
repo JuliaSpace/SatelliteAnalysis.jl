@@ -135,10 +135,7 @@ function (a::DecayProgressAffect)(integrator)
     progress = a.progress
     isnothing(progress) && return nothing
 
-    ae, ee, _, _, _, _ = _equinoctial_to_classical(integrator.u)
-
-    perigee = ae * (1 - ee) - EARTH_EQUATORIAL_RADIUS
-    apogee  = ae * (1 + ee) - EARTH_EQUATORIAL_RADIUS
+    perigee, apogee = _state_apsis_altitudes(integrator.u)
 
     _update_decay_progress!(progress, integrator.t, perigee, apogee)
 
