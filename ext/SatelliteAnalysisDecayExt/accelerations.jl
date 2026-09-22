@@ -12,12 +12,14 @@
         v_ecef::AbstractVector{T},
         area::Number,
         mass::Number,
-        Cd::Number,
+        C_d::Number,
         space_indices::NamedTuple
     ) where T <: Number -> SVector{3, T}
 
-Compute the acceleration [m/s²] due to atmospheric drag in the ECEF frame using the
-atmospheric model `am`.
+Compute the acceleration [m/s²] due to atmospheric drag using the atmospheric model
+`atmospheric_model`. The position and velocity vectors are represented in an ECEF frame (the
+decay analysis uses PEF), in which the velocity is relative to the atmosphere, and the
+acceleration is represented in the same frame.
 
 # Arguments
 
@@ -33,7 +35,7 @@ atmospheric model `am`.
 - `v_ecef::AbstractVector{T}`: Satellite velocity vector [m/s] in ECEF frame.
 - `area::Number`: Effective cross-sectional area [m²] exposed to atmosphere.
 - `mass::Number`: Spacecraft mass [kg].
-- `Cd::Number`: Drag coefficient [-].
+- `C_d::Number`: Drag coefficient [-].
 - `space_indices::NamedTuple`: Named tuple with the space indices required by the
     atmospheric model.
 
@@ -48,7 +50,7 @@ function _atmospheric_drag_acceleration(
     v_ecef::AbstractVector{T},
     area::Number,
     mass::Number,
-    Cd::Number,
+    C_d::Number,
     space_indices::NamedTuple
 ) where T <: Number
 
@@ -60,7 +62,7 @@ function _atmospheric_drag_acceleration(
     h = max(h, zero(h))
     ρ = atmospheric_model(jd_utc, lat, lon, h, space_indices)
 
-    a_drag_ecef = -(1 // 2) * T(Cd) * (T(area) / T(mass)) * T(ρ) * norm(v_ecef) .* v_ecef
+    a_drag_ecef = -(1 // 2) * T(C_d) * (T(area) / T(mass)) * T(ρ) * norm(v_ecef) .* v_ecef
 
     return a_drag_ecef
 end

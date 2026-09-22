@@ -96,7 +96,7 @@ Version 0.4.0
   enabled, a progress interface is shown in `stderr` during the numerical integration: in
   interactive terminals, a live panel with a progress bar, the current perigee and apogee
   altitudes, the elapsed model time, and the elapsed wall time; otherwise, plain progress
-  lines at every 10%. A summary line with the outcome and the wall time is printed at the
+  lines at every 5%. A summary line with the outcome and the wall time is printed at the
   end. Enabling the interface does not change the analysis result.
 - ![Feature][badge-feature] We highly improved the `plot_decay_analysis` output for
   reports: the information panel now shows a card with the analysis assumptions

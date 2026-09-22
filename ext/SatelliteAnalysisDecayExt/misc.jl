@@ -125,18 +125,18 @@ function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where T <:
     J₃₄ = -e * sin_ξ                    # de_x/dΩ
     J₃₅ = -e * sin_ξ                    # de_x/dω
 
-    # E4 (e_y = e sin(ξ)) -> ₄₂, [4, 4], [4, 5]
+    # E4 (e_y = e sin(ξ)) -> [4, 2], [4, 4], [4, 5]
     J₄₂ = sin_ξ                         # de_y/de
     J₄₄ = e * cos_ξ                     # de_y/dΩ
     J₄₅ = e * cos_ξ                     # de_y/dω
 
     # E5 (i_x = sin(i/2) cos(Ω)) -> [5, 3], [5, 4]
-    J₅₃ = (1 // 2) * cos_io2 * cos_Ω    # dq/di
-    J₅₄ = -sin_io2 * sin_Ω              # dq/dΩ
+    J₅₃ = (1 // 2) * cos_io2 * cos_Ω    # di_x/di
+    J₅₄ = -sin_io2 * sin_Ω              # di_x/dΩ
 
     # E6 (i_y = sin(i/2) sin(Ω)) -> [6, 3], [6, 4]
-    J₆₃ = (1 // 2) * cos_io2 * sin_Ω    # dp/di
-    J₆₄ = sin_io2 * cos_Ω               # dp/dΩ
+    J₆₃ = (1 // 2) * cos_io2 * sin_Ω    # di_y/di
+    J₆₄ = sin_io2 * cos_Ω               # di_y/dΩ
 
     J = @SMatrix T[
         J₁₁   0    0    0   0   0
@@ -155,8 +155,8 @@ end
         eq::AbstractVector{T}
     ) where T <: Number -> NTuple{6, T}
 
-Conversion from Equinoctial Elements `equino` to Classical Orbital Elements (COE) **[1]**.
-The input `equino` is a vector of equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`,
+Convert the equinoctial elements `eq` to classical orbital elements (COE) **[1]**. The
+input `eq` is a vector of equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`,
 where:
 
 - `a`    [m]   Semi-major axis

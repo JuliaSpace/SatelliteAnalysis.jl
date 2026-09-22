@@ -28,7 +28,7 @@ Store the state of the progress interface shown during the decay analysis.
 
 - `io::IO`: Output stream of the interface.
 - `ansi::Bool`: If `true`, the interface renders a live panel using ANSI escape sequences.
-    Otherwise, it prints plain progress lines at every 10%.
+    Otherwise, it prints plain progress lines at every 5%.
 - `tf::Float64`: Maximum propagation time [s] after the orbit epoch.
 - `perigee₀::Float64`: Initial mean perigee altitude [m].
 - `terminate_altitude::Float64`: Mean perigee altitude [m] that terminates the analysis.

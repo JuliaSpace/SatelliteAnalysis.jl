@@ -168,6 +168,7 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     also stores the following table-level metadata, which is used, for example, by the
     function [`plot_decay_analysis`](@ref):
     - `Atmospheric Model`: Name of the atmospheric model used by the drag computation.
+    - `Description`: Description of the table.
     - `Drag Coefficient`: Drag coefficient [-].
     - `Satellite Mass`: Satellite mass [kg].
     - `Satellite Mean Area`: Mean cross-sectional area [m²].
