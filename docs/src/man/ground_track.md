@@ -8,41 +8,11 @@ CurrentModule = SatelliteAnalysis
 using SatelliteAnalysis
 ```
 
-We can obtain the ground track of a satellite using the function:
+We can obtain the ground track of a satellite using the function `ground_track`:
 
-```julia
-ground_track(orbp::OrbitPropagator; kwargs...) -> Vector{NTuple{2, Float64}}
+```@docs; canonical = false
+ground_track
 ```
-
-It computes the satellite ground track using the orbit propagator `orbp`. It returns a
-vector of `NTuple{2, Float64}` where the first element is the latitude [rad] and the second
-is the longitude [rad] of each point in the ground track.
-
-The following keywords are available:
-
-- `add_nans::Bool`: If `true`, we add `NaN` if there is a discontinuity in the ground track
-    to improve plotting.
-    (**Default**: true)
-- `duration::Number`: Duration of the analysis.
-    (**Default**: 86400)
-- `initial_time::Number`: Initial time regarding the orbit propagator `orbp` epoch [s].
-    (**Default**: 0)
-- `f_eci_to_ecef::Function`: Function to convert the orbit propagator position represented
-    in the Earth-centered inertial (ECI) reference frame to the Earth-centered, Earth-fixed
-    (ECEF) reference frame. The signature must be
-
-    `f_eci_to_ecef(r_i::AbstractVector, jd::Number) -> AbstractVector`
-
-    and it must return the position vector `r_i` represented in the ECEF at the instant `jd`
-    [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.
-    (**Default**: `_default_eci_to_ecef`)
-- `step::Union{Nothing, Number}`: Step for the computation. If `nothing`, we will roughly
-    compute the step to approximate 1° in the mean anomaly.
-    (**Default**: `nothing`)
-- `track_types::Symbol`: A symbol describing what kind of track types we must add to the
-    output vector. It can be `:ascending` for only ascending passages, `:descending` for
-    only descending passages, or `:all` for both.
-    (**Default**: `:all`)
 
 ## Ground Track Inclination
 
@@ -79,36 +49,11 @@ This assumption is reasonable given the missions that would benefit from the com
 the ground track inclination. In this case, we approximate ``\omega_s`` as the mean
 satellite angular speed.
 
-The function:
+We can compute it using the function `ground_track_inclination`:
 
-```julia
-ground_track_inclination(a::Number, e::Number, i::Number; kwargs...) -> T
-ground_track_inclination(orb::Orbit{Tepoch, T}); kwargs...) where {Tepoch <: Number, T <: Number} -> T
+```@docs; canonical = false
+ground_track_inclination
 ```
-
-computes the ground track inclination at the Equator [rad] in an orbit with semi-major axis
-`a` [m], eccentricity `e` [ ], and inclination `i` [rad]. The orbit can also be specified by
-`orb` (see `Orbit`).
-
-!!! note
-    The output type `T` in the first signature is obtained by promoting the inputs to a
-    float type.
-
-The following keywords are available:
-
-- `perturbation::Symbol`: Symbol to select the perturbation terms that will be used. It can
-    be `:J0`, `:J2`, or `:J4`.
-    (**Default**: `:J2`)
-- `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
-    (**Default**: `GM_EARTH`)
-- `J2::Number`: J₂ perturbation term.
-    (**Default**: `EGM_2008_J2`)
-- `J4::Number`: J₄ perturbation term.
-    (**Default**: `EGM_2008_J4`)
-- `R0::Number`: Earth's equatorial radius [m].
-    (**Default**: `EARTH_EQUATORIAL_RADIUS`)
-- `we::Number`: Earth's angular speed [rad / s].
-    (**Default**: `EARTH_ANGULAR_SPEED`)
 
 ## Examples
 
@@ -176,35 +121,13 @@ together with a [Makie.jl](https://docs.makie.org/stable/) backend, an extension
 and adds the possibility to plot the ground track. In this case, the following functions are
 available:
 
-```julia
-plot_ground_track(gt::Vector{NTuple{2, T}}; kwargs...) where T<:Number -> Figure, Axis
+```@docs; canonical = false
+plot_ground_track
 ```
 
-It plots the ground track `gt` computed using the function [`ground_track`](@ref). It
-returns the objects `Figure` and `Axis` used to plot the data. For more information, please,
-refer to [Makie.jl](https://docs.makie.org/stable/) documentation.
-
-!!! note
-
-    This function plots the countries' borders in the created figure using the file with the
-    country polygons fetched with the function [`fetch_country_polygons`](@ref). Hence, if
-    this file does not exist, the algorithm tries to download it.
-
-The figure is styled with the theme obtained from the function
-`SatelliteAnalysis.makie_theme`, selected by the keyword `theme`, which can be `:light`
-(default) or `:dark`. All other `kwargs...` are passed to the function
-[`plot_world_map`](@ref).
-
-```julia
-plot_ground_track!(ax:Axis, gt::Vector{NTuple{2, Number}}) -> Nothing
+```@docs; canonical = false
+plot_ground_track!
 ```
-
-It plots in the **Makie.jl** axis `ax` the ground track `gt` computed using the function
-[`ground_track`](@ref).
-
-The user can use this function to plot the ground track on top of an existing figure. Since
-it draws into an existing axis, it does not apply the theme provided by the function
-`SatelliteAnalysis.makie_theme`.
 
 ### Example
 
