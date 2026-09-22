@@ -51,9 +51,8 @@ function _atmospheric_drag_acceleration(
     area::Number,
     mass::Number,
     C_d::Number,
-    space_indices::NamedTuple
-) where T <: Number
-
+    space_indices::NamedTuple,
+) where {T <: Number}
     lat, lon, h = ecef_to_geodetic(r_ecef)
 
     # The altitude can be negative when the integrator evaluates trial stages with
@@ -123,7 +122,7 @@ function _perturbational_gravity_acceleration(
         Δt_j2000;
         max_degree = max_degree,
         max_order = max_order,
-        workspace = workspace
+        workspace = workspace,
     )
 
     # Central term (degree 0, order 0), computed analytically as -μ r / r³ to avoid a
@@ -155,10 +154,8 @@ ECI, and `body_μ` is the gravitational parameter of the point mass [m³/s²].
 - `SVector{3, T}`: Perturbational acceleration vector [m/s²].
 """
 function _point_mass_acceleration(
-    rsat_eci::AbstractVector{T},
-    rbody_eci::AbstractVector{T},
-    body_μ::Number
-) where T <: Number
+    rsat_eci::AbstractVector{T}, rbody_eci::AbstractVector{T}, body_μ::Number
+) where {T <: Number}
 
     # Relative position vector of satellite w.r.t. point mass.
     Δr_eci = rsat_eci .- rbody_eci
@@ -207,14 +204,15 @@ function _solar_radiation_acceleration(
     rsun_eci::AbstractVector{T},
     area::Number,
     mass::Number,
-    C_r::Number
-) where T <: Number
+    C_r::Number,
+) where {T <: Number}
 
     # Relative position vector of spacecraft w.r.t. Sun
     Δr_eci = rsat_eci .- rsun_eci
 
     # Acceleration due to solar radiation pressure
-    a_eci = C_r * T(area) / T(mass) *
+    a_eci =
+        C_r * T(area) / T(mass) *
         _SOLAR_PRESSURE_1AU *
         (ASTRONOMICAL_UNIT^2) *
         (Δr_eci / norm(Δr_eci)^3)

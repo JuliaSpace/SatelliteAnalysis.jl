@@ -191,11 +191,13 @@ function design_sun_sync_ground_repeating_orbit(
                     a, e, i, orb_cycle; perturbation = :J2, J2, J4 = EGM_2008_J4, R0, m0, we
                 )
 
-                adjacent_gt_distance =
-                    _ground_repeating_orbit__half_angle_to_track_distance(β, R₀)
+                adjacent_gt_distance = _ground_repeating_orbit__half_angle_to_track_distance(
+                    β, R₀
+                )
 
-                adjacent_gt_angle =
-                    _ground_repeating_orbit__half_angle_to_track_angle(β, a, R₀)
+                adjacent_gt_angle = _ground_repeating_orbit__half_angle_to_track_angle(
+                    β, a, R₀
+                )
 
                 push!(
                     df,
@@ -226,12 +228,12 @@ function design_sun_sync_ground_repeating_orbit(
         style = :note,
     )
 
-    colmetadata!(df, :semi_major_axis,      "Unit", distance_unit; style = :note)
-    colmetadata!(df, :altitude,             "Unit", distance_unit; style = :note)
-    colmetadata!(df, :inclination,          "Unit", angle_unit;    style = :note)
-    colmetadata!(df, :period,               "Unit", time_unit;     style = :note)
+    colmetadata!(df, :semi_major_axis, "Unit", distance_unit; style = :note)
+    colmetadata!(df, :altitude, "Unit", distance_unit; style = :note)
+    colmetadata!(df, :inclination, "Unit", angle_unit; style = :note)
+    colmetadata!(df, :period, "Unit", time_unit; style = :note)
     colmetadata!(df, :adjacent_gt_distance, "Unit", distance_unit; style = :note)
-    colmetadata!(df, :adjacent_gt_angle,    "Unit", angle_unit;    style = :note)
+    colmetadata!(df, :adjacent_gt_angle, "Unit", angle_unit; style = :note)
 
     return df
 end
@@ -1131,8 +1133,7 @@ function _sun_sync_orbit__residues_and_jacobian(
     ∂f₁_∂isqrt_a = -k₁ * (7cos_i + 11k₂ * (3cos³_i - cos_i) * isqrt_ā⁴) * isqrt_ā⁶
     ∂f₁_∂cos_i   = -k₁ * (1 + k₂ * (9cos²_i - 1) * isqrt_ā⁴) * isqrt_ā⁷
     ∂f₂_∂isqrt_a = -(3k₅ + 7c₄ * isqrt_ā⁴ + 11k₆ * c₃ * isqrt_ā⁸) * isqrt_ā²
-    ∂f₂_∂cos_i   =
-        -((6k₃ + 10k₄) * cos_i + k₆ * (-16cos_i + 60cos³_i) * isqrt_ā⁴) * isqrt_ā⁷
+    ∂f₂_∂cos_i   = -((6k₃ + 10k₄) * cos_i + k₆ * (-16cos_i + 60cos³_i) * isqrt_ā⁴) * isqrt_ā⁷
 
     f = @SVector T[f₁, f₂]
     J = @SMatrix T[

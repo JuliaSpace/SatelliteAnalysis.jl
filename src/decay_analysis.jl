@@ -437,7 +437,7 @@ decay_analysis__jacchia77_stela_kwargs() = _decay_analysis__jacchia77_stela_setu
 function _decay_analysis__jacchia77_stela_setup(::Any)
     return error(
         "Load OrdinaryDiffEqAdamsBashforthMoulton.jl to use " *
-        "`@decay_analysis__jacchia77_stela`."
+        "`@decay_analysis__jacchia77_stela`.",
     )
 end
 

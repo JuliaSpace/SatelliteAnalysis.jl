@@ -88,7 +88,7 @@
     @test all(df_coarse.penumbra .> 15)
     @test df_coarse.sunlight ≈ df_fine.sunlight atol = 1e-2
     @test df_coarse.penumbra ≈ df_fine.penumbra atol = 1e-2
-    @test df_coarse.umbra    ≈ df_fine.umbra    atol = 1e-2
+    @test df_coarse.umbra ≈ df_fine.umbra atol = 1e-2
 
     # == Invalid Inputs ====================================================================
 

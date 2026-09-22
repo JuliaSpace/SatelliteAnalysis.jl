@@ -63,9 +63,7 @@
     d_J2 = ground_repeating_orbit_adjacent_track_distance(
         a, e, i, 5; J2 = 1.1 * EGM_2008_J2
     )
-    γ_J2 = ground_repeating_orbit_adjacent_track_angle(
-        a, e, i, 5; J2 = 1.1 * EGM_2008_J2
-    )
+    γ_J2 = ground_repeating_orbit_adjacent_track_angle(a, e, i, 5; J2 = 1.1 * EGM_2008_J2)
 
     @test d_J2 ≈ 543729.103408 atol = 1e-3
     @test γ_J2 ≈ 0.688011262719 atol = 1e-9

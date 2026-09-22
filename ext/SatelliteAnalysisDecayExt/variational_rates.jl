@@ -91,8 +91,8 @@ function _atmospheric_drag_and_solar_radiation_pressure_rates(
     D_pef_tod::StaticMatrix{3, 3, T},
     D_tod_pef::StaticMatrix{3, 3, T},
     space_indices::NamedTuple,
-    params::NamedTuple
-) where T <: Number
+    params::NamedTuple,
+) where {T <: Number}
     atmospheric_model = params.atmospheric_model
     C_d               = params.C_d
     C_r               = params.C_r
@@ -175,14 +175,8 @@ the decay evolution.
     Microcosm Press, Hawthorne, CA, sec. 9.6.
 """
 function J₂²_variational_rates(
-    ā::T,
-    ē::T,
-    ī::T,
-    ω̄::T,
-    μ::Number,
-    Re::Number,
-    J₂::Number
-) where T <: Number
+    ā::T, ē::T, ī::T, ω̄::T, μ::Number, Re::Number, J₂::Number
+) where {T <: Number}
     # Regularization.
     ē = max(ē, T(1e-6))
     ī = max(ī, T(1e-6))
@@ -198,24 +192,28 @@ function J₂²_variational_rates(
     J₂² = J₂^2
 
     sin_ī, cos_ī = sincos(ī)
-    sin_ī²  = sin_ī^2
-    sin_ī⁴  = sin_ī²^2
-    cos_ī⁴  = cos_ī^4
-    sin_2ω̄  = sin(2ω̄)
+    sin_ī² = sin_ī^2
+    sin_ī⁴ = sin_ī²^2
+    cos_ī⁴ = cos_ī^4
+    sin_2ω̄ = sin(2ω̄)
 
-    kn₂  = J₂  * R̄e²
+    kn₂  = J₂ * R̄e²
     kn₂₂ = J₂² * R̄e⁴
 
     # Perturbed mean motion considering the J₂ and J₂² secular terms [1].
-    n̄ = n₀ * (
-        1 +
-        (3 // 4) * kn₂ * η̄ * (2 - 3sin_ī²) +
-        (3 // 128) * kn₂₂ * η̄ * (
-            120 + 64η̄ - 40η̄² +
-            (-240 - 192η̄ + 40η̄²) * sin_ī² +
-            (105 + 144η̄ + 25η̄²) * sin_ī⁴
+    n̄ =
+        n₀ * (
+            1 +
+            (3 // 4) * kn₂ * η̄ * (2 - 3sin_ī²) +
+            (3 // 128) *
+            kn₂₂ *
+            η̄ *
+            (
+                120 + 64η̄ - 40η̄² +
+                (-240 - 192η̄ + 40η̄²) * sin_ī² +
+                (105 + 144η̄ + 25η̄²) * sin_ī⁴
+            )
         )
-    )
 
     # == Secular J₂² Rates =================================================================
     #
@@ -225,18 +223,17 @@ function J₂²_variational_rates(
 
     ∂M = (n̄ - n₀) - (3 // 4) * n₀ * kn₂ * η̄ * (2 - 3sin_ī²)
 
-    ∂ω = (3 // 4) * (n̄ - n₀) * kn₂ * (4 - 5sin_ī²) +
-        (3 // 128) * n̄ * kn₂₂ * (
-            384 + 96ē² - 384η̄ +
-            (-824 - 116ē² + 1056η̄) * sin_ī² +
-            (430 - 5ē² - 720η̄) * sin_ī⁴
-        ) -
+    ∂ω =
+        (3 // 4) * (n̄ - n₀) * kn₂ * (4 - 5sin_ī²) +
+        (3 // 128) *
+        n̄ *
+        kn₂₂ *
+        (384 + 96ē² - 384η̄ + (-824 - 116ē² + 1056η̄) * sin_ī² + (430 - 5ē² - 720η̄) * sin_ī⁴) -
         (15 // 16) * n₀ * kn₂₂ * ē² * cos_ī⁴
 
-    ∂Ω = -(3 // 2) * (n̄ - n₀) * kn₂ * cos_ī +
-        (3 // 32) * n̄ * kn₂₂ * cos_ī * (
-            -36 - 4ē² + 48η̄ + (40 - 5ē² - 72η̄) * sin_ī²
-        )
+    ∂Ω =
+        -(3 // 2) * (n̄ - n₀) * kn₂ * cos_ī +
+        (3 // 32) * n̄ * kn₂₂ * cos_ī * (-36 - 4ē² + 48η̄ + (40 - 5ē² - 72η̄) * sin_ī²)
 
     # == Long-Period J₂² Rates =============================================================
     #

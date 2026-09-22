@@ -58,17 +58,8 @@ equinoctial element set.
     Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
 """
 function _equinoctial_gauss_variational_matrices(
-    a::T,
-    e::T,
-    i::T,
-    Ω::T,
-    ω::T,
-    f::T,
-    r::T,
-    p::T,
-    h::T,
-    η::T
-) where T <: Number
+    a::T, e::T, i::T, Ω::T, ω::T, f::T, r::T, p::T, h::T, η::T
+) where {T <: Number}
     ξ = Ω + ω
     L = f + ξ
     θ = f + ω

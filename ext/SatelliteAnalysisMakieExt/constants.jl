@@ -6,8 +6,8 @@
 
 # == Dark Theme Colors =====================================================================
 
-const NAVY_PRIMARY   = colorant"#0A1929" # ................................ slide background
-const NAVY_CARD      = colorant"#0D2137" # ..... slightly raised surface (legends, tooltips)
+const NAVY_PRIMARY = colorant"#0A1929" # .................................. slide background
+const NAVY_CARD    = colorant"#0D2137" # ....... slightly raised surface (legends, tooltips)
 
 # Grid lines and horizontal dividers (`SEPARATOR_DARK`), and axis spines and box outlines
 # (`BORDER_DARK`). Those colors are also used by the extension that plots the maps. Hence,
@@ -67,14 +67,7 @@ const CATEGORICAL_LIGHT = [
 
 # Human-readable labels for the time and distance unit symbols used by `decay_analysis`.
 const _TIME_UNIT_LABELS = Dict{Symbol, String}(
-    :s   => "s",
-    :min => "min",
-    :h   => "h",
-    :d   => "days",
-    :y   => "years",
+    :s   => "s", :min => "min", :h   => "h", :d   => "days", :y   => "years"
 )
 
-const _DISTANCE_UNIT_LABELS = Dict{Symbol, String}(
-    :km => "km",
-    :m  => "m",
-)
+const _DISTANCE_UNIT_LABELS = Dict{Symbol, String}(:km => "km", :m  => "m")

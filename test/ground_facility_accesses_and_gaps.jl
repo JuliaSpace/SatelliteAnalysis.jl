@@ -461,5 +461,4 @@ end
 
     @test_throws ArgumentError ground_facility_gaps(orbp, (0, 0, 0); step = 0)
     @test_throws ArgumentError ground_facility_gaps(orbp, (0, 0, 0); step = -60)
-
 end

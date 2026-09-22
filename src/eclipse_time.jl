@@ -239,7 +239,7 @@ function eclipse_time_summary(
 
     colmetadata!(df, :sunlight, "Unit", time_unit; style = :note)
     colmetadata!(df, :penumbra, "Unit", time_unit; style = :note)
-    colmetadata!(df, :umbra,    "Unit", time_unit; style = :note)
+    colmetadata!(df, :umbra, "Unit", time_unit; style = :note)
 
     return df
 end

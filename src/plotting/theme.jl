@@ -7,10 +7,10 @@
 # Colors of the theme that are used by more than one package extension, stored as hex
 # strings because the main package does not depend on a color package. One extension cannot
 # access the constants of another extension. Hence, the shared values must be defined here.
-const _THEME_SURFACE_HEX         = "#FFFFFF" # .................. light theme background
-const _THEME_BORDER_LIGHT_HEX    = "#CBD5E1" # ........ light theme spines, box outlines
-const _THEME_SEPARATOR_DARK_HEX  = "#162940" # ..... dark theme grid lines and dividers
-const _THEME_BORDER_DARK_HEX     = "#1E3A5F" # ......... dark theme spines, box outlines
+const _THEME_SURFACE_HEX        = "#FFFFFF" # ....................... light theme background
+const _THEME_BORDER_LIGHT_HEX   = "#CBD5E1" # ............. light theme spines, box outlines
+const _THEME_SEPARATOR_DARK_HEX = "#162940" # ........... dark theme grid lines and dividers
+const _THEME_BORDER_DARK_HEX    = "#1E3A5F" # .............. dark theme spines, box outlines
 
 # Call the function `f` applying the theme selected by the keyword `theme` of the plotting
 # functions: `_with_plot_theme(f, theme; kwargs...)`. If `theme` is a `Symbol`, the theme is
@@ -119,6 +119,6 @@ function makie_theme(::Any; kwargs...)
         "The function `makie_theme` is provided by a package extension. Load Makie.jl " *
         "(e.g., `using CairoMakie`) to use it. If Makie.jl is already loaded, check the " *
         "arguments: the valid calls are `SatelliteAnalysis.makie_theme()`, " *
-        "`SatelliteAnalysis.makie_theme(:dark)`, and `SatelliteAnalysis.makie_theme(:light)`."
+        "`SatelliteAnalysis.makie_theme(:dark)`, and `SatelliteAnalysis.makie_theme(:light)`.",
     )
 end

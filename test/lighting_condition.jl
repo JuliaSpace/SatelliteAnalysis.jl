@@ -40,10 +40,10 @@
 
     lc(ρ) = lighting_condition(-7000e3 * s̄_i + ρ * p̄_i, s_i)
 
-    @test lc(0.0)      == :umbra
+    @test lc(0.0) == :umbra
     @test lc(6345.2e3) == :umbra
     @test lc(6345.4e3) == :penumbra
     @test lc(6411.6e3) == :penumbra
     @test lc(6411.8e3) == :sunlight
-    @test lc(8000e3)   == :sunlight
+    @test lc(8000e3) == :sunlight
 end

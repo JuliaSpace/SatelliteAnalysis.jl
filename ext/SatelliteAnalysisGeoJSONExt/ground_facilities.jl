@@ -29,7 +29,7 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles!(
     if !isnothing(ground_facilities) && (length(vgf_vc) != length(ground_facilities))
         throw(
             ArgumentError(
-                "The number of elements in `vgf_vc` and `ground_facilities` must be equal.",
+                "The number of elements in `vgf_vc` and `ground_facilities` must be equal."
             ),
         )
     end
@@ -47,8 +47,8 @@ function SatelliteAnalysis.plot_ground_facility_visibility_circles!(
 
         # Obtain the ground facility position. If the user did not provide it, we estimate
         # it using the visibility circle.
-        center_lat, center_lon = isnothing(ground_facilities) ?
-            _visibility_circle_center(gf_vc) :
+        center_lat, center_lon =
+            isnothing(ground_facilities) ? _visibility_circle_center(gf_vc) :
             ground_facilities[begin + k - 1][1:2]
 
         dot = scatter!(ax, center_lon |> rad2deg, center_lat |> rad2deg; color = vc.color)

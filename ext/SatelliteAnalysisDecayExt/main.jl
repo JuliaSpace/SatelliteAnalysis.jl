@@ -38,14 +38,12 @@ function SatelliteAnalysis.decay_analysis(
     time_unit::Symbol = :y,
     verbose::Bool = false,
 )
-    input_type in (:mean, :osculating) || throw(
-        ArgumentError("The keyword `input_type` must be `:mean` or `:osculating`.")
-    )
+    input_type in (:mean, :osculating) ||
+        throw(ArgumentError("The keyword `input_type` must be `:mean` or `:osculating`."))
 
     # Validate the physical inputs. Otherwise, the analysis can silently produce `NaN`s or
     # infinite values.
-    satellite_mass > 0 ||
-        throw(ArgumentError("The satellite mass must be greater than 0."))
+    satellite_mass > 0 || throw(ArgumentError("The satellite mass must be greater than 0."))
 
     satellite_mean_area >= 0 ||
         throw(ArgumentError("The satellite mean area must not be negative."))
@@ -76,8 +74,9 @@ function SatelliteAnalysis.decay_analysis(
     # The propagation uses mean elements with respect to the averaged dynamics. Hence, if
     # the input elements are osculating, they must be converted to mean elements first.
     orb′ = if input_type == :osculating
-        a_mean, e_mean, i_mean, Ω_mean, ω_mean, M_mean =
-            _osculating_to_mean_elements(orb.a, orb.e, orb.i, orb.Ω, orb.ω, orb.f)
+        a_mean, e_mean, i_mean, Ω_mean, ω_mean, M_mean = _osculating_to_mean_elements(
+            orb.a, orb.e, orb.i, orb.Ω, orb.ω, orb.f
+        )
 
         # The numerical integration uses the mean anomaly. Hence, we must not convert it to
         # the true anomaly here.
@@ -90,14 +89,13 @@ function SatelliteAnalysis.decay_analysis(
 
     # If the user did not select the number of sampling points per orbit, we must obtain it
     # from the mean eccentricity.
-    num_sampling_points_per_orbit′ = isnothing(num_sampling_points_per_orbit) ?
-        _decay_analysis__default_num_sampling_points(orb′.e) :
-        num_sampling_points_per_orbit
+    num_sampling_points_per_orbit′ =
+        isnothing(num_sampling_points_per_orbit) ?
+        _decay_analysis__default_num_sampling_points(orb′.e) : num_sampling_points_per_orbit
 
     gm = if isnothing(gravity_model)
         if isnothing(_DEFAULT_GRAVITY_MODEL[])
-            _DEFAULT_GRAVITY_MODEL[] =
-                GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
+            _DEFAULT_GRAVITY_MODEL[] = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
         end
 
         _DEFAULT_GRAVITY_MODEL[]
@@ -107,9 +105,8 @@ function SatelliteAnalysis.decay_analysis(
 
     # The default atmospheric model carries a mutable buffer, so a fresh instance is built
     # per call to keep the public API thread-safe.
-    atmospheric_model′ = isnothing(atmospheric_model) ?
-        Nrlmsise00AtmosphericModel() :
-        atmospheric_model
+    atmospheric_model′ =
+        isnothing(atmospheric_model) ? Nrlmsise00AtmosphericModel() : atmospheric_model
 
     # Descriptions of the atmospheric model and the space indices source, recorded as
     # metadata in the output so that, for example, `plot_decay_analysis` can show the
@@ -181,7 +178,7 @@ function SatelliteAnalysis.decay_analysis(
         terminate_altitude            = terminate_altitude,
         tf                            = tf,
         time_unit                     = time_unit,
-        verbose                       = verbose
+        verbose                       = verbose,
     )
 end
 
@@ -257,8 +254,7 @@ function _decay_analysis(
     # conversion inside the drag quadrature, avoiding one propagator allocation per
     # sampling point.
     j2osc_prop = Propagators.init(
-        Val(:J2osc),
-        KeplerianElements(0.0, ā, ē, ī, Ω̄, ω̄, mean_to_true_anomaly(ē, M̄))
+        Val(:J2osc), KeplerianElements(0.0, ā, ē, ī, Ω̄, ω̄, mean_to_true_anomaly(ē, M̄))
     )
 
     # Pre-allocate the gravity model workspace, avoiding the buffer allocations at every
@@ -297,14 +293,14 @@ function _decay_analysis(
     )
 
     # Progress interface shown during the integration when `verbose` is enabled.
-    progress = verbose ?
+    progress =
+        verbose ?
         DecayProgress(
             stderr,
             tspan[2],
             ā * (1 - ē) - EARTH_EQUATORIAL_RADIUS,
-            Float64(terminate_altitude)
-        ) :
-        nothing
+            Float64(terminate_altitude),
+        ) : nothing
 
     # The progress callback is always installed with a stable type: when `verbose` is
     # disabled, its condition is constantly `false`. Hence, the solver specialization is
@@ -312,7 +308,7 @@ function _decay_analysis(
     # verbose call.
     cbset = CallbackSet(
         ContinuousCallback(_cb_altitude_condition, _cb_altitude_affect!),
-        _decay_progress_callback(progress)
+        _decay_progress_callback(progress),
     )
 
     isnothing(progress) ||
@@ -328,7 +324,7 @@ function _decay_analysis(
             reltol   = reltol,
             abstol   = abstol,
             callback = cbset,
-            maxiters = 1e8
+            maxiters = 1e8,
         )
     finally
         # Restore the terminal cursor even if the solver throws.
@@ -354,9 +350,7 @@ function _decay_analysis(
 
     date             = Vector{DateTime}(undef, num_points)
     time             = Vector{Float64}(undef, num_points)
-    mean_elements    = Vector{KeplerianElements{MeanAnomaly, Float64, Float64}}(
-        undef, num_points
-    )
+    mean_elements    = Vector{KeplerianElements{MeanAnomaly, Float64, Float64}}(undef, num_points)
     apogee_altitude  = Vector{Float64}(undef, num_points)
     perigee_altitude = Vector{Float64}(undef, num_points)
 
@@ -403,23 +397,23 @@ function _decay_analysis(
         df,
         "Description",
         "Mean orbital element evolution during the orbital decay.";
-        style = :note
+        style = :note,
     )
 
-    metadata!(df, "Atmospheric Model",    atmospheric_model_name; style = :note)
-    metadata!(df, "Drag Coefficient",     C_d;                    style = :note)
-    metadata!(df, "Satellite Mass",       satellite_mass;         style = :note)
-    metadata!(df, "Satellite Mean Area",  satellite_mean_area;    style = :note)
-    metadata!(df, "Space Indices Source", space_indices_source;   style = :note)
-    metadata!(df, "SRP Coefficient",      C_r;                    style = :note)
-    metadata!(df, "Terminate Altitude",   terminate_altitude;     style = :note)
+    metadata!(df, "Atmospheric Model", atmospheric_model_name; style = :note)
+    metadata!(df, "Drag Coefficient", C_d; style = :note)
+    metadata!(df, "Satellite Mass", satellite_mass; style = :note)
+    metadata!(df, "Satellite Mean Area", satellite_mean_area; style = :note)
+    metadata!(df, "Space Indices Source", space_indices_source; style = :note)
+    metadata!(df, "SRP Coefficient", C_r; style = :note)
+    metadata!(df, "Terminate Altitude", terminate_altitude; style = :note)
 
     # Notice that the column `space_indices` has no `Unit` metadata since its fields have
     # heterogeneous units.
-    colmetadata!(df, :date,             "Unit", :UTC;          style = :note)
-    colmetadata!(df, :time,             "Unit", time_unit;     style = :note)
-    colmetadata!(df, :mean_elements,    "Unit", :SI;           style = :note)
-    colmetadata!(df, :apogee_altitude,  "Unit", distance_unit; style = :note)
+    colmetadata!(df, :date, "Unit", :UTC; style = :note)
+    colmetadata!(df, :time, "Unit", time_unit; style = :note)
+    colmetadata!(df, :mean_elements, "Unit", :SI; style = :note)
+    colmetadata!(df, :apogee_altitude, "Unit", distance_unit; style = :note)
     colmetadata!(df, :perigee_altitude, "Unit", distance_unit; style = :note)
 
     # The raw solution is attached to the `DataFrame`, keeping the return type stable.
@@ -457,7 +451,7 @@ function _decay_analysis__default_space_indices(jd_utc::Number)
     return (
         f107     = _default_f107(jd_utc - 1, Val(:F10obs), Val(:F10obs_predicted)),
         f107_avg = _default_f107(jd_utc, Val(:F10obs_avg_center81), Val(:F10obs_predicted)),
-        ap       = ap
+        ap       = ap,
     )
 end
 
@@ -487,7 +481,7 @@ function _decay_analysis__default_space_indices_kp(jd_utc::Number)
     return (
         f107     = _default_f107(jd_utc, Val(:F10adj), Val(:F10adj_predicted)),
         f107_avg = _default_f107(jd_utc, Val(:F10adj_avg_center81), Val(:F10adj_predicted)),
-        kp       = kp
+        kp       = kp,
     )
 end
 

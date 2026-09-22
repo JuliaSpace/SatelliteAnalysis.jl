@@ -42,7 +42,7 @@ be `:m` for meters or `:km` for kilometers.
 - `ArgumentError`: If `distance_unit` is not `:m` or `:km`.
 """
 function _distance_unit_factor(distance_unit::Symbol)
-    distance_unit == :m  && return 1.0
+    distance_unit == :m && return 1.0
     distance_unit == :km && return 1 / 1000
 
     return throw(
@@ -85,10 +85,10 @@ function _time_unit_factor(time_unit::Symbol, valid_units::Tuple = (:s, :min, :h
         )
     end
 
-    time_unit == :s   && return 1.0
+    time_unit == :s && return 1.0
     time_unit == :min && return 1 / 60
-    time_unit == :h   && return 1 / 3600
-    time_unit == :d   && return 1 / 86400
+    time_unit == :h && return 1 / 3600
+    time_unit == :d && return 1 / 86400
 
     # Julian year.
     return 1 / (365.25 * 86400)

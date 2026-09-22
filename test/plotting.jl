@@ -10,7 +10,8 @@
 
 @testset "Function plot_decay_analysis" begin
     @test_throws(
-        "The function `plot_decay_analysis` is provided by a package extension.", plot_decay_analysis(1)
+        "The function `plot_decay_analysis` is provided by a package extension.",
+        plot_decay_analysis(1)
     )
 end
 
@@ -19,9 +20,7 @@ end
     # requiring the numerical integration.
     time             = collect(range(0, 0.1; length = 20))
     date             = julian2datetime.(date_to_jd(2024, 1, 1) .+ 365.25 .* time)
-    space_indices    = [
-        (f107 = f, f107_avg = f - 10.0, ap = 9.0) for f in range(140.0, 180.0; length = 20)
-    ]
+    space_indices    = [(f107 = f, f107_avg = f - 10.0, ap = 9.0) for f in range(140.0, 180.0; length = 20)]
     perigee_altitude = collect(range(300.0, 120.0; length = 20))
     apogee_altitude  = perigee_altitude .+ 10
 
@@ -33,16 +32,16 @@ end
         perigee_altitude = perigee_altitude,
     )
 
-    metadata!(df, "Atmospheric Model",    "NRLMSISE-00";  style = :note)
-    metadata!(df, "Drag Coefficient",     2.2;            style = :note)
-    metadata!(df, "Satellite Mass",       100.0;          style = :note)
-    metadata!(df, "Satellite Mean Area",  1.0;            style = :note)
+    metadata!(df, "Atmospheric Model", "NRLMSISE-00"; style = :note)
+    metadata!(df, "Drag Coefficient", 2.2; style = :note)
+    metadata!(df, "Satellite Mass", 100.0; style = :note)
+    metadata!(df, "Satellite Mean Area", 1.0; style = :note)
     metadata!(df, "Space Indices Source", "User function"; style = :note)
-    metadata!(df, "SRP Coefficient",      1.25;           style = :note)
-    metadata!(df, "Terminate Altitude",   120e3;          style = :note)
+    metadata!(df, "SRP Coefficient", 1.25; style = :note)
+    metadata!(df, "Terminate Altitude", 120e3; style = :note)
 
-    colmetadata!(df, :time,             "Unit", :y;  style = :note)
-    colmetadata!(df, :apogee_altitude,  "Unit", :km; style = :note)
+    colmetadata!(df, :time, "Unit", :y; style = :note)
+    colmetadata!(df, :apogee_altitude, "Unit", :km; style = :note)
     colmetadata!(df, :perigee_altitude, "Unit", :km; style = :note)
 
     fig, ax = plot_decay_analysis(df)
@@ -96,10 +95,10 @@ end
     # The card number formatter must group the digits of large integers.
     ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisMakieExt)
 
-    @test ext._format_number(12340)   == "12 340"
+    @test ext._format_number(12340) == "12 340"
     @test ext._format_number(1234567) == "1 235 000"
-    @test ext._format_number(-12340)  == "-12 340"
-    @test ext._format_number(1234)    == "1234"
+    @test ext._format_number(-12340) == "-12 340"
+    @test ext._format_number(1234) == "1234"
     @test ext._format_number(3.14159) == "3.142"
 
     # Theme and layout keywords.
@@ -109,7 +108,7 @@ end
         mono_ticklabels = true,
         panel_width     = 300,
         xlims           = (0.0, 0.2),
-        ylims           = (100.0, 350.0)
+        ylims           = (100.0, 350.0),
     )
 
     @test fig isa Figure
@@ -118,10 +117,7 @@ end
     # Optional decorations: mission name, absolute dates, and F10.7 twin y-axis with the
     # default getters.
     fig, ax = plot_decay_analysis(
-        df;
-        mission_name = "Amazonia-1",
-        show_dates   = true,
-        show_f107    = true
+        df; mission_name = "Amazonia-1", show_dates   = true, show_f107    = true
     )
 
     @test fig isa Figure
@@ -137,7 +133,7 @@ end
         df_custom;
         show_f107       = true,
         f107_getter     = si -> si.daily,
-        f107_avg_getter = si -> si.mean81
+        f107_avg_getter = si -> si.mean81,
     )
 
     @test fig isa Figure
@@ -162,7 +158,7 @@ end
         df;
         show_f107       = true,
         f107_getter     = si -> (k[] += 1) <= div(num_rows, 2) ? NaN : si.f107,
-        f107_avg_getter = nothing
+        f107_avg_getter = nothing,
     )
 
     @test fig isa Figure
@@ -193,7 +189,7 @@ end
         df_no_metadata;
         satellite_mass      = 42.0,
         satellite_mean_area = 0.5,
-        terminate_altitude  = 120e3
+        terminate_altitude  = 120e3,
     )
 
     @test fig isa Figure
@@ -205,7 +201,7 @@ end
         mission_name = SubString("Amazonia-1 ", 1, 10),
         panel_width  = 300.0,
         subtitle     = SubString("Subtitle ", 1, 8),
-        title        = SubString("Title ", 1, 5)
+        title        = SubString("Title ", 1, 5),
     )
 
     @test ax.title[] == "Title"
@@ -253,17 +249,12 @@ end
 
     # At least one getter must be provided when `show_f107` is `true`.
     @test_throws ArgumentError plot_decay_analysis(
-        df;
-        show_f107       = true,
-        f107_getter     = nothing,
-        f107_avg_getter = nothing
+        df; show_f107       = true, f107_getter     = nothing, f107_avg_getter = nothing
     )
 
     # A getter that does not match the space indices must raise a clear error.
     @test_throws ArgumentError plot_decay_analysis(
-        df;
-        show_f107   = true,
-        f107_getter = si -> si.not_a_field
+        df; show_f107   = true, f107_getter = si -> si.not_a_field
     )
 
     # The keyword `subtitle` only accepts the symbol `:auto`.
@@ -318,7 +309,7 @@ end
 
     orbp = Propagators.init(Val(:J2), orb)
 
-    gt = ground_track(orbp; track_types = :descending, duration = 5 * 86400);
+    gt = ground_track(orbp; track_types = :descending, duration = 5 * 86400)
 
     fig, ax = plot_ground_track(gt; size = (2000, 1000))
 
@@ -383,10 +374,10 @@ end
 @testset "Function plot_ground_facility_visibility_circles [EXT]" begin
     using GeoJSON
 
-    gfv1 = ground_facility_visibility_circle((0, 0, 0), EARTH_EQUATORIAL_RADIUS + 700e3);
+    gfv1 = ground_facility_visibility_circle((0, 0, 0), EARTH_EQUATORIAL_RADIUS + 700e3)
     gfv2 = ground_facility_visibility_circle(
         (-40 |> deg2rad, -60 |> deg2rad, 0), EARTH_EQUATORIAL_RADIUS + 700e3
-    );
+    )
 
     fig, ax = plot_ground_facility_visibility_circles(
         [gfv1, gfv2]; ground_facility_names = ["GF 1", "GF 2"]

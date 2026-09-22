@@ -14,7 +14,7 @@ using StaticArrays
 const _SOLAR_PRESSURE_1AU = 1367 / 299792458
 
 # Sun gravitational parameter [m³ / s²].
-const _μ_SUN  = 1.32712440018e20
+const _μ_SUN = 1.32712440018e20
 
 # Moon gravitational parameter [m³ / s²].
 const _μ_MOON = 4.9027988e12
@@ -39,4 +39,3 @@ include("main.jl")
 include("precompile.jl")
 
 end
-

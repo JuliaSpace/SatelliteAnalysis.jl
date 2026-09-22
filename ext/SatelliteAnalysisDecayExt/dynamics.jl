@@ -43,7 +43,7 @@ radiation pressure) over one orbit, and adds the closed-form J₂² rates.
 - **[1]** Battin, R. H. (1999). An Introduction to the Mathematics and Methods of
     Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
 """
-function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
+function _dynamics(u::AbstractVector{T}, params, t::Real) where {T <: Number}
     # Gravity model and its constants, hoisted into `params` by `_decay_analysis`.
     gm = params.gm
     μ  = params.μ
@@ -109,15 +109,17 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
         # Position and velocity from mean orbital elements.
         rk_tod, vk_tod = _coe_to_rv(ā, ē, ī, Ω̄, ω̄, f̄k)
         rk² = dot(rk_tod, rk_tod)
-        rk  = √rk²
+        rk = √rk²
 
         rk_pef = D_pef_tod * rk_tod
 
         # Conservative perturbations in TOD.
         δak_tod =
-            (D_tod_pef * _perturbational_gravity_acceleration(
-                gm, jd_utc, rk_pef; μ = μ, workspace = params.gravity_workspace
-            )) +
+            (
+                D_tod_pef * _perturbational_gravity_acceleration(
+                    gm, jd_utc, rk_pef; μ = μ, workspace = params.gravity_workspace
+                )
+            ) +
             _point_mass_acceleration(rk_tod, rsun_tod, _μ_SUN) +
             _point_mass_acceleration(rk_tod, rmoon_tod, _μ_MOON)
 
@@ -152,7 +154,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
             D_pef_tod,
             D_tod_pef,
             space_indices,
-            params
+            params,
         )
 
         ∂u_drag += w_t * ∂u_drag_k
@@ -166,7 +168,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where T <: Number
 
     # Average of the non-conservative perturbations.
     ∂u_drag = ∂u_drag / Wsum
-    ∂u_srp  = ∂u_srp  / Wsum
+    ∂u_srp  = ∂u_srp / Wsum
 
     # The J₂² rates are expressed in classical elements. Convert them to equinoctial
     # rates using the Jacobian of the transformation.

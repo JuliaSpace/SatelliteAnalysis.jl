@@ -34,7 +34,7 @@ Compute the equinoctial orbital elements from the classical orbital elements **[
 - **[1]** Battin, R. H. (1999). An Introduction to the Mathematics and Methods of
     Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
 """
-function _classical_to_equinoctial(a::T, e::T, i::T, Ω::T, ω::T, M::T) where T<:Number
+function _classical_to_equinoctial(a::T, e::T, i::T, Ω::T, ω::T, M::T) where {T <: Number}
     ψ = M + Ω + ω
     ξ = Ω + ω
 
@@ -74,7 +74,7 @@ Compute position and velocity vectors from Classical Orbital Elements:
 - `SVector{3, T}`: Position vector in ECI frame [m].
 - `SVector{3, T}`: Velocity vector in ECI frame [m/s].
 """
-function _coe_to_rv(a::T, e::T, i::T, Ω::T, ω::T, f::T) where T <: Number
+function _coe_to_rv(a::T, e::T, i::T, Ω::T, ω::T, f::T) where {T <: Number}
     ke = KeplerianElements(0.0, a, e, i, Ω, ω, f)
 
     return kepler_to_rv(ke)
@@ -104,7 +104,7 @@ sensitivity analysis, covariance propagation, and orbit determination.
     partial derivative of an equinoctial element with respect to a classical orbital
     element.
 """
-function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where T <: Number
+function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where {T <: Number}
     ξ = Ω + ω
 
     sin_ξ, cos_ξ = sincos(ξ)
@@ -192,9 +192,7 @@ eccentricity and inclination.
 - **[1]** Battin, R. H. (1999). An Introduction to the Mathematics and Methods of
     Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
 """
-function _equinoctial_to_classical(
-    eq::AbstractVector{T}
-) where T <: Number
+function _equinoctial_to_classical(eq::AbstractVector{T}) where {T <: Number}
     # Unpack.
     a, ψ, e_x, e_y, i_x, i_y = eq
 
@@ -262,14 +260,8 @@ osculating propagator `orbp`, which is re-initialized in place.
     Microcosm Press, Hawthorne, CA.
 """
 function _mean_to_osculating_rv(
-    a::T,
-    e::T,
-    i::T,
-    Ω::T,
-    ω::T,
-    f::T,
-    orbp::OrbitPropagatorJ2Osculating
-) where T <: Number
+    a::T, e::T, i::T, Ω::T, ω::T, f::T, orbp::OrbitPropagatorJ2Osculating
+) where {T <: Number}
     orb_tod = KeplerianElements(0.0, a, e, i, Ω, ω, f)
 
     # Convert to osculating. The J2 osculating conversion is not total: for unphysical
@@ -332,7 +324,9 @@ conversions between the anomalies.
 - **[1]** Vallado, D. A. (2013). *Fundamentals of Astrodynamics and Applications*. 4th ed.
     Microcosm Press, Hawthorne, CA.
 """
-function _osculating_to_mean_elements(a::T, e::T, i::T, Ω::T, ω::T, f::T) where T <: Number
+function _osculating_to_mean_elements(
+    a::T, e::T, i::T, Ω::T, ω::T, f::T
+) where {T <: Number}
     # Normalize.
     a, e, i, Ω, ω, f = _normalize_classical_elements(a, e, i, Ω, ω, f)
     e = max(e, T(1e-6))
@@ -396,13 +390,8 @@ Normalize classical orbital elements to valid ranges:
 - `T`: Normalized mean anomaly [rad].
 """
 function _normalize_classical_elements(
-    a::T,
-    e::T,
-    i::T,
-    Ω::T,
-    ω::T,
-    M::T
-) where T <: Number
+    a::T, e::T, i::T, Ω::T, ω::T, M::T
+) where {T <: Number}
     a_norm = abs(a)
     e_norm = max(e, zero(T))
     i_norm = clamp(i, zero(T), T(π))
@@ -430,9 +419,8 @@ The Hill frame is defined as follows:
 - Z-axis: along the cross-track direction (perpendicular to the orbital plane).
 """
 function _r_eci_to_hill(
-    r_eci::AbstractVector{T},
-    v_eci::AbstractVector{T}
-) where T <: Number
+    r_eci::AbstractVector{T}, v_eci::AbstractVector{T}
+) where {T <: Number}
     r̄_eci = normalize(r_eci)
     h_eci = cross(r_eci, v_eci)
     h̄_eci = normalize(h_eci)
@@ -444,4 +432,3 @@ function _r_eci_to_hill(
         h̄_eci[1] h̄_eci[2] h̄_eci[3]
     ]
 end
-

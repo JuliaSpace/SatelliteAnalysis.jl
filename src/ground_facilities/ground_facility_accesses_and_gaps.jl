@@ -139,7 +139,6 @@ function ground_facility_accesses(
 ) where {
     T <: Tuple{T1, T2, T3} where {T1 <: Number, T2 <: Number, T3 <: Number}, R <: Function
 }
-
     step > 0 || throw(ArgumentError("The step must be positive."))
 
     # Factor to convert the time from seconds to the selected unit. Notice that this
@@ -387,11 +386,7 @@ function ground_facility_gaps(
     duration .*= time_factor
 
     # Create the DataFrame and write the metadata.
-    dfg = DataFrame(
-        :gap_beginning => vgap_beg,
-        :gap_end       => vgap_end,
-        :duration      => duration,
-    )
+    dfg = DataFrame(:gap_beginning => vgap_beg, :gap_end => vgap_end, :duration => duration)
 
     # The style `:note` makes the metadata propagate through DataFrame transformations.
     metadata!(dfg, "Description", "Gaps to the ground facilities."; style = :note)

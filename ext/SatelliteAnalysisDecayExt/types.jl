@@ -55,7 +55,7 @@ function (m::Nrlmsise00AtmosphericModel)(
         space_indices.f107_avg,
         space_indices.f107,
         space_indices.ap;
-        P = m.P
+        P = m.P,
     )
 
     return atmos.total_density
@@ -128,7 +128,7 @@ function (m::Jacchia77AtmosphericModel)(
         space_indices.f107,
         space_indices.f107_avg,
         space_indices.kp;
-        variant = m.variant
+        variant = m.variant,
     )
 
     return atmos.total_density
@@ -179,13 +179,7 @@ function (::Jr1971AtmosphericModel)(
     h′ = max(h, 90.0e3)
 
     atmos = AtmosphericModels.jr1971(
-        jd_utc,
-        lat,
-        lon,
-        h′,
-        space_indices.f107,
-        space_indices.f107_avg,
-        space_indices.kp
+        jd_utc, lat, lon, h′, space_indices.f107, space_indices.f107_avg, space_indices.kp
     )
 
     return atmos.total_density

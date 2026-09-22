@@ -21,10 +21,10 @@ end
         jd₀,
         EARTH_EQUATORIAL_RADIUS + 300e3,
         0.001,
-        98.0    |> deg2rad,
+        98.0 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90.0    |> deg2rad,
-        0.0
+        90.0 |> deg2rad,
+        0.0,
     )
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
@@ -35,7 +35,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        return_solution     = true
+        return_solution     = true,
     )
 
     # The raw solution must be stored in the metadata, and it must not be propagated by
@@ -59,23 +59,23 @@ end
         "perigee_altitude",
     ]
 
-    @test eltype(df.date)             == DateTime
-    @test eltype(df.time)             == Float64
-    @test eltype(df.space_indices)    == typeof(si_const)
-    @test eltype(df.mean_elements)    == KeplerianElements{MeanAnomaly, Float64, Float64}
-    @test eltype(df.apogee_altitude)  == Float64
+    @test eltype(df.date) == DateTime
+    @test eltype(df.time) == Float64
+    @test eltype(df.space_indices) == typeof(si_const)
+    @test eltype(df.mean_elements) == KeplerianElements{MeanAnomaly, Float64, Float64}
+    @test eltype(df.apogee_altitude) == Float64
     @test eltype(df.perigee_altitude) == Float64
 
     @test metadata(df, "Description") ==
         "Mean orbital element evolution during the orbital decay."
 
-    @test metadata(df, "Atmospheric Model")    == "NRLMSISE-00"
-    @test metadata(df, "Drag Coefficient")     == 2.2
-    @test metadata(df, "Satellite Mass")       == 100.0
-    @test metadata(df, "Satellite Mean Area")  == 1.0
+    @test metadata(df, "Atmospheric Model") == "NRLMSISE-00"
+    @test metadata(df, "Drag Coefficient") == 2.2
+    @test metadata(df, "Satellite Mass") == 100.0
+    @test metadata(df, "Satellite Mean Area") == 1.0
     @test metadata(df, "Space Indices Source") == "Constant $(si_const)"
-    @test metadata(df, "SRP Coefficient")      == 1.25
-    @test metadata(df, "Terminate Altitude")   == 120e3
+    @test metadata(df, "SRP Coefficient") == 1.25
+    @test metadata(df, "Terminate Altitude") == 120e3
 
     # All the table-level metadata must use the style `:note` to propagate through
     # DataFrame transformations.
@@ -92,13 +92,13 @@ end
 
     df_subset = subset(df, :time => t -> t .>= 0)
 
-    @test colmetadata(df_subset, :time,            "Unit") == :y
+    @test colmetadata(df_subset, :time, "Unit") == :y
     @test colmetadata(df_subset, :apogee_altitude, "Unit") == :km
 
-    @test colmetadata(df, :date,             "Unit") == :UTC
-    @test colmetadata(df, :time,             "Unit") == :y
-    @test colmetadata(df, :mean_elements,    "Unit") == :SI
-    @test colmetadata(df, :apogee_altitude,  "Unit") == :km
+    @test colmetadata(df, :date, "Unit") == :UTC
+    @test colmetadata(df, :time, "Unit") == :y
+    @test colmetadata(df, :mean_elements, "Unit") == :SI
+    @test colmetadata(df, :apogee_altitude, "Unit") == :km
     @test colmetadata(df, :perigee_altitude, "Unit") == :km
 
     # The column `space_indices` must not have unit metadata since its fields have
@@ -112,7 +112,7 @@ end
     # The analysis must start at the orbit epoch.
     @test df[begin, :date] == julian2datetime(jd₀)
     @test df[begin, :time] == 0.0
-    @test df[end,   :time] ≈ (datetime2julian(df[end, :date]) - jd₀) / 365.25 atol = 1e-8
+    @test df[end, :time] ≈ (datetime2julian(df[end, :date]) - jd₀) / 365.25 atol = 1e-8
 
     # The space indices provided by the user must be recorded in the output.
     @test all(==(si_const), df.space_indices)
@@ -140,7 +140,7 @@ end
         solver                        = Tsit5(),
         reltol                        = 1e-8,
         abstol                        = 1e-8,
-        num_sampling_points_per_orbit = 33
+        num_sampling_points_per_orbit = 33,
     )
 
     lifetime_tight = datetime2julian(df_tight[end, :date]) - jd₀
@@ -158,7 +158,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        input_type          = :osculating
+        input_type          = :osculating,
     )
 
     lifetime_osc = datetime2julian(df_osc[end, :date]) - jd₀
@@ -172,7 +172,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        input_type          = :mean
+        input_type          = :mean,
     )
 
     @test df_mean[end, :date] == df[end, :date]
@@ -195,7 +195,7 @@ end
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
         gravity_model       = gm,
-        space_indices       = si_const
+        space_indices       = si_const,
     )
 
     ke_sv  = df_sv[begin, :mean_elements]
@@ -216,7 +216,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        input_type          = :mean
+        input_type          = :mean,
     )
 
     ke_sv = df_sv[begin, :mean_elements]
@@ -242,7 +242,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        input_type          = :osc
+        input_type          = :osc,
     )
 
     # == Keyword terminate_altitude ========================================================
@@ -253,7 +253,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        terminate_altitude  = 200e3
+        terminate_altitude  = 200e3,
     )
 
     @test df_200 isa DataFrame
@@ -270,15 +270,15 @@ end
         gravity_model       = gm,
         space_indices       = si_const,
         distance_unit       = :m,
-        time_unit           = :s
+        time_unit           = :s,
     )
 
-    @test df_u.time             ≈ df.time .* (365.25 * 86400)
-    @test df_u.apogee_altitude  ≈ df.apogee_altitude .* 1000
+    @test df_u.time ≈ df.time .* (365.25 * 86400)
+    @test df_u.apogee_altitude ≈ df.apogee_altitude .* 1000
     @test df_u.perigee_altitude ≈ df.perigee_altitude .* 1000
 
-    @test colmetadata(df_u, :time,             "Unit") == :s
-    @test colmetadata(df_u, :apogee_altitude,  "Unit") == :m
+    @test colmetadata(df_u, :time, "Unit") == :s
+    @test colmetadata(df_u, :apogee_altitude, "Unit") == :m
     @test colmetadata(df_u, :perigee_altitude, "Unit") == :m
 
     df_d = decay_analysis(
@@ -287,7 +287,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        time_unit           = :d
+        time_unit           = :d,
     )
 
     @test df_d.time ≈ df.time .* 365.25
@@ -299,10 +299,10 @@ end
     ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
 
     @test ext._decay_analysis__default_num_sampling_points(0.001) == 17
-    @test ext._decay_analysis__default_num_sampling_points(0.05)  == 33
-    @test ext._decay_analysis__default_num_sampling_points(0.29)  == 33
-    @test ext._decay_analysis__default_num_sampling_points(0.3)   == 65
-    @test ext._decay_analysis__default_num_sampling_points(0.7)   == 65
+    @test ext._decay_analysis__default_num_sampling_points(0.05) == 33
+    @test ext._decay_analysis__default_num_sampling_points(0.29) == 33
+    @test ext._decay_analysis__default_num_sampling_points(0.3) == 65
+    @test ext._decay_analysis__default_num_sampling_points(0.7) == 65
 
     df_n17 = decay_analysis(
         orb;
@@ -310,7 +310,7 @@ end
         satellite_mean_area           = 1.0,
         gravity_model                 = gm,
         space_indices                 = si_const,
-        num_sampling_points_per_orbit = 17
+        num_sampling_points_per_orbit = 17,
     )
 
     @test df_n17[end, :date] == df[end, :date]
@@ -334,7 +334,7 @@ end
             satellite_mean_area = 1.0,
             gravity_model       = gm,
             space_indices       = si_const,
-            invalid_kwargs...
+            invalid_kwargs...,
         )
     end
 
@@ -345,7 +345,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        distance_unit       = :unknown
+        distance_unit       = :unknown,
     )
 
     @test_throws ArgumentError decay_analysis(
@@ -354,7 +354,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        time_unit           = :unknown
+        time_unit           = :unknown,
     )
 end
 
@@ -365,10 +365,10 @@ end
         jd₀,
         EARTH_EQUATORIAL_RADIUS + 300e3,
         0.001,
-        98.0    |> deg2rad,
+        98.0 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90.0    |> deg2rad,
-        0.0
+        90.0 |> deg2rad,
+        0.0,
     )
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
@@ -377,7 +377,7 @@ end
         orb;
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
-        gravity_model       = gm
+        gravity_model       = gm,
     )
 
     # The default space indices come from the observed and predicted data provided by
@@ -404,7 +404,7 @@ end
         orb;
         satellite_mass      = 100.0,
         satellite_mean_area = 1.0,
-        gravity_model       = gm
+        gravity_model       = gm,
     )
 
     @test df₂[end, :date] == df[end, :date]
@@ -449,10 +449,10 @@ end
         jd₀,
         EARTH_EQUATORIAL_RADIUS + 300e3,
         0.001,
-        98.0    |> deg2rad,
+        98.0 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90.0    |> deg2rad,
-        0.0
+        90.0 |> deg2rad,
+        0.0,
     )
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
@@ -467,11 +467,11 @@ end
     sis  = typeof(si_const)[]
 
     dense_model = (jd_utc, lat, lon, h, si) -> begin
-        push!(jds,  jd_utc)
+        push!(jds, jd_utc)
         push!(lats, lat)
         push!(lons, lon)
-        push!(hs,   h)
-        push!(sis,  si)
+        push!(hs, h)
+        push!(sis, si)
         return 5.0e-11
     end
 
@@ -481,7 +481,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        atmospheric_model   = dense_model
+        atmospheric_model   = dense_model,
     )
 
     @test df_dense[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
@@ -506,7 +506,7 @@ end
         gravity_model          = gm,
         space_indices          = si_const,
         atmospheric_model      = (jd_utc, lat, lon, h, si) -> 2.0e-11,
-        atmospheric_model_name = "Uniform (2e-11)"
+        atmospheric_model_name = "Uniform (2e-11)",
     )
 
     @test df_thin[end, :perigee_altitude] ≈ 120.0 atol = 1e-6
@@ -521,10 +521,10 @@ end
         jd₀,
         EARTH_EQUATORIAL_RADIUS + 300e3,
         0.001,
-        98.0    |> deg2rad,
+        98.0 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90.0    |> deg2rad,
-        0.0
+        90.0 |> deg2rad,
+        0.0,
     )
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
@@ -539,10 +539,10 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         @decay_analysis__jacchia77,
-        space_indices       = si_const
+        space_indices = si_const,
     )
 
-    @test metadata(df, "Atmospheric Model")    == "Jacchia 1977"
+    @test metadata(df, "Atmospheric Model") == "Jacchia 1977"
     @test metadata(df, "Space Indices Source") == "Constant $(si_const)"
     @test eltype(df.space_indices) == typeof(si_const)
     @test all(==(si_const), df.space_indices)
@@ -562,7 +562,7 @@ end
         @decay_analysis__jacchia77
     )
 
-    @test metadata(df_default, "Atmospheric Model")    == "Jacchia 1977"
+    @test metadata(df_default, "Atmospheric Model") == "Jacchia 1977"
     @test metadata(df_default, "Space Indices Source") == "Default (Adj. + Pred.)"
 
     f107s     = getproperty.(df_default.space_indices, :f107)
@@ -581,9 +581,9 @@ end
     ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
     jac = ext.Jacchia77AtmosphericModel()
 
-    @test jac(jd₀, 0.0, 0.0, 300e3,  si_const) > 0
+    @test jac(jd₀, 0.0, 0.0, 300e3, si_const) > 0
     @test jac(jd₀, 0.0, 0.0, 2000e3, si_const) > 0
-    @test jac(jd₀, 0.0, 0.0, 50e3,   si_const) == jac(jd₀, 0.0, 0.0, 90e3, si_const)
+    @test jac(jd₀, 0.0, 0.0, 50e3, si_const) == jac(jd₀, 0.0, 0.0, 90e3, si_const)
     @test jac(jd₀, 0.0, 0.0, 2001e3, si_const) == 0
 end
 
@@ -594,10 +594,10 @@ end
         jd₀,
         EARTH_EQUATORIAL_RADIUS + 300e3,
         0.001,
-        98.0    |> deg2rad,
+        98.0 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90.0    |> deg2rad,
-        0.0
+        90.0 |> deg2rad,
+        0.0,
     )
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
@@ -612,10 +612,10 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         @decay_analysis__jacchia77_stela,
-        space_indices       = si_const
+        space_indices = si_const,
     )
 
-    @test metadata(df, "Atmospheric Model")    == "Jacchia 1977 (STELA)"
+    @test metadata(df, "Atmospheric Model") == "Jacchia 1977 (STELA)"
     @test metadata(df, "Space Indices Source") == "Constant $(si_const)"
     @test all(==(si_const), df.space_indices)
 
@@ -640,7 +640,7 @@ end
 
     @test stela(jd₀, 0.0, 0.0, 300e3, si_const) > 0
     @test stela(jd₀, 0.0, 0.0, 2000e3, si_const) > 0
-    @test stela(jd₀, 0.0, 0.0, 50e3,   si_const) == stela(jd₀, 0.0, 0.0, 90e3, si_const)
+    @test stela(jd₀, 0.0, 0.0, 50e3, si_const) == stela(jd₀, 0.0, 0.0, 90e3, si_const)
     @test stela(jd₀, 0.0, 0.0, 2001e3, si_const) == 0
     @test stela(jd₀, 0.0, 0.0, 300e3, si_const) != jac(jd₀, 0.0, 0.0, 300e3, si_const)
 end
@@ -652,10 +652,10 @@ end
         jd₀,
         EARTH_EQUATORIAL_RADIUS + 300e3,
         0.001,
-        98.0    |> deg2rad,
+        98.0 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90.0    |> deg2rad,
-        0.0
+        90.0 |> deg2rad,
+        0.0,
     )
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
@@ -670,10 +670,10 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         @decay_analysis__jr1971,
-        space_indices       = si_const
+        space_indices = si_const,
     )
 
-    @test metadata(df, "Atmospheric Model")    == "Jacchia-Roberts 1971"
+    @test metadata(df, "Atmospheric Model") == "Jacchia-Roberts 1971"
     @test metadata(df, "Space Indices Source") == "Constant $(si_const)"
     @test all(==(si_const), df.space_indices)
 
@@ -693,7 +693,7 @@ end
         @decay_analysis__jr1971
     )
 
-    @test metadata(df_default, "Atmospheric Model")    == "Jacchia-Roberts 1971"
+    @test metadata(df_default, "Atmospheric Model") == "Jacchia-Roberts 1971"
     @test metadata(df_default, "Space Indices Source") == "Default (Adj. + Pred.)"
 
     kps = getproperty.(df_default.space_indices, :kp)
@@ -713,7 +713,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         kwargs...,
-        space_indices       = si_const
+        space_indices = si_const,
     )
 
     @test df_kwargs[end, :date] == df[end, :date]
@@ -726,9 +726,9 @@ end
     ext = Base.get_extension(SatelliteAnalysis, :SatelliteAnalysisDecayExt)
     jr = ext.Jr1971AtmosphericModel()
 
-    @test jr(jd₀, 0.0, 0.0, 300e3,  si_const) > 0
+    @test jr(jd₀, 0.0, 0.0, 300e3, si_const) > 0
     @test jr(jd₀, 0.0, 0.0, 1500e3, si_const) > 0
-    @test jr(jd₀, 0.0, 0.0, 50e3,   si_const) == jr(jd₀, 0.0, 0.0, 90e3, si_const)
+    @test jr(jd₀, 0.0, 0.0, 50e3, si_const) == jr(jd₀, 0.0, 0.0, 90e3, si_const)
     @test jr(jd₀, 0.0, 0.0, 3001e3, si_const) == 0
 
     # Hence, the analysis must work in orbits with apogee above the upper limit of the
@@ -737,10 +737,10 @@ end
         jd₀,
         (2EARTH_EQUATORIAL_RADIUS + 250e3 + 35_786e3) / 2,
         0.7285,
-        7.0   |> deg2rad,
+        7.0 |> deg2rad,
         0.0,
         178.0 |> deg2rad,
-        0.0
+        0.0,
     )
 
     for model_kwargs in (
@@ -754,8 +754,8 @@ end
             satellite_mean_area = 1.0,
             gravity_model       = gm,
             model_kwargs()...,
-            space_indices       = si_const,
-            tf                  = 10 * 86400.0
+            space_indices = si_const,
+            tf            = 10 * 86400.0,
         )
 
         @test df_gto[begin, :apogee_altitude] > 35_000
@@ -770,10 +770,10 @@ end
         jd₀,
         EARTH_EQUATORIAL_RADIUS + 300e3,
         0.001,
-        98.0    |> deg2rad,
+        98.0 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
-        90.0    |> deg2rad,
-        0.0
+        90.0 |> deg2rad,
+        0.0,
     )
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
@@ -795,7 +795,7 @@ end
                 gravity_model       = gm,
                 space_indices       = si_const,
                 atmospheric_model   = dense_model,
-                verbose             = true
+                verbose             = true,
             )
         end
     end
@@ -814,7 +814,7 @@ end
         satellite_mean_area = 1.0,
         gravity_model       = gm,
         space_indices       = si_const,
-        atmospheric_model   = dense_model
+        atmospheric_model   = dense_model,
     )
 
     @test df_verbose[end, :date] == df[end, :date]
@@ -856,8 +856,8 @@ end
 
     p₃ = ext.DecayProgress(devnull, 100.0, 300e3, 120e3)
 
-    @test ext._decay_progress_fraction(p₃, 50.0,  300e3) ≈ 0.5
-    @test ext._decay_progress_fraction(p₃, 10.0,  165e3) ≈ 0.75
+    @test ext._decay_progress_fraction(p₃, 50.0, 300e3) ≈ 0.5
+    @test ext._decay_progress_fraction(p₃, 10.0, 165e3) ≈ 0.75
     @test ext._decay_progress_fraction(p₃, 200.0, 400e3) == 1.0
 end
 
@@ -888,7 +888,7 @@ end
         98.0 |> deg2rad,
         ltdn_to_raan(10.5, jd₀),
         90.0 |> deg2rad,
-        0.0
+        0.0,
     )
 
     gm = GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
@@ -929,12 +929,13 @@ end
         )
 
         # Third-body point masses using the same routine.
-        a_3b_tod = ext._point_mass_acceleration(r_tod, rsun_tod, ext._μ_SUN) +
+        a_3b_tod =
+            ext._point_mass_acceleration(r_tod, rsun_tod, ext._μ_SUN) +
             ext._point_mass_acceleration(r_tod, rmoon_tod, ext._μ_MOON)
 
         # Solar radiation pressure with the same shadow rule.
         lc = lighting_condition(r_tod, rsun_tod)
-        ν  = lc == :sunlight ? 1.0 : (lc == :penumbra ? 0.5 : 0.0)
+        ν = lc == :sunlight ? 1.0 : (lc == :penumbra ? 0.5 : 0.0)
         a_srp_tod = ν * ext._solar_radiation_acceleration(r_tod, rsun_tod, area, mass, C_r)
 
         a_tod = D_tod_pef * (a_grav_pef + a_drag_pef) + a_3b_tod + a_srp_tod
@@ -980,7 +981,7 @@ end
         solver                        = Tsit5(),
         reltol                        = 1e-8,
         abstol                        = 1e-8,
-        num_sampling_points_per_orbit = 33
+        num_sampling_points_per_orbit = 33,
     )
 
     # == Comparison ========================================================================
@@ -988,7 +989,7 @@ end
     wrap(x) = mod(x + π, 2π) - π
 
     ke_beg = df[begin, :mean_elements]
-    ke_end = df[end,   :mean_elements]
+    ke_end = df[end, :mean_elements]
     M_end  = mean_anomaly(ke_end)
 
     # The averaged model must show significant motion, otherwise the comparison is
@@ -996,10 +997,10 @@ end
     @test ke_end.a - ke_beg.a < -200
     @test abs(wrap(ke_end.Ω - ke_beg.Ω)) > 0.1
 
-    @test abs(ke_end.a - ke_mean.a)          < 150
-    @test abs(ke_end.e - ke_mean.e)          < 2e-5
-    @test abs(wrap(ke_end.i - ke_mean.i))    < 2e-6
-    @test abs(wrap(ke_end.Ω - ke_mean.Ω))    < 4e-4
-    @test abs(wrap(ke_end.ω - ke_mean.ω))    < 2e-4
-    @test abs(wrap(M_end - M_mean))          < 2e-2
+    @test abs(ke_end.a - ke_mean.a) < 150
+    @test abs(ke_end.e - ke_mean.e) < 2e-5
+    @test abs(wrap(ke_end.i - ke_mean.i)) < 2e-6
+    @test abs(wrap(ke_end.Ω - ke_mean.Ω)) < 4e-4
+    @test abs(wrap(ke_end.ω - ke_mean.ω)) < 2e-4
+    @test abs(wrap(M_end - M_mean)) < 2e-2
 end

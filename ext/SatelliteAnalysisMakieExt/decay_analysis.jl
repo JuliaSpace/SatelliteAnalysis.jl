@@ -18,14 +18,14 @@ function SatelliteAnalysis.plot_decay_analysis(
     mission_name::Union{Nothing, AbstractString} = nothing,
     mono_ticklabels::Bool = false,
     panel_width::Union{Nothing, Real} = nothing,
-    satellite_mass::Union{Nothing, Number}      = nothing,
+    satellite_mass::Union{Nothing, Number} = nothing,
     satellite_mean_area::Union{Nothing, Number} = nothing,
     show_assumptions::Bool = true,
     show_dates::Bool = false,
     show_f107::Bool = false,
     show_reentry_callout::Bool = true,
     subtitle::Union{Nothing, AbstractString, Symbol} = :auto,
-    terminate_altitude::Union{Nothing, Number}  = nothing,
+    terminate_altitude::Union{Nothing, Number} = nothing,
     theme::Union{Nothing, Symbol, Makie.Theme} = :light,
     title::AbstractString = "Orbital Decay Analysis",
     xlims::Union{Nothing, Tuple} = nothing,
@@ -33,7 +33,7 @@ function SatelliteAnalysis.plot_decay_analysis(
     # The default size keeps the 16:9 aspect while providing enough axis height for the
     # side column to fit all the cards and the full legend within the plot frame.
     size = (1344, 756),
-    kwargs...
+    kwargs...,
 )
     # == Input Validation ==================================================================
 
@@ -43,8 +43,8 @@ function SatelliteAnalysis.plot_decay_analysis(
         hasproperty(df, c) || throw(
             ArgumentError(
                 "The input `DataFrame` must have the column `$c`. It should be obtained " *
-                "using the function `decay_analysis`."
-            )
+                "using the function `decay_analysis`.",
+            ),
         )
     end
 
@@ -56,12 +56,14 @@ function SatelliteAnalysis.plot_decay_analysis(
     f107_avg   = nothing
 
     if show_f107
-        isnothing(f107_getter) && isnothing(f107_avg_getter) && throw(
-            ArgumentError(
-                "At least one of the keywords `f107_getter` and `f107_avg_getter` must " *
-                "not be `nothing` when `show_f107` is `true`."
+        isnothing(f107_getter) &&
+            isnothing(f107_avg_getter) &&
+            throw(
+                ArgumentError(
+                    "At least one of the keywords `f107_getter` and `f107_avg_getter` must " *
+                    "not be `nothing` when `show_f107` is `true`.",
+                ),
             )
-        )
 
         # Extract the F10.7 series eagerly so that a getter mismatch raises a clear error
         # before the figure is assembled.
@@ -76,55 +78,53 @@ function SatelliteAnalysis.plot_decay_analysis(
                     "The F10.7 getters could not extract the values from the column " *
                     "`space_indices`. Pass the keywords `f107_getter` and " *
                     "`f107_avg_getter` matching the named tuple returned by the space " *
-                    "indices source used in the analysis."
-                )
+                    "indices source used in the analysis.",
+                ),
             )
         end
     end
 
     (subtitle isa Symbol && subtitle != :auto) && throw(
-        ArgumentError("The keyword `subtitle` must be a `String`, `nothing`, or `:auto`.")
+        ArgumentError("The keyword `subtitle` must be a `String`, `nothing`, or `:auto`."),
     )
 
     # If the user selected a theme variant, build the theme first since it also validates
     # the variant in `theme`. Otherwise, `theme` is a Makie theme or `nothing`.
-    sa_theme = theme isa Symbol ?
-        makie_theme(theme; fontscale = fontscale, mono_ticklabels = mono_ticklabels) :
-        theme
+    sa_theme =
+        theme isa Symbol ?
+        makie_theme(theme; fontscale = fontscale, mono_ticklabels = mono_ticklabels) : theme
 
     # Width of the column with the information panel and the legend, scaling with the
     # figure width by default.
-    panel_width′ = isnothing(panel_width) ?
-        clamp(round(Int, 0.22 * size[1]), 240, 360) :
-        panel_width
+    panel_width′ =
+        isnothing(panel_width) ? clamp(round(Int, 0.22 * size[1]), 240, 360) : panel_width
 
     # == Information Panel Values ==========================================================
 
     # The keywords have precedence over the `DataFrame` metadata.
-    mass = isnothing(satellite_mass) ?
-        metadata(df, "Satellite Mass", nothing) :
-        satellite_mass
+    mass =
+        isnothing(satellite_mass) ? metadata(df, "Satellite Mass", nothing) : satellite_mass
 
-    area = isnothing(satellite_mean_area) ?
-        metadata(df, "Satellite Mean Area", nothing) :
+    area =
+        isnothing(satellite_mean_area) ? metadata(df, "Satellite Mean Area", nothing) :
         satellite_mean_area
 
-    term = isnothing(terminate_altitude) ?
-        metadata(df, "Terminate Altitude", nothing) :
+    term =
+        isnothing(terminate_altitude) ? metadata(df, "Terminate Altitude", nothing) :
         terminate_altitude
 
     # Assumption values, resolved only from the `DataFrame` metadata.
     atm_model_name = metadata(df, "Atmospheric Model", nothing)
-    C_d            = metadata(df, "Drag Coefficient",  nothing)
-    C_r            = metadata(df, "SRP Coefficient",   nothing)
+    C_d            = metadata(df, "Drag Coefficient", nothing)
+    C_r            = metadata(df, "SRP Coefficient", nothing)
 
     # == Units =============================================================================
 
-    time_unit     = colmetadata(df, :time,            "Unit", :y)
+    time_unit     = colmetadata(df, :time, "Unit", :y)
     distance_unit = colmetadata(df, :apogee_altitude, "Unit", :km)
 
     # Human-readable axis labels, falling back to the raw symbol if it is unknown.
-    time_unit_label     = get(_TIME_UNIT_LABELS,     time_unit,     string(time_unit))
+    time_unit_label     = get(_TIME_UNIT_LABELS, time_unit, string(time_unit))
     distance_unit_label = get(_DISTANCE_UNIT_LABELS, distance_unit, string(distance_unit))
 
     # == Reentry Detection =================================================================
@@ -147,13 +147,13 @@ function SatelliteAnalysis.plot_decay_analysis(
     # `:light` if `theme` is a Makie theme or `nothing`.
     dark = theme == :dark
 
-    accent_color    = dark ? MAGENTA_DARK        : MAGENTA_LIGHT
-    border_color    = dark ? BORDER_DARK         : BORDER_LIGHT
-    card_color      = dark ? NAVY_CARD           : SURFACE_CARD
+    accent_color    = dark ? MAGENTA_DARK : MAGENTA_LIGHT
+    border_color    = dark ? BORDER_DARK : BORDER_LIGHT
+    card_color      = dark ? NAVY_CARD : SURFACE_CARD
     f107_color      = dark ? CATEGORICAL_DARK[3] : CATEGORICAL_LIGHT[3]
-    subline_color   = dark ? TEXT_TERTIARY_DARK  : TEXT_TERTIARY_LIGHT
+    subline_color   = dark ? TEXT_TERTIARY_DARK : TEXT_TERTIARY_LIGHT
     threshold_color = dark ? CATEGORICAL_DARK[6] : CATEGORICAL_LIGHT[6]
-    title_color     = dark ? CYAN_DARK           : CYAN_LIGHT
+    title_color     = dark ? CYAN_DARK : CYAN_LIGHT
 
     # == Assemble the Information Panel Cards =============================================
 
@@ -164,8 +164,7 @@ function SatelliteAnalysis.plot_decay_analysis(
 
     !isnothing(mass) &&
         push!(cards, ("SATELLITE MASS", ["$(_format_number(mass)) kg"], false))
-    !isnothing(area) &&
-        push!(cards, ("MEAN AREA", ["$(_format_number(area)) m²"], false))
+    !isnothing(area) && push!(cards, ("MEAN AREA", ["$(_format_number(area)) m²"], false))
 
     if !isnothing(term)
         if reentered
@@ -193,9 +192,12 @@ function SatelliteAnalysis.plot_decay_analysis(
             push!(
                 assumption_lines,
                 rich(
-                    "C", subscript("d"), " = $(_format_number(C_d)),  C", subscript("r"),
-                    " = $(_format_number(C_r))"
-                )
+                    "C",
+                    subscript("d"),
+                    " = $(_format_number(C_d)),  C",
+                    subscript("r"),
+                    " = $(_format_number(C_r))",
+                ),
             )
         elseif !isnothing(C_d)
             push!(assumption_lines, rich("C", subscript("d"), " = $(_format_number(C_d))"))
@@ -245,7 +247,7 @@ function SatelliteAnalysis.plot_decay_analysis(
                         f107_daily;
                         color     = (f107_color, 0.35),
                         linewidth = 1.0,
-                    )
+                    ),
                 )
                 push!(f107_labels, "F10.7 (daily)")
             end
@@ -260,7 +262,7 @@ function SatelliteAnalysis.plot_decay_analysis(
                         color     = (f107_color, 0.9),
                         linestyle = :dash,
                         linewidth = 1.5,
-                    )
+                    ),
                 )
                 push!(f107_labels, "F10.7 (81-day avg.)")
             end
@@ -273,18 +275,21 @@ function SatelliteAnalysis.plot_decay_analysis(
         # The automatic subtitle shows the analysis timespan when the dates are enabled.
         subtitle_str = if subtitle isa Symbol
             show_dates ?
-                Dates.format(first(df.date), dateformat"yyyy-mm-dd") * " → " *
-                    Dates.format(last(df.date), dateformat"yyyy-mm-dd") * " UTC" :
-                nothing
+            Dates.format(first(df.date), dateformat"yyyy-mm-dd") *
+            " → " *
+            Dates.format(last(df.date), dateformat"yyyy-mm-dd") *
+            " UTC" : nothing
         else
             subtitle
         end
 
-        subtitle_attrs = isnothing(subtitle_str) ? (;) : (;
-            subtitle      = subtitle_str,
-            subtitlecolor = subline_color,
-            subtitlesize  = 16.0 * fontscale,
-        )
+        subtitle_attrs =
+            isnothing(subtitle_str) ? (;) :
+            (;
+                subtitle = subtitle_str,
+                subtitlecolor = subline_color,
+                subtitlesize = 16.0 * fontscale,
+            )
 
         ax = Axis(
             fig[1, 1];
@@ -292,7 +297,7 @@ function SatelliteAnalysis.plot_decay_analysis(
             xlabel = "Time [$time_unit_label]",
             ylabel = "Altitude [$distance_unit_label]",
             subtitle_attrs...,
-            main_axis_background...
+            main_axis_background...,
         )
 
         push!(legend_plots, lines!(ax, df.time, df.apogee_altitude))
@@ -335,7 +340,8 @@ function SatelliteAnalysis.plot_decay_analysis(
             push!(legend_labels, "Reentry")
 
             if show_reentry_callout
-                callout_text = show_dates ?
+                callout_text =
+                    show_dates ?
                     "Reentry: " * Dates.format(last(df.date), dateformat"yyyy-mm-dd") :
                     "Reentry"
 
@@ -373,24 +379,20 @@ function SatelliteAnalysis.plot_decay_analysis(
             # automatic ticks of the twin axis.
             f107_finite = Iterators.filter(
                 isfinite,
-                Iterators.flatten(x for x in (f107_daily, f107_avg) if !isnothing(x))
+                Iterators.flatten(x for x in (f107_daily, f107_avg) if !isnothing(x)),
             )
 
             if !isempty(f107_finite)
                 f107_min, f107_max = extrema(f107_finite)
 
                 onany(ax.finallimits, ax.yaxis.tickvalues) do main_limits, main_tickvalues
-                    _align_twin_yticks!(
+                    return _align_twin_yticks!(
                         ax_f107, main_limits, main_tickvalues, f107_min, f107_max
                     )
                 end
 
                 _align_twin_yticks!(
-                    ax_f107,
-                    ax.finallimits[],
-                    ax.yaxis.tickvalues[],
-                    f107_min,
-                    f107_max
+                    ax_f107, ax.finallimits[], ax.yaxis.tickvalues[], f107_min, f107_max
                 )
             end
         end
@@ -597,11 +599,7 @@ ten) and the twin axis limits such that the data fits within the limits and each
 tick, a multiple of the tick step, shares the screen position of a main axis tick.
 """
 function _align_twin_yticks!(
-    ax_twin::Axis,
-    main_limits,
-    main_tickvalues::Vector,
-    data_min::Number,
-    data_max::Number,
+    ax_twin::Axis, main_limits, main_tickvalues::Vector, data_min::Number, data_max::Number
 )
     ylo = minimum(main_limits)[2]
     yhi = maximum(main_limits)[2]

@@ -37,12 +37,12 @@
     @test metadata(df, "Description") ==
         "Sun-synchronous, ground-repeating orbits with repetition between 1 and 1 days."
 
-    @test colmetadata(df, :semi_major_axis,      "Unit") == :km
-    @test colmetadata(df, :altitude,             "Unit") == :km
-    @test colmetadata(df, :inclination,          "Unit") == :deg
-    @test colmetadata(df, :period,               "Unit") == :min
+    @test colmetadata(df, :semi_major_axis, "Unit") == :km
+    @test colmetadata(df, :altitude, "Unit") == :km
+    @test colmetadata(df, :inclination, "Unit") == :deg
+    @test colmetadata(df, :period, "Unit") == :min
     @test colmetadata(df, :adjacent_gt_distance, "Unit") == :km
-    @test colmetadata(df, :adjacent_gt_angle,    "Unit") == :deg
+    @test colmetadata(df, :adjacent_gt_angle, "Unit") == :deg
 
     # All the metadata must use the style `:note` to propagate through DataFrame
     # transformations.
@@ -56,9 +56,9 @@
         1, 1; angle_unit = :rad, distance_unit = :m, time_unit = :s
     )
 
-    @test colmetadata(df_units, :altitude,          "Unit") == :m
+    @test colmetadata(df_units, :altitude, "Unit") == :m
     @test colmetadata(df_units, :adjacent_gt_angle, "Unit") == :rad
-    @test colmetadata(df_units, :period,            "Unit") == :s
+    @test colmetadata(df_units, :period, "Unit") == :s
 
     # == Altitude filter ===================================================================
 
@@ -262,11 +262,10 @@ end
     # large `k₂` and `k₆` to make the second-order terms relevant.
     k = (-5.0, 0.2, 0.004, 0.0045, 3.5, 1e-3)
     Ω̇_d = 0.9856
-    ω_d  = 3.6
+    ω_d = 3.6
 
-    fun(x, c) = SatelliteAnalysis._sun_sync_orbit__residues_and_jacobian(
-        x, c, Ω̇_d, ω_d, k...
-    )
+    fun(x, c) =
+        SatelliteAnalysis._sun_sync_orbit__residues_and_jacobian(x, c, Ω̇_d, ω_d, k...)
 
     for (x, c) in ((0.95, -0.15), (0.9, 0.3), (0.8, -0.6), (1.0, 0.05))
         ~, J = fun(x, c)
@@ -390,9 +389,7 @@ end
     )
     @test c == false
 
-    a, c = @test_logs sun_sync_orbit_semi_major_axis(
-        90.01 |> deg2rad; no_warnings = true
-    )
+    a, c = @test_logs sun_sync_orbit_semi_major_axis(90.01 |> deg2rad; no_warnings = true)
     @test c == true
 
     # == Test When the Orbit Is Not Valid ==================================================

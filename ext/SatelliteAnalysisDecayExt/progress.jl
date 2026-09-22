@@ -69,7 +69,7 @@ function DecayProgress(
     tf::Number,
     perigee₀::Number,
     terminate_altitude::Number;
-    ansi::Bool = io isa Base.TTY
+    ansi::Bool = io isa Base.TTY,
 )
     return DecayProgress(
         io,
@@ -80,7 +80,7 @@ function DecayProgress(
         time(),
         0.0,
         -1,
-        false
+        false,
     )
 end
 
@@ -162,7 +162,7 @@ function _decay_progress_callback(progress::Union{Nothing, DecayProgress})
     return DiscreteCallback(
         DecayProgressCondition(progress),
         DecayProgressAffect(progress);
-        save_positions = (false, false)
+        save_positions = (false, false),
     )
 end
 
@@ -193,10 +193,7 @@ wall time. In the plain fallback, a line is printed when the progress crosses a 
 of 5%.
 """
 function _update_decay_progress!(
-    progress::DecayProgress,
-    t::Number,
-    perigee::Number,
-    apogee::Number
+    progress::DecayProgress, t::Number, perigee::Number, apogee::Number
 )
     fraction = _decay_progress_fraction(progress, t, perigee)
 
@@ -204,7 +201,8 @@ function _update_decay_progress!(
         now = time()
         pct = floor(Int, fraction * 100)
 
-        redraw = !progress.drawn ||
+        redraw =
+            !progress.drawn ||
             (fraction >= 1) ||
             (pct > progress.last_percent) ||
             (now - progress.last_draw_wall >= _PROGRESS_REDRAW_PERIOD)
@@ -212,12 +210,7 @@ function _update_decay_progress!(
         redraw || return nothing
 
         _draw_decay_progress_panel(
-            progress,
-            fraction,
-            t,
-            perigee,
-            apogee,
-            now - progress.start_wall
+            progress, fraction, t, perigee, apogee, now - progress.start_wall
         )
 
         progress.last_draw_wall = now
@@ -235,7 +228,7 @@ function _update_decay_progress!(
             _format_progress_altitude(perigee),
             ", model time ",
             _format_progress_span(t),
-            ")"
+            ")",
         )
     end
 
@@ -256,12 +249,12 @@ function _finish_decay_progress!(
     t_end::Number,
     perigee_end::Number,
     apogee_end::Number,
-    reentered::Bool
+    reentered::Bool,
 )
     wall = time() - progress.start_wall
 
-    msg = reentered ?
-        "Decay analysis: reentry after " * _format_progress_span(t_end) :
+    msg =
+        reentered ? "Decay analysis: reentry after " * _format_progress_span(t_end) :
         "Decay analysis: no reentry within " * _format_progress_span(progress.tf)
 
     msg *= " (wall time: " * _format_progress_span(wall) * ")"
@@ -329,7 +322,7 @@ function _draw_decay_progress_panel(
     t::Number,
     perigee::Number,
     apogee::Number,
-    wall::Number
+    wall::Number,
 )
     io    = progress.io
     inner = _PROGRESS_PANEL_INNER_WIDTH
@@ -348,7 +341,7 @@ function _draw_decay_progress_panel(
     _print_panel_row(
         io,
         " " * _render_progress_bar(fraction) * "  \e[1m" * pct * "\e[0m",
-        1 + _PROGRESS_BAR_WIDTH + 2 + 6
+        1 + _PROGRESS_BAR_WIDTH + 2 + 6,
     )
 
     # -- Separator and Data Rows -----------------------------------------------------------
@@ -362,16 +355,28 @@ function _draw_decay_progress_panel(
 
     _print_panel_row(
         io,
-        " \e[90m" * rpad("Perigee", 12) * "\e[0m" * rpad(perigee_str, 13) * "\e[90m" *
-            rpad("Apogee", 12) * "\e[0m" * apogee_str,
-        1 + 12 + 13 + 12 + length(apogee_str)
+        " \e[90m" *
+        rpad("Perigee", 12) *
+        "\e[0m" *
+        rpad(perigee_str, 13) *
+        "\e[90m" *
+        rpad("Apogee", 12) *
+        "\e[0m" *
+        apogee_str,
+        1 + 12 + 13 + 12 + length(apogee_str),
     )
 
     _print_panel_row(
         io,
-        " \e[90m" * rpad("Model time", 12) * "\e[0m" * rpad(model_str, 13) * "\e[90m" *
-            rpad("Elapsed", 12) * "\e[0m" * wall_str,
-        1 + 12 + 13 + 12 + length(wall_str)
+        " \e[90m" *
+        rpad("Model time", 12) *
+        "\e[0m" *
+        rpad(model_str, 13) *
+        "\e[90m" *
+        rpad("Elapsed", 12) *
+        "\e[0m" *
+        wall_str,
+        1 + 12 + 13 + 12 + length(wall_str),
     )
 
     # -- Bottom Border ---------------------------------------------------------------------

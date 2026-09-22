@@ -20,8 +20,9 @@ export frozen_orbit
 
 # Cache with the default gravity model (EGM96), avoiding fetching and parsing the ICGEM file
 # at every call. The lock makes the lazy initialization thread-safe.
-const _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL =
-    Ref{Union{Nothing, AbstractGravityModel}}(nothing)
+const _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL = Ref{Union{Nothing, AbstractGravityModel}}(
+    nothing
+)
 
 const _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL_LOCK = ReentrantLock()
 
@@ -114,9 +115,8 @@ function frozen_orbit(
 )
     # The inclination functions are singular in equatorial orbits, in which the argument of
     # perigee is not defined.
-    ((0 < i < π) && !iszero(sin(i))) || throw(
-        ArgumentError("The inclination must be within the interval (0, π) [rad].")
-    )
+    ((0 < i < π) && !iszero(sin(i))) ||
+        throw(ArgumentError("The inclination must be within the interval (0, π) [rad]."))
 
     # Fetch EGM-96 gravity model if the user does not specify one.
     gm = isnothing(gravity_model) ? _frozen_orbit__default_gravity_model() : gravity_model
@@ -197,11 +197,12 @@ at the first call and kept in memory. This function is thread-safe.
 function _frozen_orbit__default_gravity_model()
     return lock(_FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL_LOCK) do
         if isnothing(_FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL[])
-            _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL[] =
-                GravityModels.load(IcgemFile, fetch_icgem_file(:EGM96))
+            _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL[] = GravityModels.load(
+                IcgemFile, fetch_icgem_file(:EGM96)
+            )
         end
 
-        _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL[]
+        return _FROZEN_ORBIT_DEFAULT_GRAVITY_MODEL[]
     end
 end
 

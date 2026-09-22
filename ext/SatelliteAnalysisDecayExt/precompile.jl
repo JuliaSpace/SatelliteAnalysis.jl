@@ -83,7 +83,7 @@
                 98.0 |> deg2rad,
                 ltdn_to_raan(10.5, jd₀),
                 90.0 |> deg2rad,
-                0.0
+                0.0,
             )
 
             # Run a short analysis compiling the whole pipeline: the solver stack, the
@@ -94,7 +94,7 @@
                 satellite_mean_area = 1.0,
                 gravity_model       = gm,
                 space_indices       = (f107 = 140.0, f107_avg = 140.0, ap = 9.0),
-                tf                  = 86400.0
+                tf                  = 86400.0,
             )
 
             # Compile the Jacchia 1977, Jacchia 1977 (STELA variant), and Jacchia-Roberts
@@ -109,7 +109,7 @@
                 gravity_model       = gm,
                 tf                  = 86400.0,
                 @decay_analysis__jacchia77,
-                space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+                space_indices = (f107 = 140.0, f107_avg = 140.0, kp = 3.0),
             )
 
             decay_analysis(
@@ -119,7 +119,7 @@
                 gravity_model       = gm,
                 tf                  = 86400.0,
                 @decay_analysis__jacchia77_stela,
-                space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+                space_indices = (f107 = 140.0, f107_avg = 140.0, kp = 3.0),
             )
 
             decay_analysis(
@@ -129,7 +129,7 @@
                 gravity_model       = gm,
                 tf                  = 86400.0,
                 @decay_analysis__jr1971,
-                space_indices       = (f107 = 140.0, f107_avg = 140.0, kp = 3.0)
+                space_indices = (f107 = 140.0, f107_avg = 140.0, kp = 3.0),
             )
 
             # Compile the progress interface rendering.

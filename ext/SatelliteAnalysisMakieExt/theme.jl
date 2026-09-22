@@ -18,7 +18,9 @@ function makie_palette(n::Int; variant::Symbol = :light)
     colors = variant == :dark ? CATEGORICAL_DARK : CATEGORICAL_LIGHT
 
     (0 <= n <= length(colors)) || throw(
-        ArgumentError("The categorical palette has $(length(colors)) colors; requested: $n.")
+        ArgumentError(
+            "The categorical palette has $(length(colors)) colors; requested: $n."
+        ),
     )
 
     return colors[1:n]
@@ -60,10 +62,12 @@ function makie_theme(::Val{:light}; fontscale::Real = 1, mono_ticklabels::Bool =
     )
 end
 
-function makie_theme(::Val{T}; kwargs...) where T
-    throw(ArgumentError(
-        "Unknown Makie theme variant `:$T`. The available options are `:dark` and `:light`."
-    ))
+function makie_theme(::Val{T}; kwargs...) where {T}
+    return throw(
+        ArgumentError(
+            "Unknown Makie theme variant `:$T`. The available options are `:dark` and `:light`.",
+        ),
+    )
 end
 
 ############################################################################################
@@ -175,7 +179,7 @@ function _build_theme(;
         # == Axis ==========================================================================
         Axis = Attributes(;
             backgroundcolor = card,  # Slightly offset from the figure background, keeping
-                                     # the plot area from blending into it.
+            # the plot area from blending into it.
 
             # Spines match the tick color so they read as subtle chrome rather than an
             # accent. Makie has no single `spinecolor`; each side must be set individually,
@@ -256,8 +260,8 @@ function _build_theme(;
             titlecolor      = cyan,
             titlesize       = fs(20),
             titlefont       = :bold,
-            padding         = (12f0, 12f0, 10f0, 10f0),
-            patchsize       = (24f0, 12f0),
+            padding         = (12.0f0, 12.0f0, 10.0f0, 10.0f0),
+            patchsize       = (24.0f0, 12.0f0),
             rowgap          = 6,
             titlegap        = 8,
         ),
@@ -276,25 +280,19 @@ function _build_theme(;
 
         # == Text ==========================================================================
 
-        Text = Attributes(;
-            color    = text_primary,
-            fontsize = fs(18),
-        ),
+        Text = Attributes(; color    = text_primary, fontsize = fs(18)),
 
         # == Lines =========================================================================
 
-        Lines = Attributes(;
-            linewidth = 2.0,
-            cycle     = Cycle([:color], covary = true),
-        ),
+        Lines = Attributes(; linewidth = 2.0, cycle     = Cycle([:color]; covary = true)),
 
         # == Scatter =======================================================================
 
         Scatter = Attributes(;
-            markersize   = 8,
-            strokewidth  = 0.5,
-            strokecolor  = bg,
-            cycle        = Cycle([:color, :marker], covary = true),
+            markersize  = 8,
+            strokewidth = 0.5,
+            strokecolor = bg,
+            cycle       = Cycle([:color, :marker]; covary = true),
         ),
 
         # == BarPlot =======================================================================
@@ -302,14 +300,12 @@ function _build_theme(;
         BarPlot = Attributes(;
             gap         = 0.15,
             strokewidth = 0,
-            cycle       = Cycle([:color], covary = true),
+            cycle       = Cycle([:color]; covary = true),
         ),
 
         # == Heatmap =======================================================================
 
-        Heatmap = Attributes(;
-            colormap = :viridis,
-        ),
+        Heatmap = Attributes(; colormap = :viridis),
 
         # == Color and Marker Cycle ========================================================
 

@@ -45,7 +45,10 @@ please refer to **Makie.jl** documentation.
 """
 function plot_world_map(args...; kwargs...)
     return _extension_error(
-        "plot_world_map", "Makie.jl and GeoJSON.jl", "CairoMakie, GeoJSON", "plot_world_map(; kwargs...)"
+        "plot_world_map",
+        "Makie.jl and GeoJSON.jl",
+        "CairoMakie, GeoJSON",
+        "plot_world_map(; kwargs...)",
     )
 end
 

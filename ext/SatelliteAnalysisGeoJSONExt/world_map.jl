@@ -5,9 +5,7 @@
 ############################################################################################
 
 function SatelliteAnalysis.plot_world_map(;
-    theme::Union{Nothing, Symbol, Makie.Theme} = :light,
-    size = (1450, 800),
-    kwargs...
+    theme::Union{Nothing, Symbol, Makie.Theme} = :light, size = (1450, 800), kwargs...
 )
     # Every object must be created inside this function because Makie resolves the theme
     # attributes at object-creation time.
@@ -17,9 +15,7 @@ function SatelliteAnalysis.plot_world_map(;
 end
 
 function SatelliteAnalysis.plot_world_map!(
-    ax::Axis;
-    theme::Union{Nothing, Symbol, Makie.Theme} = :light,
-    kwargs...
+    ax::Axis; theme::Union{Nothing, Symbol, Makie.Theme} = :light, kwargs...
 )
     variant = _theme_variant(theme)
 
