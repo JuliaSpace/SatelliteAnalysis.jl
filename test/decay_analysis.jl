@@ -185,7 +185,9 @@ end
     # A state vector is treated as an osculating state by default. Notice that the elements
     # obtained from the state vector differ from `orb` by round-off errors, which can lead to
     # a slightly different integration path near the reentry. Hence, we verify the initial
-    # mean elements tightly, and the lifetime with the same tolerance of the other tests.
+    # mean elements tightly, and the lifetime with a tolerance larger than the accuracy of
+    # the default integrator configuration (about 2e-3, see the comparison with the tight
+    # configuration above).
     sv = convert(OrbitStateVector, orb)
 
     df_sv = decay_analysis(
@@ -206,7 +208,7 @@ end
     @test ke_sv.ω ≈ ke_osc.ω atol = 1e-12
 
     lifetime_sv = datetime2julian(df_sv[end, :date]) - jd₀
-    @test lifetime_sv ≈ lifetime_osc rtol = 1e-3
+    @test lifetime_sv ≈ lifetime_osc rtol = 5e-3
 
     df_sv = decay_analysis(
         sv;
@@ -226,7 +228,7 @@ end
     @test ke_sv.ω ≈ orb.ω atol = 1e-12
 
     lifetime_sv = datetime2julian(df_sv[end, :date]) - jd₀
-    @test lifetime_sv ≈ lifetime rtol = 1e-3
+    @test lifetime_sv ≈ lifetime rtol = 5e-3
 
     # Inputs with an invalid type must throw an error that describes the valid call.
     @test_throws "the valid call is" decay_analysis(
