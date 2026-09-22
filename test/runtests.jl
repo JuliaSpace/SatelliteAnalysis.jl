@@ -24,6 +24,10 @@ end
     include("./frozen_orbits.jl")
 end
 
+@testset "Ground Repeating Orbits" verbose = true begin
+    include("./ground_repeating_orbits.jl")
+end
+
 @testset "Ground Facilities" verbose = true begin
     include("./ground_facility_accesses_and_gaps.jl")
     include("./ground_facility_visibility_circle.jl")
