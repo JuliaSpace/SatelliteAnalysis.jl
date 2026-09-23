@@ -362,5 +362,7 @@ end
 function ground_track_inclination(orb::Orbit; kwargs...)
     # Convert first to Keplerian elements.
     k = convert(KeplerianElements, orb)
-    return ground_track_inclination(k.a, k.e, k.i; kwargs...)
+    return ground_track_inclination(
+        k.semi_major_axis, k.eccentricity, k.inclination; kwargs...
+    )
 end

@@ -93,14 +93,14 @@ function beta_angle(orb::KeplerianElements, Δjd::Number; perturbation::Symbol =
     δΩ = 86400 * raan_time_derivative(orb; perturbation = perturbation)
 
     # Compute the RAAN at the day d.
-    Ω = orb.Ω + δΩ * Δjd
+    Ω = orb.raan + δΩ * Δjd
 
     # Obtain the epoch to compute the beta angle.
-    jd = orb.t + Δjd
+    jd = orb.epoch + Δjd
 
     # Compute the unit vector aligned with the orbit normal `n` represented in the TOD
     # reference frame.
-    D_tod_o = angle_to_dcm(-orb.i, -Ω, :XZ)
+    D_tod_o = angle_to_dcm(-orb.inclination, -Ω, :XZ)
     n̄_tod   = D_tod_o * @SVector([0, 0, 1])
 
     # Compute the Sun position at `jd` represented in the TOD reference frame.

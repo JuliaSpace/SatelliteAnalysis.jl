@@ -133,7 +133,7 @@ end
 
     # The mean element epochs must match the point dates, and the apogee must be above the
     # perigee.
-    @test julian2datetime(df[end, :mean_elements].t) == df[end, :date]
+    @test julian2datetime(df[end, :mean_elements].epoch) == df[end, :date]
     @test all(df.apogee_altitude .>= df.perigee_altitude)
 
     # The termination must happen when the mean perigee altitude reaches 120 km.
@@ -215,11 +215,11 @@ end
     ke_sv  = df_sv[begin, :mean_elements]
     ke_osc = df_osc[begin, :mean_elements]
 
-    @test ke_sv.a ≈ ke_osc.a atol = 1e-4
-    @test ke_sv.e ≈ ke_osc.e atol = 1e-12
-    @test ke_sv.i ≈ ke_osc.i atol = 1e-12
-    @test ke_sv.Ω ≈ ke_osc.Ω atol = 1e-12
-    @test ke_sv.ω ≈ ke_osc.ω atol = 1e-12
+    @test ke_sv.semi_major_axis ≈ ke_osc.semi_major_axis atol = 1e-4
+    @test ke_sv.eccentricity ≈ ke_osc.eccentricity atol = 1e-12
+    @test ke_sv.inclination ≈ ke_osc.inclination atol = 1e-12
+    @test ke_sv.raan ≈ ke_osc.raan atol = 1e-12
+    @test ke_sv.argument_of_periapsis ≈ ke_osc.argument_of_periapsis atol = 1e-12
 
     lifetime_sv = datetime2julian(df_sv[end, :date]) - jd₀
     @test lifetime_sv ≈ lifetime_osc rtol = 5e-3
@@ -235,11 +235,11 @@ end
 
     ke_sv = df_sv[begin, :mean_elements]
 
-    @test ke_sv.a ≈ orb.a atol = 1e-4
-    @test ke_sv.e ≈ orb.e atol = 1e-12
-    @test ke_sv.i ≈ orb.i atol = 1e-12
-    @test ke_sv.Ω ≈ orb.Ω atol = 1e-12
-    @test ke_sv.ω ≈ orb.ω atol = 1e-12
+    @test ke_sv.semi_major_axis ≈ orb.semi_major_axis atol = 1e-4
+    @test ke_sv.eccentricity ≈ orb.eccentricity atol = 1e-12
+    @test ke_sv.inclination ≈ orb.inclination atol = 1e-12
+    @test ke_sv.raan ≈ orb.raan atol = 1e-12
+    @test ke_sv.argument_of_periapsis ≈ orb.argument_of_periapsis atol = 1e-12
 
     lifetime_sv = datetime2julian(df_sv[end, :date]) - jd₀
     @test lifetime_sv ≈ lifetime rtol = 5e-3
@@ -974,7 +974,7 @@ end
     ke_mean, ~ = fit_j2osc_mean_elements(
         [0.0], [rf], [vf]; max_iterations = 50, verbose = false
     )
-    M_mean = true_to_mean_anomaly(ke_mean.e, ke_mean.f)
+    M_mean = true_to_mean_anomaly(ke_mean.eccentricity, true_anomaly(ke_mean))
 
     # == Averaged Model ====================================================================
 
@@ -1008,13 +1008,13 @@ end
 
     # The averaged model must show significant motion, otherwise the comparison is
     # meaningless.
-    @test ke_end.a - ke_beg.a < -200
-    @test abs(wrap(ke_end.Ω - ke_beg.Ω)) > 0.1
+    @test ke_end.semi_major_axis - ke_beg.semi_major_axis < -200
+    @test abs(wrap(ke_end.raan - ke_beg.raan)) > 0.1
 
-    @test abs(ke_end.a - ke_mean.a) < 150
-    @test abs(ke_end.e - ke_mean.e) < 2e-5
-    @test abs(wrap(ke_end.i - ke_mean.i)) < 2e-6
-    @test abs(wrap(ke_end.Ω - ke_mean.Ω)) < 4e-4
-    @test abs(wrap(ke_end.ω - ke_mean.ω)) < 2e-4
+    @test abs(ke_end.semi_major_axis - ke_mean.semi_major_axis) < 150
+    @test abs(ke_end.eccentricity - ke_mean.eccentricity) < 2e-5
+    @test abs(wrap(ke_end.inclination - ke_mean.inclination)) < 2e-6
+    @test abs(wrap(ke_end.raan - ke_mean.raan)) < 4e-4
+    @test abs(wrap(ke_end.argument_of_periapsis - ke_mean.argument_of_periapsis)) < 2e-4
     @test abs(wrap(M_end - M_mean)) < 2e-2
 end

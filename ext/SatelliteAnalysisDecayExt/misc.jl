@@ -222,13 +222,19 @@ function _osculating_to_mean_elements(
     orb::KeplerianElements{Tanomaly, Tepoch, T}
 ) where {Tanomaly <: AbstractAnomaly, Tepoch <: Number, T <: Number}
     orb_reg = KeplerianElements{Tanomaly}(
-        orb.t, orb.a, max(orb.e, T(1e-6)), max(orb.i, T(1e-6)), orb.Ω, orb.ω, orb.anomaly
+        orb.epoch,
+        orb.semi_major_axis,
+        max(orb.eccentricity, T(1e-6)),
+        max(orb.inclination, T(1e-6)),
+        orb.raan,
+        orb.argument_of_periapsis,
+        orb.anomaly,
     )
 
     r_tod, v_tod = kepler_to_rv(orb_reg)
 
     ke, ~ = fit_j2osc_mean_elements(
-        [orb.t], [r_tod], [v_tod]; max_iterations = 50, verbose = false
+        [orb.epoch], [r_tod], [v_tod]; max_iterations = 50, verbose = false
     )
 
     return ke

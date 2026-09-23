@@ -55,7 +55,11 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where {T <: Number}
 
     # Unpack mean orbital elements.
     ke = _state_to_keplerian(u, jd_utc)
-    ā, ē, ī, Ω̄, ω̄ = ke.a, ke.e, ke.i, ke.Ω, ke.ω
+    ā = ke.semi_major_axis
+    ē = ke.eccentricity
+    ī = ke.inclination
+    Ω̄ = ke.raan
+    ω̄ = ke.argument_of_periapsis
 
     # Clamp the mean elements to a physically meaningful region. The adaptive integrator
     # can evaluate trial stages with unphysical states (e.g. e > 1) near the decay end.

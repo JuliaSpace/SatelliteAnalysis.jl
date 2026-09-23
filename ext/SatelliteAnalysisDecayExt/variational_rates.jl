@@ -78,7 +78,7 @@ function _atmospheric_drag_and_solar_radiation_pressure_rates(
     space_indices::NamedTuple,
     params::NamedTuple,
 ) where {Tepoch <: Number, T <: Number}
-    jd_utc            = orb.t
+    jd_utc            = orb.epoch
     atmospheric_model = params.atmospheric_model
     C_d               = params.C_d
     C_r               = params.C_r

@@ -79,7 +79,8 @@ function SatelliteAnalysis.decay_analysis(
     # from the mean eccentricity.
     num_sampling_points_per_orbit′ =
         isnothing(num_sampling_points_per_orbit) ?
-        _decay_analysis__default_num_sampling_points(orb′.e) : num_sampling_points_per_orbit
+        _decay_analysis__default_num_sampling_points(orb′.eccentricity) :
+        num_sampling_points_per_orbit
 
     gm = if isnothing(gravity_model)
         if isnothing(_DEFAULT_GRAVITY_MODEL[])
@@ -274,7 +275,7 @@ function _decay_analysis(
         Re                            = Re,
         J₂                            = J₂,
         gravity_workspace             = gravity_workspace,
-        jd₀_utc                       = orb.t,
+        jd₀_utc                       = orb.epoch,
         j2osc_prop                    = j2osc_prop,
         terminate_altitude            = terminate_altitude,
     )
@@ -335,7 +336,7 @@ function _decay_analysis(
     perigee_altitude = Vector{Float64}(undef, num_points)
 
     @inbounds for k in 1:num_points
-        jdₖ = orb.t + sol.t[k] / 86400
+        jdₖ = orb.epoch + sol.t[k] / 86400
 
         date[k] = julian2datetime(jdₖ)
         time[k] = sol.t[k]
@@ -349,7 +350,7 @@ function _decay_analysis(
 
     # Record the space indices used by the dynamics at each instant. A comprehension is
     # used so that the column eltype is the concrete named tuple type of the source.
-    space_indices_column = [space_indices(orb.t + tₖ / 86400) for tₖ in sol.t]
+    space_indices_column = [space_indices(orb.epoch + tₖ / 86400) for tₖ in sol.t]
 
     # Convert the time and altitude columns to the selected units. Notice that the year is
     # the Julian year, consistent with the default `tf` of 30 years.
