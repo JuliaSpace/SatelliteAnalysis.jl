@@ -117,7 +117,7 @@ end
     # Optional decorations: mission name, absolute dates, and F10.7 twin y-axis with the
     # default getters.
     fig, ax = plot_decay_analysis(
-        df; mission_name = "Amazonia-1", show_dates   = true, show_f107    = true
+        df; mission_name = "Amazonia-1", show_dates = true, show_f107 = true
     )
 
     @test fig isa Figure
@@ -249,12 +249,12 @@ end
 
     # At least one getter must be provided when `show_f107` is `true`.
     @test_throws ArgumentError plot_decay_analysis(
-        df; show_f107       = true, f107_getter     = nothing, f107_avg_getter = nothing
+        df; show_f107 = true, f107_getter = nothing, f107_avg_getter = nothing
     )
 
     # A getter that does not match the space indices must raise a clear error.
     @test_throws ArgumentError plot_decay_analysis(
-        df; show_f107   = true, f107_getter = si -> si.not_a_field
+        df; show_f107 = true, f107_getter = si -> si.not_a_field
     )
 
     # The keyword `subtitle` only accepts the symbol `:auto`.

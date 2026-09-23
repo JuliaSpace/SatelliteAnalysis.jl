@@ -67,7 +67,7 @@ const CATEGORICAL_LIGHT = [
 
 # Human-readable labels for the time and distance unit symbols used by `decay_analysis`.
 const _TIME_UNIT_LABELS = Dict{Symbol, String}(
-    :s   => "s", :min => "min", :h   => "h", :d   => "days", :y   => "years"
+    :s => "s", :min => "min", :h => "h", :d => "days", :y => "years"
 )
 
-const _DISTANCE_UNIT_LABELS = Dict{Symbol, String}(:km => "km", :m  => "m")
+const _DISTANCE_UNIT_LABELS = Dict{Symbol, String}(:km => "km", :m => "m")

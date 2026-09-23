@@ -280,11 +280,11 @@ function _build_theme(;
 
         # == Text ==========================================================================
 
-        Text = Attributes(; color    = text_primary, fontsize = fs(18)),
+        Text = Attributes(; color = text_primary, fontsize = fs(18)),
 
         # == Lines =========================================================================
 
-        Lines = Attributes(; linewidth = 2.0, cycle     = Cycle([:color]; covary = true)),
+        Lines = Attributes(; linewidth = 2.0, cycle = Cycle([:color]; covary = true)),
 
         # == Scatter =======================================================================
 
