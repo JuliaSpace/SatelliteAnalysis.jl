@@ -49,9 +49,12 @@ This function returns a `DataFrame` with the following columns:
     (**Default**: `:km`)
 - `eccentricity::Number`: Orbit eccentricity.
     (**Default**: 0)
-- `int_rev_per_day::Tuple`: `Tuple` with the integer parts of the number of revolutions per
-    day to be analyzed.
-    (**Default** = `(13, 14, 15, 16, 17)`)
+- `maximum_revs_per_day::Number`: Maximum number of revolutions per day of the orbits in
+    the output `DataFrame`.
+    (**Default**: 18)
+- `minimum_revs_per_day::Number`: Minimum number of revolutions per day of the orbits in
+    the output `DataFrame`.
+    (**Default**: 13)
 - `pretty_revs_per_day::Bool`: If `true`, the column with the revolutions per day will be
     converted to a string with a pretty representation of this information.
     (**Default**: `true`)
@@ -79,9 +82,10 @@ This function returns a `DataFrame` with the following columns:
 
 ## Throws
 
-- `ArgumentError`: If the repetition interval is not valid, if `eccentricity` is not in the
-    interval `[0, 1)`, or if `angle_unit`, `distance_unit`, or `time_unit` is not one of the
-    supported symbols.
+- `ArgumentError`: If the repetition interval is not valid, if the interval
+    `[minimum_revs_per_day, maximum_revs_per_day]` is not valid, if `eccentricity` is not in
+    the interval `[0, 1)`, or if `angle_unit`, `distance_unit`, or `time_unit` is not one of
+    the supported symbols.
 """
 function design_sun_sync_ground_repeating_orbit(
     minimum_repetition::Int,
@@ -89,7 +93,8 @@ function design_sun_sync_ground_repeating_orbit(
     angle_unit::Symbol = :deg,
     distance_unit::Symbol = :km,
     eccentricity::Number = 0,
-    int_rev_per_day::Tuple = (13, 14, 15, 16, 17),
+    maximum_revs_per_day::Number = 18,
+    minimum_revs_per_day::Number = 13,
     pretty_revs_per_day::Bool = true,
     maximum_altitude::Union{Nothing, Number} = nothing,
     minimum_altitude::Union{Nothing, Number} = nothing,
@@ -113,6 +118,16 @@ function design_sun_sync_ground_repeating_orbit(
     maximum_repetition < minimum_repetition && throw(
         ArgumentError(
             "The minimum repetition must be smaller or equal than the maximum repetition.",
+        ),
+    )
+
+    minimum_revs_per_day <= 0 && throw(
+        ArgumentError("The minimum number of revolutions per day must be greater than 0."),
+    )
+
+    maximum_revs_per_day < minimum_revs_per_day && throw(
+        ArgumentError(
+            "The minimum number of revolutions per day must be smaller or equal than the maximum number of revolutions per day.",
         ),
     )
 
@@ -142,11 +157,17 @@ function design_sun_sync_ground_repeating_orbit(
             # Check if the fraction `num / den` is irreducible.
             gcd(num, den) != 1 && continue
 
-            # Loop through the integer parts.
-            for int in int_rev_per_day
-                # Compute the number of revolutions per day of this orbit, and convert it to
-                # angular velocity.
+            # Loop through the integer parts of the number of revolutions per day that can
+            # lead to an orbit inside the selected interval.
+            for int in floor(Int, minimum_revs_per_day):floor(Int, maximum_revs_per_day)
+                # Compute the number of revolutions per day of this orbit, skipping it if it
+                # is outside the selected interval.
                 num_rev_per_day = int + num / den
+
+                (minimum_revs_per_day <= num_rev_per_day <= maximum_revs_per_day) ||
+                    continue
+
+                # Convert the number of revolutions per day to angular velocity.
                 n = num_rev_per_day * 2π / 86400
 
                 # Find a Sun synchronous orbit with that angular velocity. Notice that we

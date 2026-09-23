@@ -159,16 +159,49 @@
         1, 5; time_unit = :unknown
     )
 
+    @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
+        1, 5; minimum_revs_per_day = 0
+    )
+
+    @test_throws ArgumentError design_sun_sync_ground_repeating_orbit(
+        1, 5; minimum_revs_per_day = 15, maximum_revs_per_day = 14
+    )
+
+    # == Keywords minimum_revs_per_day and maximum_revs_per_day ============================
+
+    # All the orbits must be inside the selected interval, including the bounds.
+    df = design_sun_sync_ground_repeating_orbit(
+        1,
+        5;
+        minimum_revs_per_day = 14.2,
+        maximum_revs_per_day = 14.5,
+        pretty_revs_per_day  = false,
+    )
+
+    vrevs = [int + frac for (int, frac) in df.revs_per_day]
+
+    @test sort(vrevs) == [14 + 1 // 5, 14 + 1 // 4, 14 + 1 // 3, 14 + 2 // 5, 14 + 1 // 2]
+
+    # A fractional upper bound must also limit the orbits with the last integer part.
+    df = design_sun_sync_ground_repeating_orbit(
+        1, 2; minimum_revs_per_day = 14, maximum_revs_per_day = 15.4
+    )
+
+    @test sort(df.revs_per_day) == ["14", "14 + ¹/₂", "15"]
+
     # == Revolutions per Day Without a Sun-Synchronous Orbit ===============================
 
     # If there is no Sun-synchronous orbit for a number of revolutions per day, it must be
     # skipped without throwing exceptions or printing warnings.
-    df = @test_logs design_sun_sync_ground_repeating_orbit(1, 1; int_rev_per_day = (5, 14))
+    df = @test_logs design_sun_sync_ground_repeating_orbit(
+        1, 1; minimum_revs_per_day = 5, maximum_revs_per_day = 14
+    )
 
-    @test size(df) == (1, 7)
-    @test df[begin, :revs_per_day] == "14"
+    @test "14" in df.revs_per_day
 
-    df = @test_logs design_sun_sync_ground_repeating_orbit(1, 1; int_rev_per_day = (5,))
+    df = @test_logs design_sun_sync_ground_repeating_orbit(
+        1, 1; minimum_revs_per_day = 5, maximum_revs_per_day = 5
+    )
 
     @test size(df) == (0, 7)
 end
