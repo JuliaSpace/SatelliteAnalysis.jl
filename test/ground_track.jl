@@ -59,6 +59,18 @@
     @test_throws ArgumentError ground_track(orbp; step = 0)
     @test_throws ArgumentError ground_track(orbp; step = -10)
 
+    # == Propagator Without Mean Elements ==================================================
+
+    # If the propagator does not provide the mean elements, the default step must be
+    # computed using the osculating elements.
+    orbp_nme = NoMeanElementsPropagator(Propagators.init(Val(:J2), orb))
+    gt_nme   = ground_track(orbp_nme; duration = 6000)
+    gt_ref   = ground_track(Propagators.init(Val(:J2), orb); duration = 6000)
+
+    @test length(gt_nme) ≈ length(gt_ref) rtol = 1e-2
+    @test first(gt_nme)[1] ≈ first(gt_ref)[1]
+    @test first(gt_nme)[2] ≈ first(gt_ref)[2]
+
     # == Keywords initial_time and f_eci_to_ecef ===========================================
 
     # The ground track computed from `initial_time` must be equal to the corresponding part

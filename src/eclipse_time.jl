@@ -119,6 +119,13 @@ function eclipse_time_summary(
     # way to do this.
     mean_elements = Propagators.mean_elements(orbp)
 
+    # If the propagator cannot return the mean elements, we will compute the orbit period by
+    # converting the osculating elements to Keplerian elements.
+    if isnothing(mean_elements)
+        r_i, v_i = Propagators.propagate!(orbp, 0)
+        mean_elements = rv_to_kepler(r_i, v_i, jd₀)
+    end
+
     # We need the orbit period because we will propagate one orbit per day.
     orb_period = orbital_period(mean_elements)
 

@@ -97,6 +97,20 @@
     @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, step = -1)
     @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, step = 7000)
 
+    # == Propagator Without Mean Elements ==================================================
+
+    # If the propagator does not provide the mean elements, the orbit period must be
+    # computed using the osculating elements.
+    orbp_nme = NoMeanElementsPropagator(Propagators.init(Val(:J2), orb))
+    df_nme   = eclipse_time_summary(orbp_nme; num_days = 5)
+    df_ref   = eclipse_time_summary(orbp; num_days = 5)
+
+    @test isnothing(Propagators.mean_elements(orbp_nme))
+    @test size(df_nme) == size(df_ref)
+    @test df_nme.sunlight ≈ df_ref.sunlight rtol = 1e-3
+    @test df_nme.penumbra ≈ df_ref.penumbra rtol = 1e-2
+    @test df_nme.umbra ≈ df_ref.umbra rtol = 1e-3
+
     # == Unknown Symbol ====================================================================
 
     @test_throws ArgumentError eclipse_time_summary(orbp; num_days = 5, time_unit = :bad)

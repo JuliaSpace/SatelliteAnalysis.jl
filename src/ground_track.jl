@@ -161,7 +161,7 @@ function ground_track(
         # If the propagator cannot return the mean elements, we will compute the orbit
         # period by converting the osculating elements to Keplerian elements.
         if isnothing(orb)
-            r_i, v_i = Propagators.propagate(orbp, 0)
+            r_i, v_i = Propagators.propagate!(orbp, 0)
             orb = rv_to_kepler(r_i, v_i, epoch)
         end
 

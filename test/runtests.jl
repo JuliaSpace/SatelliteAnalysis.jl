@@ -8,6 +8,19 @@ using OrdinaryDiffEqAdamsBashforthMoulton
 using StaticArrays
 using SatelliteAnalysis
 
+# Orbit propagator that wraps another one without implementing the optional API function
+# `Propagators.mean_elements`, used to test the algorithms that need a fallback in this case.
+struct NoMeanElementsPropagator{Tepoch, T, P <: OrbitPropagator{Tepoch, T}} <:
+       OrbitPropagator{Tepoch, T}
+    orbp::P
+end
+
+SatelliteAnalysis.Propagators.epoch(p::NoMeanElementsPropagator) =
+    SatelliteAnalysis.Propagators.epoch(p.orbp)
+
+SatelliteAnalysis.Propagators.propagate!(p::NoMeanElementsPropagator, t::Number) =
+    SatelliteAnalysis.Propagators.propagate!(p.orbp, t)
+
 @testset "Beta Angle" verbose = true begin
     include("./beta_angle.jl")
 end
