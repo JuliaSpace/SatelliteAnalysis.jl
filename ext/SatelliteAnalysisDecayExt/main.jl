@@ -73,19 +73,7 @@ function SatelliteAnalysis.decay_analysis(
 
     # The propagation uses mean elements with respect to the averaged dynamics. Hence, if
     # the input elements are osculating, they must be converted to mean elements first.
-    orb′ = if input_type == :osculating
-        a_mean, e_mean, i_mean, Ω_mean, ω_mean, M_mean = _osculating_to_mean_elements(
-            orb.a, orb.e, orb.i, orb.Ω, orb.ω, orb.f
-        )
-
-        # The numerical integration uses the mean anomaly. Hence, we must not convert it to
-        # the true anomaly here.
-        KeplerianElements{MeanAnomaly}(
-            orb.t, a_mean, e_mean, i_mean, Ω_mean, ω_mean, M_mean
-        )
-    else
-        orb
-    end
+    orb′ = input_type == :osculating ? _osculating_to_mean_elements(orb) : orb
 
     # If the user did not select the number of sampling points per orbit, we must obtain it
     # from the mean eccentricity.
@@ -238,10 +226,11 @@ function _decay_analysis(
     verbose::Bool,
 ) where {AM, SF}
     # The input elements are treated as mean elements with respect to the averaged
-    # dynamics, following the same convention of semi-analytical tools such as STELA.
-    # Notice that the following function does not perform any conversion if the elements
-    # already store the mean anomaly.
-    ā, ē, ī, Ω̄, ω̄, M̄ = orb.a, orb.e, orb.i, orb.Ω, orb.ω, mean_anomaly(orb)
+    # dynamics, following the same convention of semi-analytical tools such as STELA. The
+    # analysis is computed in `Float64`, and the state of the numerical integration stores
+    # the mean anomaly. Hence, we convert the elements once so that the initial state, the
+    # pre-allocated propagator, and the output share the same types.
+    orb = convert(KeplerianElements{MeanAnomaly, Float64, Float64}, orb)
 
     # The state is a static vector with an out-of-place right-hand side, removing the
     # per-step state allocations of the numerical integration.
@@ -253,9 +242,7 @@ function _decay_analysis(
     # Pre-allocate the J2 osculating propagator used for the mean-to-osculating
     # conversion inside the drag quadrature, avoiding one propagator allocation per
     # sampling point.
-    j2osc_prop = Propagators.init(
-        Val(:J2osc), KeplerianElements(0.0, ā, ē, ī, Ω̄, ω̄, mean_to_true_anomaly(ē, M̄))
-    )
+    j2osc_prop = Propagators.init(Val(:J2osc), orb)
 
     # Pre-allocate the gravity model workspace, avoiding the buffer allocations at every
     # acceleration evaluation. It supports the maximum degree 7 and order 0 used by
@@ -293,14 +280,11 @@ function _decay_analysis(
     )
 
     # Progress interface shown during the integration when `verbose` is enabled.
+    perigee₀, apogee₀ = _state_apsis_altitudes(u₀)
+
     progress =
-        verbose ?
-        DecayProgress(
-            stderr,
-            tspan[2],
-            ā * (1 - ē) - EARTH_EQUATORIAL_RADIUS,
-            Float64(terminate_altitude),
-        ) : nothing
+        verbose ? DecayProgress(stderr, tspan[2], perigee₀, Float64(terminate_altitude)) :
+        nothing
 
     # The progress callback is always installed with a stable type: when `verbose` is
     # disabled, its condition is constantly `false`. Hence, the solver specialization is
@@ -311,8 +295,7 @@ function _decay_analysis(
         _decay_progress_callback(progress),
     )
 
-    isnothing(progress) ||
-        _start_decay_progress!(progress, ā * (1 + ē) - EARTH_EQUATORIAL_RADIUS)
+    isnothing(progress) || _start_decay_progress!(progress, apogee₀)
 
     prob = ODEProblem(_dynamics, u₀, tspan, params)
 

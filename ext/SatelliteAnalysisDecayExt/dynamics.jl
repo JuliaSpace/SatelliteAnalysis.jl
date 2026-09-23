@@ -105,10 +105,11 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where {T <: Number}
     # point, but for efficiency, we assume they are constant over one orbit.
     for k in 0:(N - 1)
         # Sampling point along the mean orbit.
-        f̄k = T(2π) * k / N
+        f̄k    = T(2π) * k / N
+        orb_k = KeplerianElements(jd_utc, ā, ē, ī, Ω̄, ω̄, f̄k)
 
         # Position and velocity from mean orbital elements.
-        rk_tod, vk_tod = kepler_to_rv(KeplerianElements(jd_utc, ā, ē, ī, Ω̄, ω̄, f̄k))
+        rk_tod, vk_tod = kepler_to_rv(orb_k)
         rk² = dot(rk_tod, rk_tod)
         rk = √rk²
 
@@ -142,20 +143,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where {T <: Number}
         # Non-conservative perturbations at the same sampling point, using the same Gauss
         # matrix, Hill frame, and temporal weighting.
         ∂u_drag_k, ∂u_srp_k = _atmospheric_drag_and_solar_radiation_pressure_rates(
-            jd_utc,
-            ā,
-            ē,
-            ī,
-            Ω̄,
-            ω̄,
-            f̄k,
-            Ak,
-            Dk_hill_tod,
-            rsun_tod,
-            D_pef_tod,
-            D_tod_pef,
-            space_indices,
-            params,
+            orb_k, Ak, Dk_hill_tod, rsun_tod, D_pef_tod, D_tod_pef, space_indices, params
         )
 
         ∂u_drag += w_t * ∂u_drag_k

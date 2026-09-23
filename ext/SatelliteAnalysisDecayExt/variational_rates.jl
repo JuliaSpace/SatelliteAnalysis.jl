@@ -6,13 +6,7 @@
 
 """
     _atmospheric_drag_and_solar_radiation_pressure_rates(
-        jd_utc::T,
-        ā::T,
-        ē::T,
-        ī::T,
-        Ω̄::T,
-        ω̄::T,
-        f̄::T,
+        orb::KeplerianElements{TrueAnomaly, Tepoch, T},
         A::StaticMatrix{6, 3, T},
         D_hill_tod::StaticMatrix{3, 3, T},
         rsun_tod::SVector{3, T},
@@ -20,11 +14,11 @@
         D_tod_pef::StaticMatrix{3, 3, T},
         space_indices::NamedTuple,
         params::NamedTuple
-    ) where T <: Number -> SVector{6, T}, SVector{6, T}
+    ) where {Tepoch <: Number, T <: Number} -> SVector{6, T}, SVector{6, T}
 
 Compute the Gauss variation rates due to the atmospheric drag and the solar radiation
-pressure **[1]** at the sampling point of the orbit-averaging quadrature with mean true
-anomaly `f̄` [rad].
+pressure **[1]** at the sampling point of the orbit-averaging quadrature with mean elements
+`orb`.
 
 The accelerations are computed using the osculating position and velocity obtained from the
 mean elements because the atmospheric density, the velocity relative to the atmosphere, and
@@ -38,23 +32,20 @@ the physically meaningful region and derived consistently, as done by `_dynamics
 
 # Arguments
 
-- `jd_utc::T`: Julian date [UTC] at which the rates are computed.
-- `ā::T`: Mean semi-major axis [m].
-- `ē::T`: Mean eccentricity [-].
-- `ī::T`: Mean inclination [rad].
-- `Ω̄::T`: Mean right ascension of ascending node [rad].
-- `ω̄::T`: Mean argument of perigee [rad].
-- `f̄::T`: Mean true anomaly of the sampling point [rad], which must be in `[0, 2π)`.
+- `orb::KeplerianElements{TrueAnomaly, Tepoch, T}`: Mean Keplerian elements [SI] of the
+    sampling point, whose epoch is the Julian date [UTC] at which the rates are computed
+    and whose true anomaly must be in `[0, 2π)` [rad].
 - `A::StaticMatrix{6, 3, T}`: Gauss matrix of the mean orbit at the sampling point,
     computed by `_equinoctial_gauss_variational_matrices`.
 - `D_hill_tod::StaticMatrix{3, 3, T}`: DCM that rotates vectors from the TOD frame to the
     Hill frame of the mean orbit at the sampling point.
 - `rsun_tod::SVector{3, T}`: Sun position vector [m] in TOD frame.
 - `D_pef_tod::StaticMatrix{3, 3, T}`: DCM that rotates vectors from the TOD frame to the
-    PEF frame at `jd_utc`.
+    PEF frame at the epoch of `orb`.
 - `D_tod_pef::StaticMatrix{3, 3, T}`: DCM that rotates vectors from the PEF frame to the
-    TOD frame at `jd_utc`.
-- `space_indices::NamedTuple`: Space indices at `jd_utc` required by the atmospheric model.
+    TOD frame at the epoch of `orb`.
+- `space_indices::NamedTuple`: Space indices at the epoch of `orb` required by the
+    atmospheric model.
 - `params::NamedTuple`: Named tuple containing environment parameters:
     - `atmospheric_model::Any`: Callable object that computes the atmospheric density
         [kg/m³] at a given location and time considering a set of space indices. It must
@@ -78,13 +69,7 @@ the physically meaningful region and derived consistently, as done by `_dynamics
     Astrodynamics. Revised ed. AIAA Education Series, Reston, VA.
 """
 function _atmospheric_drag_and_solar_radiation_pressure_rates(
-    jd_utc::T,
-    ā::T,
-    ē::T,
-    ī::T,
-    Ω̄::T,
-    ω̄::T,
-    f̄::T,
+    orb::KeplerianElements{TrueAnomaly, Tepoch, T},
     A::StaticMatrix{6, 3, T},
     D_hill_tod::StaticMatrix{3, 3, T},
     rsun_tod::SVector{3, T},
@@ -92,7 +77,8 @@ function _atmospheric_drag_and_solar_radiation_pressure_rates(
     D_tod_pef::StaticMatrix{3, 3, T},
     space_indices::NamedTuple,
     params::NamedTuple,
-) where {T <: Number}
+) where {Tepoch <: Number, T <: Number}
+    jd_utc            = orb.t
     atmospheric_model = params.atmospheric_model
     C_d               = params.C_d
     C_r               = params.C_r
@@ -105,7 +91,7 @@ function _atmospheric_drag_and_solar_radiation_pressure_rates(
     ω_pef = @SVector T[0, 0, EARTH_ANGULAR_SPEED]
 
     # Position and velocity of the osculating orbit in TOD.
-    r_tod, v_tod = _mean_to_osculating_rv(ā, ē, ī, Ω̄, ω̄, f̄, orbp)
+    r_tod, v_tod = _mean_to_osculating_rv(orb, orbp)
 
     # Position and velocity in PEF to compute the atmospheric drag acceleration.
     r_pef = D_pef_tod * r_tod

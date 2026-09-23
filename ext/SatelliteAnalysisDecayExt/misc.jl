@@ -152,19 +152,12 @@ function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where {T <
 end
 
 """
-    _mean_to_osculating_rv(
-        a::T,
-        e::T,
-        i::T,
-        Ω::T,
-        ω::T,
-        f::T,
-        orbp::OrbitPropagatorJ2Osculating
-    ) where T <: Number -> SVector{3, T}, SVector{3, T}
+    _mean_to_osculating_rv(orb::KeplerianElements, orbp::OrbitPropagatorJ2Osculating) -> SVector{3, T}, SVector{3, T}
 
-Compute the osculating position and velocity vectors from the mean classical elements
-`[a, e, i, Ω, ω, f]` under the J2 perturbation model **[1]** using the pre-allocated J2
-osculating propagator `orbp`, which is re-initialized in place.
+Compute the osculating position and velocity vectors from the mean Keplerian elements `orb`
+[SI] under the J2 perturbation model **[1]** using the pre-allocated J2 osculating
+propagator `orbp`, which is re-initialized in place, avoiding one propagator allocation per
+call.
 
 !!! note
 
@@ -172,17 +165,6 @@ osculating propagator `orbp`, which is re-initialized in place.
     not normalize the inputs, which must be performed by the caller: the eccentricity and
     the inclination must not be lower than `1e-6`, and the angles must be in the interval
     `[0, 2π)` [rad].
-
-# Arguments
-
-- `a::T`: Mean semi-major axis [m].
-- `e::T`: Mean eccentricity (0 ≤ e < 1) [-].
-- `i::T`: Mean inclination [rad].
-- `Ω::T`: Mean right ascension of ascending node [rad].
-- `ω::T`: Mean argument of perigee [rad].
-- `f::T`: Mean true anomaly [rad].
-- `orbp::OrbitPropagatorJ2Osculating`: Pre-allocated J2 osculating propagator. It is
-    re-initialized in place, avoiding one propagator allocation per call.
 
 # Returns
 
@@ -196,63 +178,36 @@ osculating propagator `orbp`, which is re-initialized in place.
 - **[1]** Vallado, D. A. (2013). *Fundamentals of Astrodynamics and Applications*. 4th ed.
     Microcosm Press, Hawthorne, CA.
 """
-function _mean_to_osculating_rv(
-    a::T, e::T, i::T, Ω::T, ω::T, f::T, orbp::OrbitPropagatorJ2Osculating
-) where {T <: Number}
-    orb_tod = KeplerianElements(0.0, a, e, i, Ω, ω, f)
-
+function _mean_to_osculating_rv(orb::KeplerianElements, orbp::OrbitPropagatorJ2Osculating)
     # Convert to osculating. The J2 osculating conversion is not total: for unphysical
     # states evaluated by the integrator in trial stages (mainly with loose tolerances),
     # the short-period corrections can push the osculating eccentricity outside [0, 1),
     # which throws inside the propagator. In this case, fall back to the mean elements so
     # the right-hand side remains finite and the step error control can act.
     r_tod, v_tod = try
-        Propagators.init!(orbp, orb_tod)
+        Propagators.init!(orbp, orb)
         Propagators.propagate!(orbp, 0.0)
     catch err
         # The propagator and the element conversions throw `ArgumentError` or
         # `DomainError` for those unphysical states. Any other exception is a genuine
         # error and must propagate.
         err isa Union{ArgumentError, DomainError} || rethrow()
-        kepler_to_rv(orb_tod)
+        kepler_to_rv(orb)
     end
 
     return r_tod, v_tod
 end
 
 """
-    _osculating_to_mean_elements(
-        a::T,
-        e::T,
-        i::T,
-        Ω::T,
-        ω::T,
-        f::T
-    ) where T <: Number -> NTuple{6, T}
+    _osculating_to_mean_elements(orb::KeplerianElements) -> KeplerianElements{MeanAnomaly, Float64, Float64}
 
-Convert the osculating classical elements `[a, e, i, Ω, ω, f]` to the mean elements
-`[a, e, i, Ω, ω, M]` under the J2 perturbation model **[1]**. Notice that the input contains
-the true anomaly, as in the elements provided by the user, whereas the output contains the
-mean anomaly, as in the state of the numerical integration, avoiding unnecessary
-conversions between the anomalies.
+Convert the osculating Keplerian elements `orb` [SI], with any anomaly type, to the mean
+elements under the J2 perturbation model **[1]** by fitting the osculating state vector at
+the epoch of `orb`. The returned elements store the mean anomaly, as the state of the
+numerical integration, avoiding unnecessary conversions between the anomalies.
 
-# Arguments
-
-- `a::T`: Semi-major axis [m].
-- `e::T`: Eccentricity (0 ≤ e < 1) [-].
-- `i::T`: Inclination [rad].
-- `Ω::T`: Right ascension of ascending node [rad].
-- `ω::T`: Argument of perigee [rad].
-- `f::T`: True anomaly [rad].
-
-# Returns
-
-- `T`: Mean semi-major axis [m].
-- `T`: Mean eccentricity [-].
-- `T`: Mean inclination [rad].
-- `T`: Mean right ascension of ascending node [rad].
-- `T`: Mean argument of perigee [rad].
-- `T`: Mean mean anomaly [rad].
+The least-squares fit is singular for exactly circular or equatorial orbits. Hence, the
+eccentricity and the inclination are regularized to at least `1e-6` before the fit.
 
 # Extended help
 
@@ -262,79 +217,17 @@ conversions between the anomalies.
     Microcosm Press, Hawthorne, CA.
 """
 function _osculating_to_mean_elements(
-    a::T, e::T, i::T, Ω::T, ω::T, f::T
-) where {T <: Number}
-    # Normalize.
-    a, e, i, Ω, ω, f = _normalize_classical_elements(a, e, i, Ω, ω, f)
-    e = max(e, T(1e-6))
-    i = max(i, T(1e-6))
-
-    # Convert to mean.
-    orb_osc_tod  = KeplerianElements(0.0, a, e, i, Ω, ω, f)
-    r_tod, v_tod = kepler_to_rv(orb_osc_tod)
-
-    ke, _ = fit_j2osc_mean_elements(
-        [0.0], [r_tod], [v_tod]; max_iterations = 50, verbose = false
+    orb::KeplerianElements{Tanomaly, Tepoch, T}
+) where {Tanomaly <: AbstractAnomaly, Tepoch <: Number, T <: Number}
+    orb_reg = KeplerianElements{Tanomaly}(
+        orb.t, orb.a, max(orb.e, T(1e-6)), max(orb.i, T(1e-6)), orb.Ω, orb.ω, orb.anomaly
     )
 
-    ap = ke.a
-    ep = ke.e
-    ip = ke.i
-    Ωp = ke.Ω
-    ωp = ke.ω
+    r_tod, v_tod = kepler_to_rv(orb_reg)
 
-    # The fitted elements already store the mean anomaly. Hence, this function does not
-    # perform any conversion in this case.
-    Mp = mean_anomaly(ke)
+    ke, ~ = fit_j2osc_mean_elements(
+        [orb.t], [r_tod], [v_tod]; max_iterations = 50, verbose = false
+    )
 
-    # Return new state.
-    return ap, ep, ip, Ωp, ωp, Mp
-end
-
-"""
-    _normalize_classical_elements(
-        a::T,
-        e::T,
-        i::T,
-        Ω::T,
-        ω::T,
-        M::T
-    ) where T <: Number -> NTuple{6, T}
-
-Normalize classical orbital elements to valid ranges:
-
-- Semi-major axis `a` is forced positive.
-- Eccentricity `e` is clamped to non-negative values.
-- Inclination `i` is clamped to [0, π] [rad].
-- Angular elements (Ω, ω, M) are normalized to [0, 2π) [rad].
-
-# Arguments
-
-- `a::T`: Semi-major axis [m].
-- `e::T`: Eccentricity [-].
-- `i::T`: Inclination [rad].
-- `Ω::T`: Right Ascension of Ascending Node [rad].
-- `ω::T`: Argument of Perigee [rad].
-- `M::T`: Mean Anomaly [rad].
-
-# Returns
-
-- `T`: Normalized semi-major axis [m].
-- `T`: Normalized eccentricity [-].
-- `T`: Normalized inclination [rad].
-- `T`: Normalized right ascension of ascending node [rad].
-- `T`: Normalized argument of perigee [rad].
-- `T`: Normalized mean anomaly [rad].
-"""
-function _normalize_classical_elements(
-    a::T, e::T, i::T, Ω::T, ω::T, M::T
-) where {T <: Number}
-    a_norm = abs(a)
-    e_norm = max(e, zero(T))
-    i_norm = clamp(i, zero(T), T(π))
-    Ω_norm = mod(Ω, 2π)
-    ω_norm = mod(ω, 2π)
-    M_norm = mod(M, 2π)
-
-    return a_norm, e_norm, i_norm, Ω_norm, ω_norm, M_norm
+    return ke
 end
