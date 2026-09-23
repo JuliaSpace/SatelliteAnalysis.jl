@@ -5,11 +5,21 @@ on:
       - main
     tags: '*'
   pull_request:
-
+permissions:
+  # Required by `julia-actions/cache` to delete old caches and by Documenter to deploy the
+  # documentation and report its status.
+  actions: write
+  contents: write
+  pull-requests: read
+  statuses: write
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
   docs:
     name: Documenter
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v7
       - uses: julia-actions/setup-julia@v3
@@ -17,7 +27,7 @@ jobs:
           version: '1'
       - uses: julia-actions/cache@v3
       - uses: julia-actions/julia-buildpkg@v1
-      - uses: julia-actions/julia-docdeploy@releases/v1
+      - uses: julia-actions/julia-docdeploy@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
