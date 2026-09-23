@@ -9,6 +9,11 @@ Version 0.4.1
   order as the fields of `AlternateEquinoctialElements`, `[a, h, k, p, q, λ]`, instead of
   the order `[a, ψ, e_x, e_y, i_x, i_y]`, which did not match any orbit representation of
   **SatelliteToolbox.jl**.
+- ![Info][badge-info] The decay analysis now uses the orbit representation conversions of
+  **SatelliteToolbox.jl** v2 (`AlternateEquinoctialElements`, `KeplerianElements` with the
+  mean anomaly, and `r_eci_to_hill`) instead of private implementations, removing the
+  unnecessary conversions between representations and the normalization of the input
+  elements, which the mean elements fit already performs.
 
 Version 0.4.0
 -------------
