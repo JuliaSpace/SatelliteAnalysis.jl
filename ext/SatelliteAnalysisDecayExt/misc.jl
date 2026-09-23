@@ -154,7 +154,7 @@ function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where {T <
     J₆₅ = T(1)                          # dλ/dω
     J₆₆ = T(1)                          # dλ/dM
 
-    #! format: on
+    #! format: off
     J = @SMatrix T[
         J₁₁   0    0    0    0    0
          0   J₂₂   0   J₂₄  J₂₅   0
@@ -163,7 +163,7 @@ function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where {T <
          0    0   J₅₃  J₅₄   0    0
          0    0    0   J₆₄  J₆₅  J₆₆
     ]
-    #! format: off
+    #! format: on
 
     return J
 end
