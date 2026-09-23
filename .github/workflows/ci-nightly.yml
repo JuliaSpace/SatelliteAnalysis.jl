@@ -1,21 +1,16 @@
 name: CI-nightly
 on:
-  schedule:
-    - cron: '0 3 * * *'
-  workflow_dispatch:
-permissions:
-  # Required by `julia-actions/cache` to delete old caches.
-  actions: write
-  contents: read
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    tags: '*'
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
-    # Julia nightly can break for reasons unrelated to this package.
-    continue-on-error: true
-    env:
-      JULIA_NUM_THREADS: 2
     strategy:
       fail-fast: false
       matrix:
