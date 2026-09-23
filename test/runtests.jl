@@ -66,7 +66,7 @@ end
     include("./plotting.jl")
 end
 
-@testset "Orbits" verbose = true begin
+@testset "Sun-Synchronous Orbits" verbose = true begin
     include("./sun_synchronous_orbits.jl")
 end
 
