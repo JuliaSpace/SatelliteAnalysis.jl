@@ -301,7 +301,8 @@ function _decay_analysis(
     # shared by the verbose and silent paths, avoiding a second compilation on the first
     # verbose call.
     cbset = CallbackSet(
-        ContinuousCallback(_cb_altitude_condition, _cb_altitude_affect!),
+        # Only a downward crossing of the terminate altitude ends the integration.
+        ContinuousCallback(_cb_altitude_condition, nothing, _cb_altitude_affect!),
         _decay_progress_callback(progress),
     )
 
