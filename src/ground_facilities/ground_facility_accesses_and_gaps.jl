@@ -390,13 +390,15 @@ function ground_facility_gaps(
         end
     end
 
-    # Compute the access duration and convert to the desired unit.
-    duration = Dates.value.(vgap_end .- vgap_beg) ./ 1000
+    # Compute the gap duration and convert to the desired unit.
+    vgap_duration = Dates.value.(vgap_end .- vgap_beg) ./ 1000
 
-    duration .*= time_factor
+    vgap_duration .*= time_factor
 
     # Create the DataFrame and write the metadata.
-    dfg = DataFrame(:gap_beginning => vgap_beg, :gap_end => vgap_end, :duration => duration)
+    dfg = DataFrame(
+        :gap_beginning => vgap_beg, :gap_end => vgap_end, :duration => vgap_duration
+    )
 
     # The style `:note` makes the metadata propagate through DataFrame transformations.
     metadata!(dfg, "Description", "Gaps to the ground facilities."; style = :note)
