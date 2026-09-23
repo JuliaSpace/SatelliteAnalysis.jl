@@ -332,7 +332,14 @@ function _decay_analysis(
         # altitude reaches the terminate altitude.
         reentered = sol.retcode == ReturnCode.Terminated
 
-        _finish_decay_progress!(progress, sol.t[end], perigee_end, apogee_end, reentered)
+        # Any other return code, except `Success`, means that the solver stopped before
+        # reaching the maximum propagation time.
+        failure =
+            (reentered || sol.retcode == ReturnCode.Success) ? nothing : string(sol.retcode)
+
+        _finish_decay_progress!(
+            progress, sol.t[end], perigee_end, apogee_end, reentered, failure
+        )
     end
 
     # == Assemble the Output ===============================================================

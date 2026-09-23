@@ -864,6 +864,17 @@ end
 
     @test occursin("no reentry within 24.0 h", out)
 
+    # If the solver fails, the summary must report where the integration stopped.
+    p₃ = ext.DecayProgress(buf, 86400.0, 300e3, 120e3; ansi = false)
+
+    ext._finish_decay_progress!(p₃, 43200.0, 250e3, 260e3, false, "MaxIters")
+
+    out = String(take!(buf))
+
+    @test occursin("integration stopped after 12.0 h", out)
+    @test occursin("MaxIters", out)
+    @test !occursin("no reentry", out)
+
     # The wall time must be measured from the object creation if the progress interface was
     # not explicitly started.
     @test occursin(r"\(wall time: [0-9.]+ s\)", out)

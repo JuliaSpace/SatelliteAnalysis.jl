@@ -249,13 +249,15 @@ end
         t_end::Number,
         perigee_end::Number,
         apogee_end::Number,
-        reentered::Bool
+        reentered::Bool,
+        failure::Union{Nothing, String} = nothing
     ) -> Nothing
 
 Finish the progress interface `progress` at the final model time `t_end` [s] with the
 final mean perigee and apogee altitudes [m]. In ANSI mode, the panel is redrawn with the
 final state and left on the screen. A summary line is then printed with the outcome: a
-reentry after `t_end` if `reentered` is `true`, or no reentry within the maximum
+reentry after `t_end` if `reentered` is `true`, an integration that stopped at `t_end` if
+`failure` is a string with the solver return code, or no reentry within the maximum
 propagation time otherwise.
 """
 function _finish_decay_progress!(
@@ -264,19 +266,28 @@ function _finish_decay_progress!(
     perigee_end::Number,
     apogee_end::Number,
     reentered::Bool,
+    failure::Union{Nothing, String} = nothing,
 )
     wall = time() - progress.start_wall
 
-    msg =
-        reentered ? "Decay analysis: reentry after " * _format_progress_span(t_end) :
+    msg = if reentered
+        "Decay analysis: reentry after " * _format_progress_span(t_end)
+    elseif !isnothing(failure)
+        "Decay analysis: integration stopped after " *
+        _format_progress_span(t_end) *
+        " (solver return code: " *
+        failure *
+        ")"
+    else
         "Decay analysis: no reentry within " * _format_progress_span(progress.tf)
+    end
 
     msg *= " (wall time: " * _format_progress_span(wall) * ")"
 
     if progress.ansi
         # Redraw the panel with the final state, leaving it on the screen, and print the
         # summary below it. Notice that the progress fraction is 1 at either termination
-        # condition by construction.
+        # condition by construction, but it can be lower if the solver failed.
         fraction = _decay_progress_fraction(progress, t_end, perigee_end)
 
         _draw_decay_progress_panel(progress, fraction, t_end, perigee_end, apogee_end, wall)
