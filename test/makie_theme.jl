@@ -50,6 +50,7 @@ end
     mono_theme = SatelliteAnalysis.makie_theme(; mono_ticklabels = true)
     @test to_value(theme.Axis.xticklabelfont) == :regular
     @test endswith(to_value(mono_theme.Axis.xticklabelfont), "IBMPlexMono-Regular.ttf")
+    @test isfile(to_value(mono_theme.Axis.xticklabelfont))
 
     # The colorbar outline must use the secondary accent color. Makie has no single
     # attribute for the spine color, so each side must be set.

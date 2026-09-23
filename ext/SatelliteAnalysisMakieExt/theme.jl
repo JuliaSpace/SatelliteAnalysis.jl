@@ -99,16 +99,14 @@ end
 
 SatelliteAnalysis._with_plot_theme(f, ::Nothing; kwargs...) = f()
 
-# Directory holding the bundled `.ttf` font files, relative to this source file.
-const _FONT_DIR = normpath(joinpath(@__DIR__, "..", "..", "assets", "fonts"))
-
 """
     _font(file::AbstractString) -> String
 
 Return the absolute path to the bundled font `file`, so Makie loads it directly instead of
-looking the family up in the host system's installed fonts.
+looking the family up in the host system's installed fonts. The path is resolved at call
+time, so it remains valid if the package directory is relocated after precompilation.
 """
-_font(file::AbstractString) = joinpath(_FONT_DIR, file)
+_font(file::AbstractString) = pkgdir(SatelliteAnalysis, "assets", "fonts", file)
 
 """
     _build_theme(; kwargs...) -> Theme
