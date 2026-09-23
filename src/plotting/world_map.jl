@@ -79,13 +79,19 @@ This function does not change the axis limits, ticks, or labels.
 # Keywords
 
 - `theme::Union{Nothing, Symbol, Makie.Theme}`: Select the colors of the country polygons,
-    which are not styled by the Makie theme. If it is `:dark`, we use the colors of the dark
-    variant of the theme provided by `SatelliteAnalysis.makie_theme`. Otherwise, we use the
-    colors of the light variant.
+    which are not styled by the Makie theme. If it is `:dark` or `:light`, we use the colors
+    of the respective variant of the theme provided by `SatelliteAnalysis.makie_theme`. If
+    it is a `Makie.Theme` or `nothing`, we use the colors of the light variant.
     (**Default**: `:light`)
 
 All other `kwargs...` are passed to the function `poly!`, overriding the attributes selected
 by this function (`color`, `strokecolor`, and `strokewidth`).
+
+# Extended help
+
+## Throws
+
+- `ArgumentError`: If `theme` is a `Symbol` other than `:dark` or `:light`.
 """
 function plot_world_map!(args...; kwargs...)
     return _extension_error(

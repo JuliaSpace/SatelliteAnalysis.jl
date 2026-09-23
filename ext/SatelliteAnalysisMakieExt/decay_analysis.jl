@@ -686,7 +686,7 @@ end
     _format_number(v::Number) -> String
 
 Format the number `v` with four significant digits, omitting the decimal part if the
-rounded value is an integer and grouping the digits of large integers with thin spaces.
+rounded value is an integer and grouping the digits of large integers with spaces.
 """
 function _format_number(v::Number)
     rounded = round(v; sigdigits = 4)
@@ -698,7 +698,7 @@ end
 """
     _group_digits(str::AbstractString) -> String
 
-Insert a thin space between each group of three digits in the number in `str`, counting
+Insert a space between each group of three digits in the number in `str`, counting
 from the right, when it is an integer with more than four digits.
 """
 function _group_digits(str::AbstractString)

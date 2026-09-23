@@ -313,7 +313,7 @@ angvel = n̄ + n̄ . ─── . ─── . J₂ . (4 - 5sin²(i)),
                   4     p²
 ```
 
-where `n` is the perturbed mean motion due to the same consideration as presented for the
+where `n̄` is the perturbed mean motion due to the same consideration as presented for the
 RAAN time-derivative.
 
 Finally, this function finds the pair `(a, i)` that simultaneously solves the equations:
@@ -329,6 +329,15 @@ Finally, this function finds the pair `(a, i)` that simultaneously solves the eq
 ```
 
 using the Newton-Raphson method with the presented equations.
+
+## Throws
+
+- `ArgumentError`: If `angvel` is not positive, if `e` is not in the interval `[0, 1)`, or
+    if there is no Sun-synchronous orbit with the angular velocity `angvel` and eccentricity
+    `e`.
+
+Notice that, differently from [`sun_sync_orbit_inclination`](@ref), this function only
+prints a warning if the perigee of the computed orbit is inside the Earth.
 
 ## Examples
 
@@ -505,6 +514,14 @@ Finally, this function solves the equation:
 ```
 
 for `a` using the Newton-Raphson method with the presented equations.
+
+## Throws
+
+- `ArgumentError`: If `e` is not in the interval `[0, 1)`, or if there is no
+    Sun-synchronous orbit with the inclination `i` and eccentricity `e`.
+
+Notice that, differently from [`sun_sync_orbit_inclination`](@ref), this function only
+prints a warning if the perigee of the computed orbit is inside the Earth.
 
 ## Examples
 
@@ -756,6 +773,12 @@ Finally, this function solves the equation:
 ```
 
 for `i` using the Newton-Raphson method with the presented equations.
+
+## Throws
+
+- `ArgumentError`: If `e` is not in the interval `[0, 1)`, if the perigee is not above the
+    Earth's surface, or if there is no Sun-synchronous orbit with the semi-major axis `a`
+    and eccentricity `e`.
 
 ## Examples
 

@@ -61,12 +61,12 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
     `(jd_utc::Number, lat::Number, lon::Number, alt::Number, space_indices::NamedTuple) -> Number`
     where `jd_utc` is the Julian date in UTC, `lat`, `lon`, and `alt` are the geodetic
     latitude [rad], longitude [rad], and altitude [m] of the point where the density is
-    evaluated, and `space_indices` is the named tuple with the space indices at that
-    instant provided by the keyword `space_indices`. If it is `nothing`, the system uses an
-    internal wrapper for the NRLMSISE-00 model provided by **AtmosphericModels.jl**, which
-    requires the fields `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day average
-    of the 10.7 cm solar flux) [sfu], and `ap` (daily geomagnetic index) [-] in the named
-    tuple. The macros [`@decay_analysis__jacchia77`](@ref),
+    evaluated, and `space_indices` is the named tuple with the space indices at that instant
+    provided by the keyword `space_indices`. If it is `nothing`, the system uses an internal
+    wrapper for the NRLMSISE-00 model provided by **SatelliteToolboxAtmosphericModels.jl**,
+    which requires the fields `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day
+    average of the 10.7 cm solar flux) [sfu], and `ap` (daily geomagnetic index) [-] in the
+    named tuple. The macros [`@decay_analysis__jacchia77`](@ref),
     [`@decay_analysis__jacchia77_stela`](@ref), and [`@decay_analysis__jr1971`](@ref)
     provide keyword sets that select the Jacchia 1977 (report and STELA variants) and the
     Jacchia-Roberts 1971 models instead.
@@ -253,9 +253,9 @@ end
     @decay_analysis__jacchia77
 
 Keyword set for [`decay_analysis`](@ref) that selects the Jacchia 1977 atmospheric model
-provided by **AtmosphericModels.jl** instead of the default NRLMSISE-00. The macro expands
-to the keywords `atmospheric_model`, `atmospheric_model_name`, and `space_indices`, hence
-it must be used in the keyword section of the call:
+provided by **SatelliteToolboxAtmosphericModels.jl** instead of the default NRLMSISE-00. The
+macro expands to the keywords `atmospheric_model`, `atmospheric_model_name`, and
+`space_indices`, hence it must be used in the keyword section of the call:
 
 ```julia
 decay_analysis(
@@ -348,11 +348,11 @@ end
 """
     @decay_analysis__jacchia77_stela
 
-Keyword set for [`decay_analysis`](@ref) that selects the STELA variant of the Jacchia
-1977 atmospheric model provided by **AtmosphericModels.jl** instead of the default
-NRLMSISE-00. The macro expands to the keywords `atmospheric_model`,
-`atmospheric_model_name`, and `space_indices`, hence it must be used in the keyword
-section of the call:
+Keyword set for [`decay_analysis`](@ref) that selects the STELA variant of the Jacchia 1977
+atmospheric model provided by **SatelliteToolboxAtmosphericModels.jl** instead of the
+default NRLMSISE-00. The macro expands to the keywords `atmospheric_model`,
+`atmospheric_model_name`, and `space_indices`, hence it must be used in the keyword section
+of the call:
 
 ```julia
 decay_analysis(
@@ -449,9 +449,10 @@ end
     @decay_analysis__jr1971
 
 Keyword set for [`decay_analysis`](@ref) that selects the Jacchia-Roberts 1971 atmospheric
-model provided by **AtmosphericModels.jl** instead of the default NRLMSISE-00. The macro
-expands to the keywords `atmospheric_model`, `atmospheric_model_name`, and
-`space_indices`, hence it must be used in the keyword section of the call:
+model provided by **SatelliteToolboxAtmosphericModels.jl** instead of the default
+NRLMSISE-00. The macro expands to the keywords `atmospheric_model`,
+`atmospheric_model_name`, and `space_indices`, hence it must be used in the keyword section
+of the call:
 
 ```julia
 decay_analysis(

@@ -21,19 +21,20 @@ remote sensing mission with an optical payload, we must know how much two images
 This information can only be computed using spherical trigonometry and the ground track
 inclination instead of the orbital one.
 
-The ground track inclination ``i_{gt}``, shown in the following figure, is a composition of the orbit inclination, the
-Earth's angular speed, and the RAAN time derivative. We can compute it using:
+The ground track inclination ``i_{gt}``, shown in the following figure, is a composition of
+the orbit inclination, the Earth's angular speed, and the RAAN time derivative. We can
+compute it using:
 
 ```math
 i_{gt} = \tan^{-1}\left(\frac{
-    \omega_s \sin i 
+    \omega_s \sin i
 }{
     \omega_s \cos i - \omega_e + \dot{\Omega}
 }\right)\ ,
 ```
 
 where ``i`` is the orbital inclination, ``\omega_s`` is the satellite angular speed at
-Equator, ``\omega_e`` is the Earth angular speed, and ``\Omega`` is the RAAN.
+Equator, ``\omega_e`` is the Earth angular speed, and ``\dot{\Omega}`` is the RAAN time derivative.
 
 ```@raw html
 <div align="center">

@@ -49,13 +49,15 @@ keyword was not passed, is omitted from the panel.
     `show_f107` is `true`. If it is `nothing`, the daily curve is omitted from the plot.
     (**Default**: `si -> si.f107`)
 - `fontscale::Real`: Factor to uniformly scale every font size of the figure, useful when
-    rendering at a size other than the default.
+    rendering at a size other than the default. If `theme` is a `Makie.Theme` or `nothing`,
+    it only scales the font sizes selected by this function, such as the ones in the
+    information panel and in the legend.
     (**Default**: 1)
 - `mission_name::Union{Nothing, AbstractString}`: Mission name rendered in uppercase above
     the plot title. If it is `nothing`, no mission name is added to the figure.
     (**Default**: `nothing`)
 - `mono_ticklabels::Bool`: If `true`, the tick labels are rendered using a monospaced
-    font.
+    font. This keyword only has effect if `theme` is a `Symbol`.
     (**Default**: `false`)
 - `panel_width::Union{Nothing, Real}`: Width [px] of the column with the information panel
     and the legend. If it is `nothing`, the width scales with the figure width.

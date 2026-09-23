@@ -457,8 +457,9 @@ end
 
 Default space indices computed at the Julian Day [UTC] `jd_utc` used by the decay analysis
 with the atmospheric models that require the geomagnetic index Kp (Jacchia 1977 and
-Jacchia-Roberts 1971), selected by the macros `@decay_analysis__jacchia77` and
-`@decay_analysis__jr1971`. It returns a named tuple with the fields:
+Jacchia-Roberts 1971), selected by the macros `@decay_analysis__jacchia77`,
+`@decay_analysis__jacchia77_stela`, and `@decay_analysis__jr1971`. It returns a named tuple
+with the fields:
 
 - `f107`: Daily 10.7 cm solar flux adjusted to 1 AU [sfu], falling back to the predicted
     F10.7 outside the adjusted flux timespan. The adjusted flux is used because the

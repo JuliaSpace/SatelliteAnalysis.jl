@@ -7,12 +7,12 @@
 """
     struct Nrlmsise00AtmosphericModel
 
-Default atmospheric model of the decay analysis, wrapping the NRLMSISE-00 model provided
-by **AtmosphericModels.jl**. It consumes the space indices `f107` (daily 10.7 cm solar
-flux) [sfu], `f107_avg` (81-day average of the 10.7 cm solar flux) [sfu], and `ap` (daily
-geomagnetic index) [-] from the named tuple passed to the callable. The NRLMSISE-00
-documentation requires the observed flux, at the actual Earth-Sun distance, instead of the
-flux adjusted to 1 AU.
+Default atmospheric model of the decay analysis, wrapping the NRLMSISE-00 model provided by
+**SatelliteToolboxAtmosphericModels.jl**. It consumes the space indices `f107` (daily
+10.7 cm solar flux) [sfu], `f107_avg` (81-day average of the 10.7 cm solar flux) [sfu], and
+`ap` (daily geomagnetic index) [-] from the named tuple passed to the callable. The
+NRLMSISE-00 documentation requires the observed flux, at the actual Earth-Sun distance,
+instead of the flux adjusted to 1 AU.
 
 # Fields
 
@@ -65,11 +65,11 @@ end
     struct Jacchia77AtmosphericModel{V <: Val}
 
 Atmospheric model of the decay analysis wrapping the Jacchia 1977 model provided by
-**AtmosphericModels.jl**. It consumes the space indices `f107` (daily 10.7 cm solar flux)
-[sfu], `f107_avg` (81-day average of the 10.7 cm solar flux) [sfu], and `kp` (daily
-geomagnetic index Kp) [-] from the named tuple passed to the callable. The Jacchia models
-were derived using the flux adjusted to 1 AU, so both F10.7 indices must belong to the
-adjusted class.
+**SatelliteToolboxAtmosphericModels.jl**. It consumes the space indices `f107` (daily
+10.7 cm solar flux) [sfu], `f107_avg` (81-day average of the 10.7 cm solar flux) [sfu], and
+`kp` (daily geomagnetic index Kp) [-] from the named tuple passed to the callable. The
+Jacchia models were derived using the flux adjusted to 1 AU, so both F10.7 indices must
+belong to the adjusted class.
 
 The object created by `Jacchia77AtmosphericModel()` uses the report formulation
 (`Val(:sr375)`), and it is selected by the macro
@@ -138,7 +138,7 @@ end
     struct Jr1971AtmosphericModel
 
 Atmospheric model of the decay analysis wrapping the Jacchia-Roberts 1971 model provided
-by **AtmosphericModels.jl**, selected by the macro
+by **SatelliteToolboxAtmosphericModels.jl**, selected by the macro
 [`@decay_analysis__jr1971`](@ref SatelliteAnalysis.@decay_analysis__jr1971). It consumes
 the space indices `f107` (daily 10.7 cm solar flux) [sfu], `f107_avg` (81-day average of
 the 10.7 cm solar flux) [sfu], and `kp` (daily geomagnetic index Kp) [-] from the named

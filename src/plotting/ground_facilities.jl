@@ -27,7 +27,7 @@ to **Makie.jl** documentation.
 
 # Keywords
 
-- `ground_facilities::Union{Nothing, AbstractVector{<:Tuple}}`: Vector with the WGS84
+- `ground_facilities::Union{Nothing, AbstractVector{<:NTuple{3, Number}}}`: Vector with the WGS84
     position of each ground facility `(latitude [rad], longitude [rad], altitude [m])`, as
     used to compute the visibility circles, which selects the position of the ground
     facility markers. If it is `nothing`, the positions are estimated using the visibility
@@ -53,10 +53,12 @@ All other `kwargs...` are passed to the function [`plot_world_map`](@ref).
 ## Throws
 
 - `ArgumentError`: If the theme variant in `theme` is not `:dark` or `:light`.
+- `ArgumentError`: If `ground_facility_names` or `ground_facilities` is not `nothing` and
+    its length differs from the length of `vgf_vc`.
 
 ## Examples
 
-```julia
+```julia-repl
 julia> using SatelliteAnalysis, GeoJSON, GLMakie
 
 julia> gfv1 = ground_facility_visibility_circle((0, 0, 0), EARTH_EQUATORIAL_RADIUS + 700e3);
@@ -101,7 +103,7 @@ visibility circle, which can be used, for example, to build a legend.
 
 # Keywords
 
-- `ground_facilities::Union{Nothing, AbstractVector{<:Tuple}}`: Vector with the WGS84
+- `ground_facilities::Union{Nothing, AbstractVector{<:NTuple{3, Number}}}`: Vector with the WGS84
     position of each ground facility `(latitude [rad], longitude [rad], altitude [m])`, as
     used to compute the visibility circles, which selects the position of the ground
     facility markers. If it is `nothing`, the positions are estimated using the visibility
@@ -118,9 +120,14 @@ allowing the selection of attributes such as `linestyle` and `linewidth`.
 
 # Extended Help
 
+## Throws
+
+- `ArgumentError`: If `ground_facility_names` or `ground_facilities` is not `nothing` and
+    its length differs from the length of `vgf_vc`.
+
 ## Examples
 
-```julia
+```julia-repl
 julia> using SatelliteAnalysis, GeoJSON, GLMakie
 
 julia> gfv1 = ground_facility_visibility_circle((0, 0, 0), EARTH_EQUATORIAL_RADIUS + 700e3);

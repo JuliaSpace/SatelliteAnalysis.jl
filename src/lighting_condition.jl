@@ -12,7 +12,7 @@
 export lighting_condition
 
 """
-    lighting_condition(r_i::AbstractVector, s_i::AbstractVector)
+    lighting_condition(r_i::AbstractVector, s_i::AbstractVector) -> Symbol
 
 Compute the lighting condition at the position `r_i` [m] considering the Sun position vector
 `s_i` [m]. The possible return values are:

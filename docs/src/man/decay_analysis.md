@@ -74,10 +74,10 @@ df_high[end, :date]
 The macros [`@decay_analysis__jacchia77`](@ref),
 [`@decay_analysis__jacchia77_stela`](@ref), and [`@decay_analysis__jr1971`](@ref) provide
 keyword sets that select the Jacchia 1977 (report and STELA variants) and the
-Jacchia-Roberts 1971 atmospheric models provided by **AtmosphericModels.jl** instead of
-the default NRLMSISE-00. Each macro expands to the keywords `atmospheric_model`,
-`atmospheric_model_name`, and `space_indices`, hence it must be used in the keyword
-section of the call:
+Jacchia-Roberts 1971 atmospheric models provided by **SatelliteToolboxAtmosphericModels.jl**
+instead of the default NRLMSISE-00. Each macro expands to the keywords `atmospheric_model`,
+`atmospheric_model_name`, and `space_indices`, hence it must be used in the keyword section
+of the call:
 
 ```@repl decay_analysis
 df_j77 = decay_analysis(

@@ -11,7 +11,7 @@ using SatelliteAnalysis
 Given the Earth's gravitational potential, all the low Earth orbits (LEO) suffer from
 perturbations in their elements. The right ascension of the ascending node (RAAN) is one of
 the elements that see a secular perturbation. Hence, we can use this effect to design
-orbits that the RAAN time derivative matches that of the Earth's orbit around the Sun. In
+orbits whose RAAN time derivative matches that of the Earth's orbit around the Sun. In
 this case, the orbit plane keeps its geometry almost constant regarding the Sun vector.
 Hence, the apparent local time of the ascending or descending node (LTAN and LTDN) will also
 be almost invariable, as shown in the following figure:
@@ -33,14 +33,14 @@ is:
 ```
 
 where ``R_0`` is the Earth's Equatorial radius, ``i_0`` is the orbit inclination, ``p_0 =
-a_0 (1 - e_0^2)``, ``a_0`` is the orbit semi-major axis, and ``e_0`` is the orbit
+a_0 (1 - e_0^2)``, ``a_0`` is the orbit semi-major axis, ``e_0`` is the orbit
 eccentricity, and ``\bar{n}`` is the perturbed mean-motion, given by:
 
 ```math
 \bar{n} = n_0 \left[1 + \frac{3}{4} J_2 \left(\frac{R_0}{p_0}\right)^2 \sqrt{1 - e_0^2} \left(2 - 3\sin^2 i_0\right)\right]\ ,
 ```
 
-where ``n_0 = \sqrt{\mu / a^3}``, and ``\mu`` is the Earth's standard gravitational
+where ``n_0 = \sqrt{\mu / a_0^3}``, and ``\mu`` is the Earth's standard gravitational
 parameter.
 
 !!! note
@@ -130,7 +130,6 @@ rad2deg(i)
 
 ## Designing Sun-Synchronous Orbits from Inclination
 
-
 Given a desired inclination ``i_d``, we can compute the semi-major axis that turns the orbit
 into a Sun-synchronous one by solving numerically:
 
@@ -146,7 +145,7 @@ sun_sync_orbit_semi_major_axis
 
 ### Example
 
-Let's find the semi-major axis that turns an orbit with inclination axis 98.190° and
+Let's find the semi-major axis that turns an orbit with inclination 98.190° and
 eccentricity 0.001987 into a Sun-synchronous one:
 
 ```@repl sun_sync
@@ -197,7 +196,7 @@ design_sun_sync_ground_repeating_orbit
 
 ### Example
 
-Let's find all the possible orbits between 650km and 800km that repeat the ground track in,
+Let's find all the possible orbits between 650 km and 800 km that repeat the ground track in,
 at most, 5 days:
 
 ```@repl sun_sync

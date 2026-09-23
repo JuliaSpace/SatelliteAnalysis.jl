@@ -14,7 +14,7 @@ will differ during the mission. This effect can be problematic, especially if we
 compare images by a camera onboard the satellite in different periods. The altitude
 variation will change the resolution, leading to some problems when comparing the data.
 
-We can avoid this problem if we compute an eccentricity ``e``  and the argument of perigee
+We can avoid this problem if we compute an eccentricity ``e`` and the argument of perigee
 ``\omega`` that yields theoretically:
 
 ```math
@@ -35,7 +35,7 @@ frozen_orbit
 ## Examples
 
 We will compute the eccentricity and argument of perigee that yields a frozen orbit using the
-data from Amazonia-1 mission. First, we will use only 5 degrees, and the default gravity
+data from Amazonia-1 mission. First, we will use only up to degree 5, and the default gravity
 model (EGM96):
 
 ```@repl frozen_orbit

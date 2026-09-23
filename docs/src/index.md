@@ -30,7 +30,8 @@ julia> Pkg.add("SatelliteAnalysis")
   `ground_repeating_orbit_adjacent_track_distance`.
 - **Orbital decay**: `decay_analysis`.
 - **Plotting**: `plot_world_map`, `plot_ground_track`,
-  `plot_ground_facility_visibility_circles`, `plot_decay_analysis`, and a Makie theme.
+  `plot_ground_facility_visibility_circles`, `plot_decay_analysis`,
+  `fetch_country_polygons`, and a Makie theme.
 
 ## Optional Features
 
