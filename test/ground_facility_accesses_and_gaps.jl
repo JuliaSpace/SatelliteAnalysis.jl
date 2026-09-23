@@ -47,6 +47,8 @@ end
     @test df.duration[2] ≈ exp_duration[2]
 
     @test metadata(df, "Description") == "Accesses to the ground facilities."
+    @test colmetadata(df, :access_beginning, "Unit") == :UTC
+    @test colmetadata(df, :access_end, "Unit") == :UTC
     @test colmetadata(df, :duration, "Unit") == :s
 
     # All the metadata must use the style `:note` to propagate through DataFrame
@@ -366,6 +368,8 @@ end
     @test df.duration[3] ≈ exp_duration[3]
 
     @test metadata(df, "Description") == "Gaps to the ground facilities."
+    @test colmetadata(df, :gap_beginning, "Unit") == :UTC
+    @test colmetadata(df, :gap_end, "Unit") == :UTC
     @test colmetadata(df, :duration, "Unit") == :s
 
     # All the metadata must use the style `:note` to propagate through DataFrame

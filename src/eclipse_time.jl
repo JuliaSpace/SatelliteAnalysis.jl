@@ -93,9 +93,10 @@ julia> df = eclipse_time_summary(orbp; num_days = 5, time_unit = :min)
    5 │ 2021-01-05   66.2824  0.341704  33.3759
 
 julia> colmetadata(df)
-Dict{Symbol, Dict{String, Symbol}} with 3 entries:
+Dict{Symbol, Dict{String, Symbol}} with 4 entries:
   :penumbra => Dict("Unit"=>:min)
   :sunlight => Dict("Unit"=>:min)
+  :date     => Dict("Unit"=>:UTC)
   :umbra    => Dict("Unit"=>:min)
 ```
 """
@@ -244,6 +245,7 @@ function eclipse_time_summary(
         df, "Description", "Eclipse time PER ORBIT computed at each day."; style = :note
     )
 
+    colmetadata!(df, :date, "Unit", :UTC; style = :note)
     colmetadata!(df, :sunlight, "Unit", time_unit; style = :note)
     colmetadata!(df, :penumbra, "Unit", time_unit; style = :note)
     colmetadata!(df, :umbra, "Unit", time_unit; style = :note)

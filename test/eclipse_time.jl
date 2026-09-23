@@ -34,6 +34,7 @@
 
     @test metadata(df, "Description") == "Eclipse time PER ORBIT computed at each day."
 
+    @test colmetadata(df, :date, "Unit") == :UTC
     @test colmetadata(df, :sunlight, "Unit") == :s
     @test colmetadata(df, :penumbra, "Unit") == :s
     @test colmetadata(df, :umbra, "Unit") == :s

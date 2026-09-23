@@ -74,7 +74,7 @@ This geodetic information is transformed to an ECEF vector using the function
     - `access_beginning`: Time of the access beginning [UTC] encoded using `DateTime`.
     - `access_end`: Time of the access end [UTC] encoded using `DateTime`.
     - `duration`: Duration of the access [`time_unit`].
-    The unit of the column `duration` is stored in the `DataFrame` using metadata.
+    The unit of each column is stored in the `DataFrame` using metadata.
 
 # Extended Help
 
@@ -260,6 +260,8 @@ function ground_facility_accesses(
 
     # The style `:note` makes the metadata propagate through DataFrame transformations.
     metadata!(df, "Description", "Accesses to the ground facilities."; style = :note)
+    colmetadata!(df, :access_beginning, "Unit", :UTC; style = :note)
+    colmetadata!(df, :access_end, "Unit", :UTC; style = :note)
     colmetadata!(df, :duration, "Unit", time_unit; style = :note)
 
     return df
@@ -280,7 +282,7 @@ lasts for `duration` [s].
     - `gap_beginning`: Time of the gap beginning [UTC] encoded using `DateTime`.
     - `gap_end`: Time of the gap end [UTC] encoded using `DateTime`.
     - `duration`: Duration of the gap [`time_unit`].
-    The unit of the column `duration` is stored in the `DataFrame` using metadata.
+    The unit of each column is stored in the `DataFrame` using metadata.
 
 # Extended Help
 
@@ -402,6 +404,8 @@ function ground_facility_gaps(
 
     # The style `:note` makes the metadata propagate through DataFrame transformations.
     metadata!(dfg, "Description", "Gaps to the ground facilities."; style = :note)
+    colmetadata!(dfg, :gap_beginning, "Unit", :UTC; style = :note)
+    colmetadata!(dfg, :gap_end, "Unit", :UTC; style = :note)
     colmetadata!(dfg, :duration, "Unit", time_unit; style = :note)
 
     return dfg
