@@ -179,13 +179,15 @@ function ground_facility_accesses(
         debug_msg
     end
 
+    # A propagation modifies the propagator structure. Hence, we need to copy the structure
+    # for each thread to avoid race conditions. Notice that all the copies must be created
+    # before spawning any task because the first one uses the original propagator.
+    chunk_orbps = [c == 1 ? orbp : deepcopy(orbp) for c in eachindex(vt_chunks)]
+
     # Create the tasks to compute by each thread.
     tasks = map(eachindex(vt_chunks)) do c
-        chunk_vt = vt_chunks[c]
-
-        # A propagation modified the propagator structure. Hence, we need to copy the
-        # structure for each thread to avoid racing conditions.
-        chunk_orbp = c == 1 ? orbp : deepcopy(orbp)
+        chunk_vt   = vt_chunks[c]
+        chunk_orbp = chunk_orbps[c]
 
         Threads.@spawn begin
             _ground_facility_access_chunk(
