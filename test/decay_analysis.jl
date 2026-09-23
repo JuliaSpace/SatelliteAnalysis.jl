@@ -341,6 +341,8 @@ end
         (; reltol = 0.0),
         (; terminate_altitude = -1.0),
         (; tf = 0.0),
+        # The initial mean perigee altitude must be above the terminate altitude.
+        (; terminate_altitude = 400e3),
     )
         @test_throws ArgumentError decay_analysis(
             orb;

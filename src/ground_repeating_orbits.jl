@@ -53,6 +53,10 @@ The information `orbit_cycle` is redundant given that we have `a`, `e`, and `i`.
 it is necessary to improve the algorithm precision. Otherwise, the `orbit_cycle` must be
 obtained by computing the orbit period using `a`, `e`, and `i` and then converting it to a
 rational number, leading to numerical problems.
+
+## Throws
+
+- `ArgumentError`: If `orbit_cycle` is not positive.
 """
 function ground_repeating_orbit_adjacent_track_angle(
     a::T1,
@@ -119,6 +123,10 @@ The information `orbit_cycle` is redundant given that we have `a`, `e`, and `i`.
 it is necessary to improve the algorithm precision. Otherwise, the `orbit_cycle` must be
 obtained by computing the orbit period using `a`, `e`, and `i` and then converting it to a
 rational number, leading to numerical problems.
+
+## Throws
+
+- `ArgumentError`: If `orbit_cycle` is not positive.
 """
 function ground_repeating_orbit_adjacent_track_distance(
     a::T1,
@@ -213,6 +221,8 @@ function _ground_repeating_orbit__adjacent_track_half_angle(
     m0::Number,
     we::Number,
 ) where {T1 <: Number, T2 <: Number, T3 <: Number}
+    orbit_cycle > 0 || throw(ArgumentError("The orbit cycle must be greater than 0."))
+
     T   = float(promote_type(T1, T2, T3))
     ω_e = T(we)
 

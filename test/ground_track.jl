@@ -58,6 +58,7 @@
     @test_throws ArgumentError ground_track(orbp; track_types = :unknown)
     @test_throws ArgumentError ground_track(orbp; step = 0)
     @test_throws ArgumentError ground_track(orbp; step = -10)
+    @test_throws ArgumentError ground_track(orbp; duration = -1)
 
     # == Propagator Without Mean Elements ==================================================
 

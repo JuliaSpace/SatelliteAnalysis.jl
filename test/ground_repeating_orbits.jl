@@ -105,4 +105,11 @@
         ground_repeating_orbit_adjacent_track_distance(a_df, e, i_df, 5)
     @test df[begin, :adjacent_gt_angle] ≈
         ground_repeating_orbit_adjacent_track_angle(a_df, e, i_df, 5)
+
+    # == Invalid Orbit Cycle ===============================================================
+
+    @test_throws ArgumentError ground_repeating_orbit_adjacent_track_distance(a, e, i, 0)
+    @test_throws ArgumentError ground_repeating_orbit_adjacent_track_distance(a, e, i, -1)
+    @test_throws ArgumentError ground_repeating_orbit_adjacent_track_angle(a, e, i, 0)
+    @test_throws ArgumentError ground_repeating_orbit_adjacent_track_angle(a, e, i, -1)
 end

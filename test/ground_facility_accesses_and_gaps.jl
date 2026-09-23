@@ -147,6 +147,10 @@ end
     @test_throws ArgumentError ground_facility_accesses(orbp, (0, 0, 0); step = 0)
     @test_throws ArgumentError ground_facility_accesses(orbp, (0, 0, 0); step = -60)
 
+    # -- Invalid Duration ------------------------------------------------------------------
+
+    @test_throws ArgumentError ground_facility_accesses(orbp, (0, 0, 0); duration = -1)
+
     # == Duration Not Multiple of the Step =================================================
 
     # The analysis must end exactly at the requested instant even if the duration is not a
@@ -499,6 +503,10 @@ end
 
     @test_throws ArgumentError ground_facility_gaps(orbp, (0, 0, 0); step = 0)
     @test_throws ArgumentError ground_facility_gaps(orbp, (0, 0, 0); step = -60)
+
+    # -- Invalid Duration ------------------------------------------------------------------
+
+    @test_throws ArgumentError ground_facility_gaps(orbp, (0, 0, 0); duration = -1)
 
     # == Duration Not Multiple of the Step =================================================
 

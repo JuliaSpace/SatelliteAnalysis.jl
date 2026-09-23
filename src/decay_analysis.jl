@@ -195,6 +195,8 @@ epoch estimation.
 - `ArgumentError`: If `satellite_mass`, `num_sampling_points_per_orbit`, `abstol`, `reltol`,
     or `tf` is not positive, or if `satellite_mean_area`, `C_d`, `C_r`, or
     `terminate_altitude` is negative.
+- `ArgumentError`: If the initial mean perigee altitude is not greater than
+    `terminate_altitude`.
 
 ## Examples
 

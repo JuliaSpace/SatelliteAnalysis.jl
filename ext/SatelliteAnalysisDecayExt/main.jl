@@ -237,6 +237,17 @@ function _decay_analysis(
     # per-step state allocations of the numerical integration.
     u₀ = _keplerian_to_state(orb)
 
+    # The analysis is meaningless if the initial mean perigee altitude is already at or
+    # below the terminate altitude, since the termination condition could never be
+    # triggered.
+    perigee₀, apogee₀ = _state_apsis_altitudes(u₀)
+
+    perigee₀ > terminate_altitude || throw(
+        ArgumentError(
+            "The initial mean perigee altitude ($(perigee₀) m) must be greater than the terminate altitude ($(terminate_altitude) m).",
+        ),
+    )
+
     # Force a homogeneous time span even if the user passes an integer `tf`.
     tspan = (0.0, Float64(tf))
 
@@ -281,8 +292,6 @@ function _decay_analysis(
     )
 
     # Progress interface shown during the integration when `verbose` is enabled.
-    perigee₀, apogee₀ = _state_apsis_altitudes(u₀)
-
     progress =
         verbose ? DecayProgress(stderr, tspan[2], perigee₀, Float64(terminate_altitude)) :
         nothing

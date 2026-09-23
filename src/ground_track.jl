@@ -44,8 +44,8 @@ ground track.
 
 ## Throws
 
-- `ArgumentError`: If `step` is not positive, or if `track_types` is not `:all`,
-    `:ascending`, or `:descending`.
+- `ArgumentError`: If `step` is not positive, if `duration` is negative, or if
+    `track_types` is not `:all`, `:ascending`, or `:descending`.
 
 ## Examples
 
@@ -144,6 +144,8 @@ function ground_track(
 )
 
     # == Prepare the Inputs ================================================================
+
+    duration >= 0 || throw(ArgumentError("The duration must not be negative."))
 
     track_types ∉ (:all, :ascending, :descending) && throw(
         ArgumentError(
