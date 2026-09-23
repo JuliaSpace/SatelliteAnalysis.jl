@@ -2,7 +2,7 @@ name = "SatelliteAnalysis"
 uuid = "101040f3-2a13-4d8c-b9b0-4a720fa906ce"
 license = "MIT"
 desc = "A package for Julia with several functions to perform satellite analysis."
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Ronan Arraes Jardim Chagas <ronisbr@gmail.com>"]
 
 [deps]
