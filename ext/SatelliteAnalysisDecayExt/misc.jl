@@ -5,7 +5,10 @@
 ############################################################################################
 
 """
-    _state_to_alternate_equinoctial(u::AbstractVector{T}, epoch::Number) where {T <: Number} -> AlternateEquinoctialElements
+    _state_to_alternate_equinoctial(
+        u::AbstractVector{T},
+        epoch::Number
+    ) where {T <: Number} -> AlternateEquinoctialElements
 
 Convert the state vector `u = [a, h, k, p, q, λ]` of the numerical integration to the
 alternate equinoctial elements of **SatelliteToolboxBase.jl** with the Julian Day `epoch`
@@ -33,7 +36,10 @@ function _state_to_alternate_equinoctial(
 end
 
 """
-    _state_to_keplerian(u::AbstractVector{T}, epoch::Number) where {T <: Number} -> KeplerianElements{MeanAnomaly}
+    _state_to_keplerian(
+        u::AbstractVector{T},
+        epoch::Number
+    ) where {T <: Number} -> KeplerianElements{MeanAnomaly}
 
 Convert the state vector `u = [a, h, k, p, q, λ]` of the numerical integration to Keplerian
 elements storing the mean anomaly with the Julian Day `epoch` [UTC]. The angles are
@@ -47,7 +53,9 @@ function _state_to_keplerian(u::AbstractVector{T}, epoch::Number) where {T <: Nu
 end
 
 """
-    _keplerian_to_state(ke::KeplerianElements{Tanomaly, Tepoch, T}) where {Tanomaly, Tepoch, T} -> SVector{6, T}
+    _keplerian_to_state(
+        ke::KeplerianElements{Tanomaly, Tepoch, T}
+    ) where {Tanomaly, Tepoch, T} -> SVector{6, T}
 
 Convert the Keplerian elements `ke`, with any anomaly type, to the state vector
 `u = [a, h, k, p, q, λ]` of the numerical integration (see
@@ -82,7 +90,12 @@ function _state_apsis_altitudes(u::AbstractVector{T}) where {T <: Number}
 end
 
 """
-    _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where T <: Number -> SMatrix{6, 6, T}
+    _classical_to_equinoctial_jacobian(
+        e::T,
+        i::T,
+        Ω::T,
+        ω::T
+    ) where T <: Number -> SMatrix{6, 6, T}
 
 Compute the Jacobian matrix of the transformation from the classical orbital elements
 `[a, e, i, Ω, ω, M]` to the alternate equinoctial elements `[a, h, k, p, q, λ]`, the state
@@ -141,6 +154,7 @@ function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where {T <
     J₆₅ = T(1)                          # dλ/dω
     J₆₆ = T(1)                          # dλ/dM
 
+    #! format: on
     J = @SMatrix T[
         J₁₁   0    0    0    0    0
          0   J₂₂   0   J₂₄  J₂₅   0
@@ -149,12 +163,16 @@ function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where {T <
          0    0   J₅₃  J₅₄   0    0
          0    0    0   J₆₄  J₆₅  J₆₆
     ]
+    #! format: off
 
     return J
 end
 
 """
-    _mean_to_osculating_rv(orb::KeplerianElements, orbp::OrbitPropagatorJ2Osculating) -> SVector{3, T}, SVector{3, T}
+    _mean_to_osculating_rv(
+        orb::KeplerianElements,
+        orbp::OrbitPropagatorJ2Osculating
+    ) -> SVector{3, T}, SVector{3, T}
 
 Compute the osculating position and velocity vectors from the mean Keplerian elements `orb`
 [SI] under the J2 perturbation model **[1]** using the pre-allocated J2 osculating
@@ -201,7 +219,9 @@ function _mean_to_osculating_rv(orb::KeplerianElements, orbp::OrbitPropagatorJ2O
 end
 
 """
-    _osculating_to_mean_elements(orb::KeplerianElements) -> KeplerianElements{MeanAnomaly, Float64, Float64}
+    _osculating_to_mean_elements(
+        orb::KeplerianElements
+    ) -> KeplerianElements{MeanAnomaly, Float64, Float64}
 
 Convert the osculating Keplerian elements `orb` [SI], with any anomaly type, to the mean
 elements under the J2 perturbation model **[1]** by fitting the osculating state vector at

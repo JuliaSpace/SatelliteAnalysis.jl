@@ -52,7 +52,13 @@ mutable struct DecayProgress
 end
 
 """
-    DecayProgress(io::IO, tf::Number, perigee₀::Number, terminate_altitude::Number; kwargs...) -> DecayProgress
+    DecayProgress(
+        io::IO,
+        tf::Number,
+        perigee₀::Number,
+        terminate_altitude::Number;
+        kwargs...
+    ) -> DecayProgress
 
 Create the progress interface state writing to `io` for an analysis with the maximum
 propagation time `tf` [s], the initial mean perigee altitude `perigee₀` [m], and the
@@ -181,7 +187,12 @@ function _start_decay_progress!(progress::DecayProgress, apogee₀::Number)
 end
 
 """
-    _update_decay_progress!(progress::DecayProgress, t::Number, perigee::Number, apogee::Number) -> Nothing
+    _update_decay_progress!(
+        progress::DecayProgress,
+        t::Number,
+        perigee::Number,
+        apogee::Number
+    ) -> Nothing
 
 Update the progress interface `progress` at the model time `t` [s] with the current mean
 perigee and apogee altitudes [m]. In ANSI mode, the panel is redrawn whenever the progress
@@ -233,7 +244,13 @@ function _update_decay_progress!(
 end
 
 """
-    _finish_decay_progress!(progress::DecayProgress, t_end::Number, perigee_end::Number, apogee_end::Number, reentered::Bool) -> Nothing
+    _finish_decay_progress!(
+        progress::DecayProgress,
+        t_end::Number,
+        perigee_end::Number,
+        apogee_end::Number,
+        reentered::Bool
+    ) -> Nothing
 
 Finish the progress interface `progress` at the final model time `t_end` [s] with the
 final mean perigee and apogee altitudes [m]. In ANSI mode, the panel is redrawn with the
@@ -307,7 +324,14 @@ function _decay_progress_fraction(progress::DecayProgress, t::Number, perigee::N
 end
 
 """
-    _draw_decay_progress_panel(progress::DecayProgress, fraction::Number, t::Number, perigee::Number, apogee::Number, wall::Number) -> Nothing
+    _draw_decay_progress_panel(
+        progress::DecayProgress,
+        fraction::Number,
+        t::Number,
+        perigee::Number,
+        apogee::Number,
+        wall::Number
+    ) -> Nothing
 
 Draw the ANSI progress panel of `progress` with the progress `fraction`, the model time
 `t` [s], the mean perigee and apogee altitudes [m], and the elapsed wall time `wall` [s].
@@ -429,15 +453,9 @@ selecting the unit that best fits its magnitude.
 function _format_progress_span(seconds::Number)
     s = Float64(seconds)
 
-    if s < 120
-        return string(round(s; digits = 1)) * " s"
-    elseif s < 2 * 3600
-        return string(round(s / 60; digits = 1)) * " min"
-    elseif s < 2 * 86400
-        return string(round(s / 3600; digits = 1)) * " h"
-    elseif s < 2 * 365.25 * 86400
-        return string(round(s / 86400; digits = 1)) * " days"
-    else
-        return string(round(s / (365.25 * 86400); digits = 2)) * " years"
-    end
+    s < 120 && return string(round(s; digits = 1)) * " s"
+    s < 2 * 3600 && return string(round(s / 60; digits = 1)) * " min"
+    s < 2 * 86400 && return string(round(s / 3600; digits = 1)) * " h"
+    s < 2 * 365.25 * 86400 && return string(round(s / 86400; digits = 1)) * " days"
+    return string(round(s / (365.25 * 86400); digits = 2)) * " years"
 end

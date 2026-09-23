@@ -5,7 +5,11 @@
 ############################################################################################
 
 """
-    _dynamics(u::AbstractVector{T}, params::NamedTuple, t::Real) where T <: Number -> SVector{6, T}
+    _dynamics(
+        u::AbstractVector{T},
+        params::NamedTuple,
+        t::Real
+    ) where T <: Number -> SVector{6, T}
 
 Compute the time derivatives of the mean equinoctial orbital elements `u` at the time `t`
 [s] after the epoch using Gauss variational equations with averaged perturbations.

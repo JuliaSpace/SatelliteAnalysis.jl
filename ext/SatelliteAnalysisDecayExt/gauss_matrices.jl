@@ -87,14 +87,30 @@ function _equinoctial_gauss_variational_matrices(
     k₂  = r * sin_θ / h
     k₃  = 1 / (1 + η)
 
+    A₁₁ = k₁ * e * sin_f
+    A₁₂ = k₁ * p / r
+    A₂₁ = -p * cos_L / h
+    A₂₂ = (psr * sin_L + r * e_y) / h
+    A₂₃ = +k₂ * tan_io2 * e_x
+    A₃₁ = p * sin_L / h
+    A₃₂ = (psr * cos_L + r * e_x) / h
+    A₃₃ = -k₂ * tan_io2 * e_y
+    A₄₃ = r / h * (cos_io2 * sin_Ω * cos_θ + cos_Ω * sin_θ / cos_io2) / 2
+    A₅₃ = r / h * (cos_io2 * cos_Ω * cos_θ - sin_Ω * sin_θ / cos_io2) / 2
+    A₆₁ = -(p * e * cos_f * k₃ + 2r * η) / h
+    A₆₂ = psr * e * sin_f * k₃ / h
+    A₆₃ = k₂ * tan_io2
+
+    #! format: off
     A = @SMatrix T[
-        (k₁ * e * sin_f)                      (k₁ * p / r)                   0
-        (-p * cos_L / h)                      ((psr * sin_L + r * e_y) / h)  (+k₂ * tan_io2 * e_x)
-        (p * sin_L / h)                       ((psr * cos_L + r * e_x) / h)  (-k₂ * tan_io2 * e_y)
-        0  0  (r / h * (cos_io2 * sin_Ω * cos_θ + cos_Ω * sin_θ / cos_io2) / 2)
-        0  0  (r / h * (cos_io2 * cos_Ω * cos_θ - sin_Ω * sin_θ / cos_io2) / 2)
-        (-(p * e * cos_f * k₃ + 2r * η) / h)  (psr * e * sin_f * k₃ / h)     (k₂ * tan_io2)
+        A₁₁ A₁₂   0
+        A₂₁ A₂₂ A₂₃
+        A₃₁ A₃₂ A₃₃
+          0   0 A₄₃
+          0   0 A₅₃
+        A₆₁ A₆₂ A₆₃
     ]
+    #! format: on
 
     return A
 end
