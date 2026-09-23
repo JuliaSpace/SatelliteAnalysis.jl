@@ -1,6 +1,61 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.5.0
+-------------
+
+- ![BREAKING][badge-breaking] The keyword `int_rev_per_day` of
+  `design_sun_sync_ground_repeating_orbit`, which selected the integer parts of the number
+  of revolutions per day, was replaced by the keywords `minimum_revs_per_day` and
+  `maximum_revs_per_day`, which select the interval of the number of revolutions per day,
+  including fractional bounds. The default interval `[13, 18]` analyzes the same orbits as
+  the previous default value.
+- ![BREAKING][badge-breaking] The `DataFrame`s returned by `eclipse_time_summary`,
+  `ground_facility_accesses`, and `ground_facility_gaps` now store the unit `:UTC` in the
+  metadata of the date columns (`date`, `access_beginning`, `access_end`, `gap_beginning`,
+  and `gap_end`), as `decay_analysis` already does.
+- ![BREAKING][badge-breaking] `ground_track` now always ends at the instant
+  `initial_time + duration`. If `duration` is not a multiple of `step`, the output has an
+  additional point at the end of the interval, which was previously omitted.
+- ![Bugfix][badge-bugfix] The initial guess of the inclination in
+  `sun_sync_orbit_from_angular_velocity` had the wrong sign, starting the Newton-Raphson
+  method in the prograde orbit symmetric to the solution. The solver now converges in fewer
+  iterations, which also reduces the number of orbits discarded by
+  `design_sun_sync_ground_repeating_orbit` due to the iteration limit.
+- ![Bugfix][badge-bugfix] `ground_facility_accesses` and `ground_facility_gaps` now copy the
+  orbit propagator for every thread before starting any computation, avoiding a race
+  condition in which a copy could capture a propagator being modified by the first thread.
+- ![Bugfix][badge-bugfix] `ground_facility_accesses` and `ground_facility_gaps` now analyze
+  the entire interval when `duration` is not a multiple of `step`. Previously, accesses
+  beginning in the last partial step were missed, and an access ongoing at the end of the
+  analysis led to a spurious gap.
+- ![Bugfix][badge-bugfix] `eclipse_time_summary` and `ground_track` now compute the orbit
+  period from the osculating elements when the propagator does not provide the mean
+  elements, instead of throwing an error.
+- ![Bugfix][badge-bugfix] The functions now throw an `ArgumentError` for inputs that
+  previously led to meaningless results or obscure errors: a non-positive `orbit_cycle` in
+  `ground_repeating_orbit_adjacent_track_angle` and
+  `ground_repeating_orbit_adjacent_track_distance`; a negative `duration` in `ground_track`,
+  `ground_facility_accesses`, and `ground_facility_gaps`; and an initial mean perigee
+  altitude not above `terminate_altitude` in `decay_analysis`.
+- ![Bugfix][badge-bugfix] In `decay_analysis`, only a downward crossing of
+  `terminate_altitude` now ends the integration, and the verbose summary reports where the
+  integration stopped if the solver fails instead of reporting no reentry.
+- ![Bugfix][badge-bugfix] `decay_analysis` now computes J₂ correctly when the gravity model
+  coefficients are unnormalized.
+- ![Bugfix][badge-bugfix] The Makie theme now colors the colorbar outline with the secondary
+  accent color, as intended, instead of the default black.
+- ![Bugfix][badge-bugfix] `plot_decay_analysis` no longer converts an interruption while
+  extracting the F10.7 indices into an `ArgumentError`.
+- ![Bugfix][badge-bugfix] The path to the fonts bundled with the Makie theme is now
+  resolved when the theme is created, remaining valid if the package directory is moved
+  after precompilation.
+- ![Info][badge-info] The README and the documentation home page now include an overview
+  of the package features.
+- ![Info][badge-info] We fixed several errors in the documentation, including the missing
+  `ArgumentError` descriptions, the name of **SatelliteToolboxAtmosphericModels.jl**, and
+  the symbols in the equations of the ground track and Sun-synchronous orbit pages.
+
 Version 0.4.1
 -------------
 
@@ -65,8 +120,8 @@ Version 0.4.0
   to the averaged dynamics, following the same convention of semi-analytical tools such as
   STELA; the keyword `input_type` selects between `:mean` and `:osculating` input
   elements, converting the latter to mean elements before the propagation. The analysis
-  is available when OrdinaryDiffEq.jl is loaded and returns a `DataFrame` with the mean
-  orbital element evolution. (PR [#16][gh-pr-16])
+  is available when OrdinaryDiffEqAdamsBashforthMoulton.jl is loaded and returns a
+  `DataFrame` with the mean orbital element evolution. (PR [#16][gh-pr-16])
 - ![Feature][badge-feature] We added a Makie theme extension, moved from
   **SatelliteToolbox.jl**, where it was never released. Loading a Makie backend together
   with **SatelliteAnalysis.jl** provides the non-exported functions
