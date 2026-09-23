@@ -128,7 +128,8 @@ palettes, so all styling common to the two variants lives here.
 - `text_secondary::Colorant`: Secondary text color for tick labels, spines, and metadata.
 - `text_tertiary::Colorant`: Tertiary text color for minor ticks.
 - `amber::Colorant`: Primary accent color.
-- `cyan::Colorant`: Secondary accent color used for legend and colorbar titles.
+- `cyan::Colorant`: Secondary accent color used for legend titles and colorbar
+    outlines.
 - `magenta::Colorant`: Tertiary accent color.
 - `categorical::AbstractVector{<:Colorant}`: Categorical color cycle for data series.
 - `fontscale::Real`: Factor by which every font size is uniformly multiplied.
@@ -275,7 +276,12 @@ function _build_theme(;
             ticklabelfont  = ticklabelfont,
             labelcolor     = text_primary,
             labelsize      = fs(18),
-            spinecolor     = cyan, # Secondary accent to highlight the colorbar outline.
+            # Secondary accent to highlight the colorbar outline. Makie has no single
+            # `spinecolor`; each side must be set individually.
+            leftspinecolor   = cyan,
+            rightspinecolor  = cyan,
+            bottomspinecolor = cyan,
+            topspinecolor    = cyan,
         ),
 
         # == Text ==========================================================================
