@@ -147,6 +147,44 @@ end
     @test_throws ArgumentError ground_facility_accesses(orbp, (0, 0, 0); step = 0)
     @test_throws ArgumentError ground_facility_accesses(orbp, (0, 0, 0); step = -60)
 
+    # == Duration Not Multiple of the Step =================================================
+
+    # The analysis must end exactly at the requested instant even if the duration is not a
+    # multiple of the step. In this case, the analysis ends during the first access.
+    df = ground_facility_accesses(
+        orbp, (0, 0, 0); duration = 37500, step = 7, f_eci_to_ecef = gf_tod_to_pef
+    )
+
+    @test size(df) == (1, 3)
+    @test abs(df.access_beginning[1] - DateTime("2021-01-01T10:20:03.163")) <=
+        Millisecond(1)
+    @test df.access_end[1] == DateTime("2021-01-01T10:25:00")
+
+    # An access that begins after the last multiple of the step must not be missed.
+    df = ground_facility_accesses(
+        orbp, (0, 0, 0); duration = 37205, step = 11, f_eci_to_ecef = gf_tod_to_pef
+    )
+
+    @test size(df) == (1, 3)
+    @test abs(df.access_beginning[1] - DateTime("2021-01-01T10:20:03.163")) <=
+        Millisecond(1)
+    @test df.access_end[1] == DateTime("2021-01-01T10:20:05")
+
+    # The results must not depend on the number of chunks.
+    for num_chunks in (1, 2, 5)
+        df_chunks = ground_facility_accesses(
+            orbp,
+            (0, 0, 0);
+            duration      = 37500,
+            step          = 7,
+            f_eci_to_ecef = gf_tod_to_pef,
+            num_chunks    = num_chunks,
+        )
+
+        @test size(df_chunks) == (1, 3)
+        @test df_chunks.access_end[1] == DateTime("2021-01-01T10:25:00")
+    end
+
     # == Facility Outside the Equator ======================================================
 
     # This test is used to verify the improvement provided by commit `43eea92`.
@@ -461,4 +499,16 @@ end
 
     @test_throws ArgumentError ground_facility_gaps(orbp, (0, 0, 0); step = 0)
     @test_throws ArgumentError ground_facility_gaps(orbp, (0, 0, 0); step = -60)
+
+    # == Duration Not Multiple of the Step =================================================
+
+    # If the analysis ends during an access, there must be no gap after it, even if the
+    # duration is not a multiple of the step.
+    df = ground_facility_gaps(
+        orbp, (0, 0, 0); duration = 37500, step = 7, f_eci_to_ecef = gf_tod_to_pef
+    )
+
+    @test size(df) == (1, 3)
+    @test df.gap_beginning[1] == DateTime("2021-01-01T00:00:00")
+    @test abs(df.gap_end[1] - DateTime("2021-01-01T10:20:03.163")) <= Millisecond(1)
 end

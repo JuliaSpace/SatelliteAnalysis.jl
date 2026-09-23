@@ -146,13 +146,20 @@ function ground_facility_accesses(
     time_factor = _time_unit_factor(time_unit)
 
     # Time vector of the analysis.
-    vt = float(initial_time):float(step):float(initial_time + duration)
+    t_end = float(initial_time + duration)
+    vt    = float(initial_time):float(step):t_end
 
     # Create the chunks with the time to be computed by each thread.
     # There is no useful work in creating more tasks than propagation instants. Clamp the
     # requested count also so extreme values cannot create invalid chunk indices.
     num_chunks = min(max(num_chunks, 1), max(length(vt), 1))
-    vt_chunks = _gf_access_time_vector_partition(vt, num_chunks) |> collect
+    vt_chunks = AbstractVector{eltype(vt)}[]
+    append!(vt_chunks, _gf_access_time_vector_partition(vt, num_chunks))
+
+    # If the duration is not a multiple of the step, the time vector ends before the end of
+    # the analysis. In this case, we add a chunk with the remaining interval. Notice that
+    # it shares its first instant with the last chunk, as required by the merge algorithm.
+    last(vt) < t_end && push!(vt_chunks, [last(vt), t_end])
 
     @debug begin
         dtf = dateformat"yyyy-mm-ddTHH:MM:SS.sss"
@@ -435,7 +442,7 @@ end
 # Compute the ground facility access for a specific time chunk.
 function _ground_facility_access_chunk(
     orbp::OrbitPropagator,
-    vt::StepRangeLen,
+    vt::AbstractVector,
     vgf_wgs84::AbstractVector{T};
     f_eci_to_ecef::Function = _default_eci_to_ecef,
     minimum_elevation::Number = 10 |> deg2rad,
@@ -446,9 +453,6 @@ function _ground_facility_access_chunk(
 
     # Get the epoch of the propagator.
     jd₀ = Propagators.epoch(orbp)
-
-    # Get the step in the time chunk.
-    Δt = step(vt)
 
     # State to help the computation.
     state = :initial
@@ -501,6 +505,7 @@ function _ground_facility_access_chunk(
     Tt = eltype(vt)
 
     access_beg_s  = first(vt)
+    t_prev        = first(vt)
     vaccess_beg_s = Tt[]
     vaccess_end_s = Tt[]
 
@@ -524,17 +529,19 @@ function _ground_facility_access_chunk(
             # Handle transitions.
         elseif (state == :not_visible) && visible
             # Refine to find the edge.
-            access_beg_s = find_crossing(f, k - Δt, k, false, true)
+            access_beg_s = find_crossing(f, t_prev, k, false, true)
             state = :visible
 
         elseif (state == :visible) && !visible
             # Refine to find the edge.
-            access_end_s = find_crossing(f, k - Δt, k, true, false)
+            access_end_s = find_crossing(f, t_prev, k, true, false)
             state = :not_visible
 
             push!(vaccess_beg_s, access_beg_s)
             push!(vaccess_end_s, access_end_s)
         end
+
+        t_prev = k
     end
 
     # If the analysis finished during an access, then just add the end of the interval as
