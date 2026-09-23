@@ -28,15 +28,16 @@ radiation pressure) over one orbit, and adds the closed-form J₂² rates.
 
 # Arguments
 
-- `u::AbstractVector{T}`: Mean equinoctial orbital elements `[a, ψ, e_x, e_y, i_x, i_y]`.
+- `u::AbstractVector{T}`: Mean alternate equinoctial orbital elements `[a, h, k, p, q, λ]`,
+    stored in the same order as the fields of `AlternateEquinoctialElements`.
 - `params::NamedTuple`: Named tuple with the integration parameters. See
     `_decay_analysis`.
 - `t::Real`: Time since the orbit epoch [s].
 
 # Returns
 
-- `SVector{6, T}`: Time derivatives of the mean equinoctial orbital elements
-    `[da, dψ, de_x, de_y, di_x, di_y]`.
+- `SVector{6, T}`: Time derivatives of the mean alternate equinoctial orbital elements
+    `[da, dh, dk, dp, dq, dλ]`.
 
 # References
 
@@ -153,7 +154,7 @@ function _dynamics(u::AbstractVector{T}, params, t::Real) where {T <: Number}
     # Average of the conservative perturbations plus the constant Kepler term of the
     # mean longitude rate. The sum of weights is strictly positive since
     # `w_t = rk² / h̄ > 0`.
-    ∂C_total = ∂C_sum / Wsum + @SVector T[0, n̄, 0, 0, 0, 0]
+    ∂C_total = ∂C_sum / Wsum + @SVector T[0, 0, 0, 0, 0, n̄]
 
     # Average of the non-conservative perturbations.
     ∂u_drag = ∂u_drag / Wsum

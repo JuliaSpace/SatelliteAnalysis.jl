@@ -1,6 +1,15 @@
 SatelliteAnalysis.jl Changelog
 ==============================
 
+Version 0.4.1
+-------------
+
+- ![Bugfix][badge-bugfix] The state vector of the raw solution stored by `decay_analysis`
+  in the metadata `Solution` now holds the mean alternate equinoctial elements in the same
+  order as the fields of `AlternateEquinoctialElements`, `[a, h, k, p, q, λ]`, instead of
+  the order `[a, ψ, e_x, e_y, i_x, i_y]`, which did not match any orbit representation of
+  **SatelliteToolbox.jl**.
+
 Version 0.4.0
 -------------
 

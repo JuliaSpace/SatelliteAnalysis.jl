@@ -109,6 +109,20 @@ end
 
     @test sol.retcode == ReturnCode.Terminated
 
+    # The state of the raw solution must store the mean alternate equinoctial elements in
+    # the same order as the fields of `AlternateEquinoctialElements`. Notice that the mean
+    # longitude of the state is not wrapped, unlike the one obtained from the mean elements.
+    for k in eachindex(sol.t)
+        aee = convert(AlternateEquinoctialElements, df[k, :mean_elements])
+
+        @test sol.u[k][1] ≈ aee.semi_major_axis rtol = 1e-12
+        @test sol.u[k][2] ≈ aee.h atol = 1e-12
+        @test sol.u[k][3] ≈ aee.k atol = 1e-12
+        @test sol.u[k][4] ≈ aee.p atol = 1e-12
+        @test sol.u[k][5] ≈ aee.q atol = 1e-12
+        @test rem2pi(sol.u[k][6] - aee.mean_longitude, RoundNearest) ≈ 0 atol = 1e-9
+    end
+
     # The analysis must start at the orbit epoch.
     @test df[begin, :date] == julian2datetime(jd₀)
     @test df[begin, :time] == 0.0

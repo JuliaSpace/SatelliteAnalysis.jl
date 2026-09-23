@@ -7,37 +7,37 @@
 """
     _state_to_alternate_equinoctial(u::AbstractVector{T}, epoch::Number) where {T <: Number} -> AlternateEquinoctialElements
 
-Convert the state vector `u = [a, ψ, e_x, e_y, i_x, i_y]` of the numerical integration to the
+Convert the state vector `u = [a, h, k, p, q, λ]` of the numerical integration to the
 alternate equinoctial elements of **SatelliteToolboxBase.jl** with the Julian Day `epoch`
-[UTC]. The elements are the same, but stored in a different order: `h = e_y`, `k = e_x`,
-`p = i_y`, `q = i_x`, and `mean_longitude = ψ`.
+[UTC]. The state stores the elements in the same order as the fields of
+`AlternateEquinoctialElements`.
 
 The adaptive integrator can evaluate trial stages with unphysical states. If the
-inclination elements satisfy `i_x² + i_y² > 1`, which does not represent an orbit, they are
+inclination elements satisfy `p² + q² > 1`, which does not represent an orbit, they are
 scaled to the unit circle so that the conversion to Keplerian elements remains finite,
 allowing the error control to reject the step.
 """
 function _state_to_alternate_equinoctial(
     u::AbstractVector{T}, epoch::Number
 ) where {T <: Number}
-    a, ψ, e_x, e_y, i_x, i_y = u
+    a, h, k, p, q, λ = u
 
-    sin_io2 = hypot(i_x, i_y)
+    sin_io2 = hypot(p, q)
 
     if sin_io2 > 1
-        i_x /= sin_io2
-        i_y /= sin_io2
+        p /= sin_io2
+        q /= sin_io2
     end
 
-    return AlternateEquinoctialElements(epoch, a, e_y, e_x, i_y, i_x, ψ)
+    return AlternateEquinoctialElements(epoch, a, h, k, p, q, λ)
 end
 
 """
     _state_to_keplerian(u::AbstractVector{T}, epoch::Number) where {T <: Number} -> KeplerianElements{MeanAnomaly}
 
-Convert the state vector `u = [a, ψ, e_x, e_y, i_x, i_y]` of the numerical integration to
-Keplerian elements storing the mean anomaly with the Julian Day `epoch` [UTC]. The angles
-are returned in the interval `[0, 2π)` [rad], and the eccentricity is not clamped, so the
+Convert the state vector `u = [a, h, k, p, q, λ]` of the numerical integration to Keplerian
+elements storing the mean anomaly with the Julian Day `epoch` [UTC]. The angles are
+returned in the interval `[0, 2π)` [rad], and the eccentricity is not clamped, so the
 returned value is faithful to the input. Consumers that require `e > 0` must clamp it
 themselves.
 """
@@ -50,7 +50,7 @@ end
     _keplerian_to_state(ke::KeplerianElements{Tanomaly, Tepoch, T}) where {Tanomaly, Tepoch, T} -> SVector{6, T}
 
 Convert the Keplerian elements `ke`, with any anomaly type, to the state vector
-`u = [a, ψ, e_x, e_y, i_x, i_y]` of the numerical integration (see
+`u = [a, h, k, p, q, λ]` of the numerical integration (see
 [`_state_to_alternate_equinoctial`](@ref)).
 """
 function _keplerian_to_state(
@@ -59,7 +59,7 @@ function _keplerian_to_state(
     aee = convert(AlternateEquinoctialElements, ke)
 
     return SVector{6, T}(
-        aee.semi_major_axis, aee.mean_longitude, aee.k, aee.h, aee.q, aee.p
+        aee.semi_major_axis, aee.h, aee.k, aee.p, aee.q, aee.mean_longitude
     )
 end
 
@@ -67,13 +67,13 @@ end
     _state_apsis_altitudes(u::AbstractVector{T}) where {T <: Number} -> T, T
 
 Compute the mean perigee and apogee altitudes [m] above the Earth's equatorial radius from
-the state vector `u = [a, ψ, e_x, e_y, i_x, i_y]` of the numerical integration. Only the
-semi-major axis and the eccentricity are required. Hence, this function avoids the full
-conversion to Keplerian elements in the callbacks of the integration.
+the state vector `u = [a, h, k, p, q, λ]` of the numerical integration. Only the semi-major
+axis and the eccentricity are required. Hence, this function avoids the full conversion to
+Keplerian elements in the callbacks of the integration.
 """
 function _state_apsis_altitudes(u::AbstractVector{T}) where {T <: Number}
     a = u[1]
-    e = hypot(u[3], u[4])
+    e = hypot(u[2], u[3])
 
     perigee_altitude = a * (1 - e) - T(EARTH_EQUATORIAL_RADIUS)
     apogee_altitude  = a * (1 + e) - T(EARTH_EQUATORIAL_RADIUS)
@@ -84,13 +84,15 @@ end
 """
     _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where T <: Number -> SMatrix{6, 6, T}
 
-Compute the Jacobian matrix of the transformation from Classical Orbital Elements (COE) to
-Equinoctial Elements.
+Compute the Jacobian matrix of the transformation from the classical orbital elements
+`[a, e, i, Ω, ω, M]` to the alternate equinoctial elements `[a, h, k, p, q, λ]`, the state
+of the numerical integration (see [`_state_to_alternate_equinoctial`](@ref)).
 
 This routine computes the Jacobian matrix associated with the mapping between classical
-orbital elements and equinoctial elements. The Jacobian provides the partial derivatives of
-equinoctial elements with respect to classical orbital elements, which is useful for
-sensitivity analysis, covariance propagation, and orbit determination.
+orbital elements and alternate equinoctial elements. The Jacobian provides the partial
+derivatives of the alternate equinoctial elements with respect to the classical orbital
+elements, which is useful for sensitivity analysis, covariance propagation, and orbit
+determination.
 
 # Arguments
 
@@ -102,8 +104,8 @@ sensitivity analysis, covariance propagation, and orbit determination.
 # Returns
 
 - `SMatrix{6, 6, T}`: Jacobian matrix `J` of size `6x6`, where each entry corresponds to the
-    partial derivative of an equinoctial element with respect to a classical orbital
-    element.
+    partial derivative of an alternate equinoctial element with respect to a classical
+    orbital element.
 """
 function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where {T <: Number}
     ξ = Ω + ω
@@ -116,36 +118,36 @@ function _classical_to_equinoctial_jacobian(e::T, i::T, Ω::T, ω::T) where {T <
     # E1 (a) -> [1, 1]
     J₁₁ = T(1)
 
-    # E2 (Ψ = M + Ω + ω) -> [2, 4], [2, 5], [2, 6]
-    J₂₄ = T(1)                          # dΨ/dΩ
-    J₂₅ = T(1)                          # dΨ/dω
-    J₂₆ = T(1)                          # dΨ/dM
+    # E2 (h = e sin(ξ)) -> [2, 2], [2, 4], [2, 5]
+    J₂₂ = sin_ξ                         # dh/de
+    J₂₄ = e * cos_ξ                     # dh/dΩ
+    J₂₅ = e * cos_ξ                     # dh/dω
 
-    # E3 (e_x = e cos(ξ)) -> [3, 2], [3, 4], [3, 5]
-    J₃₂ = cos_ξ                         # de_x/de
-    J₃₄ = -e * sin_ξ                    # de_x/dΩ
-    J₃₅ = -e * sin_ξ                    # de_x/dω
+    # E3 (k = e cos(ξ)) -> [3, 2], [3, 4], [3, 5]
+    J₃₂ = cos_ξ                         # dk/de
+    J₃₄ = -e * sin_ξ                    # dk/dΩ
+    J₃₅ = -e * sin_ξ                    # dk/dω
 
-    # E4 (e_y = e sin(ξ)) -> [4, 2], [4, 4], [4, 5]
-    J₄₂ = sin_ξ                         # de_y/de
-    J₄₄ = e * cos_ξ                     # de_y/dΩ
-    J₄₅ = e * cos_ξ                     # de_y/dω
+    # E4 (p = sin(i/2) sin(Ω)) -> [4, 3], [4, 4]
+    J₄₃ = (1 // 2) * cos_io2 * sin_Ω    # dp/di
+    J₄₄ = sin_io2 * cos_Ω               # dp/dΩ
 
-    # E5 (i_x = sin(i/2) cos(Ω)) -> [5, 3], [5, 4]
-    J₅₃ = (1 // 2) * cos_io2 * cos_Ω    # di_x/di
-    J₅₄ = -sin_io2 * sin_Ω              # di_x/dΩ
+    # E5 (q = sin(i/2) cos(Ω)) -> [5, 3], [5, 4]
+    J₅₃ = (1 // 2) * cos_io2 * cos_Ω    # dq/di
+    J₅₄ = -sin_io2 * sin_Ω              # dq/dΩ
 
-    # E6 (i_y = sin(i/2) sin(Ω)) -> [6, 3], [6, 4]
-    J₆₃ = (1 // 2) * cos_io2 * sin_Ω    # di_y/di
-    J₆₄ = sin_io2 * cos_Ω               # di_y/dΩ
+    # E6 (λ = M + Ω + ω) -> [6, 4], [6, 5], [6, 6]
+    J₆₄ = T(1)                          # dλ/dΩ
+    J₆₅ = T(1)                          # dλ/dω
+    J₆₆ = T(1)                          # dλ/dM
 
     J = @SMatrix T[
-        J₁₁   0    0    0   0   0
-         0    0    0   J₂₄ J₂₅ J₂₆
-         0   J₃₂   0   J₃₄ J₃₅  0
-         0   J₄₂   0   J₄₄ J₄₅  0
-         0    0   J₅₃  J₅₄  0   0
-         0    0   J₆₃  J₆₄  0   0
+        J₁₁   0    0    0    0    0
+         0   J₂₂   0   J₂₄  J₂₅   0
+         0   J₃₂   0   J₃₄  J₃₅   0
+         0    0   J₄₃  J₄₄   0    0
+         0    0   J₅₃  J₅₄   0    0
+         0    0    0   J₆₄  J₆₅  J₆₆
     ]
 
     return J

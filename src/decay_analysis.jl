@@ -120,9 +120,11 @@ the Moon, atmospheric drag, and solar radiation pressure gated by the Earth shad
 - `reltol::Number`: Relative tolerance of the numerical integration.
     (**Default**: 1e-6)
 - `return_solution::Bool`: If `true`, the raw solution of the numerical integration (see
-    `SciMLBase.ODESolution`), whose state vector is the equinoctial orbital elements
-    `[a, ψ, e_x, e_y, i_x, i_y]`, is stored in the table-level metadata `Solution` of the
-    output `DataFrame`. It can be obtained using `metadata(df, "Solution")`.
+    `SciMLBase.ODESolution`), whose state vector stores the mean alternate equinoctial
+    elements `[a, h, k, p, q, λ]` in the same order as the fields of
+    `AlternateEquinoctialElements`, is stored in the table-level metadata `Solution` of the
+    output `DataFrame`. It can be obtained using `metadata(df, "Solution")`. Notice that
+    the mean longitude `λ` is not wrapped to `[0, 2π)`.
     (**Default**: `false`)
 - `solver`: Solver from the **OrdinaryDiffEq.jl** ecosystem used for the numerical
     integration. Notice that the user must load the package that provides the selected

@@ -19,15 +19,21 @@
         η::T
     ) where T <: Number -> SMatrix{6, 3, T}
 
-Compute the Gauss variational equations in matrix form for the equinoctial orbital elements
-**[1]**:
+Compute the Gauss variational equations in matrix form for the alternate equinoctial
+orbital elements **[1]**:
 
     u̇ = A(u) * ap + B
 
-where `u = [a, ψ, e_x, e_y, i_x, i_y]` are the equinoctial elements and
-`ap = [u_r, u_θ, u_h]` is the perturbation acceleration represented in the Hill frame
-(radial, along-track, cross-track). The constant Kepler term `B = [0, n, 0, 0, 0, 0]`,
-where `n` is the mean motion, is not returned and must be added once by the caller.
+where `u = [a, h, k, p, q, λ]` are the alternate equinoctial elements, stored in the same
+order as the fields of `AlternateEquinoctialElements`, and `ap = [u_r, u_θ, u_h]` is the
+perturbation acceleration represented in the Hill frame (radial, along-track, cross-track).
+The constant Kepler term `B = [0, 0, 0, 0, 0, n]`, where `n` is the mean motion, is not
+returned and must be added once by the caller.
+
+!!! note
+
+    Inside this function, the eccentricity elements are named `e_x = k = e cos(Ω + ω)` and
+    `e_y = h = e sin(Ω + ω)` because `h` denotes the specific angular momentum.
 
 This formulation is obtained by analytically combining the classical Gauss variational
 equations with the Jacobian of the classical-to-equinoctial transformation. All `1 / e`
@@ -83,11 +89,11 @@ function _equinoctial_gauss_variational_matrices(
 
     A = @SMatrix T[
         (k₁ * e * sin_f)                      (k₁ * p / r)                   0
-        (-(p * e * cos_f * k₃ + 2r * η) / h)  (psr * e * sin_f * k₃ / h)     (k₂ * tan_io2)
-        (p * sin_L / h)                       ((psr * cos_L + r * e_x) / h)  (-k₂ * tan_io2 * e_y)
         (-p * cos_L / h)                      ((psr * sin_L + r * e_y) / h)  (+k₂ * tan_io2 * e_x)
-        0  0  (r / h * (cos_io2 * cos_Ω * cos_θ - sin_Ω * sin_θ / cos_io2) / 2)
+        (p * sin_L / h)                       ((psr * cos_L + r * e_x) / h)  (-k₂ * tan_io2 * e_y)
         0  0  (r / h * (cos_io2 * sin_Ω * cos_θ + cos_Ω * sin_θ / cos_io2) / 2)
+        0  0  (r / h * (cos_io2 * cos_Ω * cos_θ - sin_Ω * sin_θ / cos_io2) / 2)
+        (-(p * e * cos_f * k₃ + 2r * η) / h)  (psr * e * sin_f * k₃ / h)     (k₂ * tan_io2)
     ]
 
     return A
