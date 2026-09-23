@@ -19,7 +19,8 @@ ground track.
 - `add_nans::Bool`: If `true`, we add `NaN` if there is a discontinuity in the ground track
     to improve plotting.
     (**Default**: true)
-- `duration::Number`: Duration of the analysis [s].
+- `duration::Number`: Duration of the analysis [s]. The ground track always ends at the
+    instant `initial_time + duration`, even if `duration` is not a multiple of `step`.
     (**Default**: 86400)
 - `initial_time::Number`: Initial time regarding the orbit propagator `orbp` epoch [s].
     (**Default**: 0)
@@ -176,8 +177,12 @@ function ground_track(
 
     # == Compute the Ground Track ==========================================================
 
-    # Time vector to compute the ground track.
-    vt = float(initial_time):float(step):float(initial_time + duration)
+    # Time vector to compute the ground track. If the duration is not a multiple of the
+    # step, we add the final instant so that the ground track covers the entire interval.
+    t_end = float(initial_time + duration)
+    vt    = collect(float(initial_time):float(step):t_end)
+
+    last(vt) < t_end && push!(vt, t_end)
 
     # Keep the precision of the time inputs in the output. In particular, do not force a
     # BigFloat (or another floating-point type) through Float64 merely because NaNs may be

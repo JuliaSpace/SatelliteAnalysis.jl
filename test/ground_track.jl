@@ -23,13 +23,21 @@
 
     # == Scenario 01 =======================================================================
 
+    # The duration is not a multiple of the default step. Hence, the last point must be
+    # computed at the end of the interval.
     gt = ground_track(orbp; duration = 30)
 
-    @test length(gt) == 2
+    @test length(gt) == 3
     @test gt[1][1] ≈ 1.4249660489382514
     @test gt[1][2] ≈ -1.9629472118375995
     @test gt[2][1] ≈ 1.4239401788695614
     @test gt[2][2] ≈ -2.0832752921442603
+    @test gt[3][1] ≈ 1.4216678200848796
+    @test gt[3][2] ≈ -2.177361837584095
+
+    # The last point must be the one computed at the end of the interval.
+    gt_end = ground_track(orbp; step = 30, duration = 30)
+    @test last(gt) == last(gt_end)
 
     # == Scenario 02 =======================================================================
 
