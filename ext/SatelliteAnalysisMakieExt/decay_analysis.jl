@@ -72,7 +72,9 @@ function SatelliteAnalysis.plot_decay_analysis(
                 (f107_daily = Float64.(f107_getter.(df.space_indices)))
             isnothing(f107_avg_getter) ||
                 (f107_avg = Float64.(f107_avg_getter.(df.space_indices)))
-        catch
+        catch err
+            err isa InterruptException && rethrow()
+
             throw(
                 ArgumentError(
                     "The F10.7 getters could not extract the values from the column " *
