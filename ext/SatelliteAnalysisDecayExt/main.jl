@@ -267,7 +267,9 @@ function _decay_analysis(
     # Hoist the gravity model constants used by the hot loop out of the right-hand side.
     μ  = GravityModels.gravity_constant(gm)
     Re = GravityModels.radius(gm)
-    J₂ = -first(GravityModels.coefficients(gm, 2, 0)) * √5
+    # The coefficient must be unnormalized to obtain J₂.
+    C₂₀ = first(GravityModels.coefficients(gm, 2, 0))
+    J₂  = GravityModels.coefficient_norm(gm) === Val(:full) ? -C₂₀ * √5 : -C₂₀
 
     # NOTE: `params` carries per-call mutable workspaces: the propagator `j2osc_prop` and
     # the gravity model workspace `gravity_workspace`. Hence, the assembled ODE problem
