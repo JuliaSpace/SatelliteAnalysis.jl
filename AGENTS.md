@@ -7,6 +7,7 @@
 - Source is organized by analysis domain, with shared helpers in `src/misc/`, ground-facility code in `src/ground_facilities/`, and plotting entrypoints in `src/plotting/`.
 - Map plotting is an optional `SatelliteAnalysisGeoJSONExt` extension under `ext/`, loaded only when `Makie` and `GeoJSON` are available; its plot functions apply the theme from `SatelliteAnalysisMakieExt` through the keyword `theme`. Exercise plotting changes with a Makie backend and `GeoJSON` loaded.
 - The Makie theme (`makie_theme`, `makie_palette`) and the decay plot (`plot_decay_analysis`) form an optional `SatelliteAnalysisMakieExt` extension under `ext/`, loaded only when `Makie` is available; it uses the fonts bundled in `assets/fonts/`.
+- The orbital decay analysis (`decay_analysis` and the `@decay_analysis__*` macros) is an optional `SatelliteAnalysisDecayExt` extension under `ext/`, loaded only when `OrdinaryDiffEqAdamsBashforthMoulton` is available. Public stubs in `src/` throw through `_extension_error`, and the macro setups use `_setup(::Any)` fallbacks that the extension overrides with `_setup(::Nothing)` methods. Tests also load `OrdinaryDiffEq` to exercise other solvers.
 - `test/runtests.jl` uses verbose domain-level testsets and includes each test file. Add or update the corresponding focused test file, then wire any new file into `test/runtests.jl`.
 - Tests use `[extras]` and the `test` target in `Project.toml`; use `Pkg.test()` rather than a plain project session when test-only dependencies are needed.
 
@@ -37,8 +38,9 @@
 ## CI and Documentation
 
 - CI builds and tests on Julia 1.10 and the latest stable Julia 1.x across supported Ubuntu, macOS, and Windows architecture combinations; standard CI also reports coverage.
-- A nightly workflow builds and tests the package on the same platform matrix.
-- Documentation uses the separate `docs/` environment with Documenter, CairoMakie, and GeoJSON; the docs workflow deploys through `julia-docdeploy`.
+- Standard CI runs the tests with `JULIA_NUM_THREADS=2`, exercising the concurrent ground-facility access calculations.
+- The `CI-nightly` workflow tests against Julia nightly on the same platform matrix on every push and pull request to `main`.
+- Documentation uses the separate `docs/` environment with Documenter, CairoMakie, GeoJSON, OrdinaryDiffEqAdamsBashforthMoulton, and Random; the docs workflow deploys through `julia-docdeploy`.
 
 ## Not Configured
 
