@@ -215,6 +215,14 @@ end
     ))
     @test c == false
 
+    # The initial guess must be near the retrograde solution. Hence, a single iteration of
+    # the Newton-Raphson method must already provide an accurate inclination.
+    a, i, c = sun_sync_orbit_from_angular_velocity(
+        0.06 |> deg2rad; max_iterations = 1, no_warnings = true
+    )
+    @test c == false
+    @test rad2deg(i) ≈ 98.41065 atol = 1e-3
+
     # A loose tolerance must lead to a less accurate result without warnings.
     a_ref, i_ref, ~ = sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad)
     a, i, c = @test_logs sun_sync_orbit_from_angular_velocity(

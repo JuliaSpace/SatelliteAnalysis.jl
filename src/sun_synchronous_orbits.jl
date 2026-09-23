@@ -336,13 +336,13 @@ using the Newton-Raphson method with the presented equations.
 julia> using SatelliteAnalysis
 
 julia> sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad)
-(7.130983932846816e6, 1.7175898375139984, true)
+(7.130983931054438e6, 1.7175898374396166, true)
 
 julia> sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad, 0)
-(7.130983932846816e6, 1.7175898375139984, true)
+(7.130983931054438e6, 1.7175898374396166, true)
 
 julia> sun_sync_orbit_from_angular_velocity(0.06 |> deg2rad, 0.1)
-(7.13086251587883e6, 1.7146410689929386, true)
+(7.130862514086433e6, 1.714641068920069, true)
 ```
 
 The user can verify some internal information of the solver by turning on the debugging
@@ -356,37 +356,29 @@ julia> with_logger(ConsoleLogger(stderr, Logging.Debug)) do
        end
 ┌ Debug: Iteration #1
 │   Estimation :
-│     a  = 7136.635455699327 km
-│     i  = 81.57099271530629 °
+│     a  = 7136.635453908904 km
+│     i  = 98.42900728043362 °
 │   Residues :
-│     f₁ = 1.9706966881670205 ° / day
-│     f₂ = 0.004266929859281898 ° / min
+│     f₁ = 0.0005980316229170501 ° / day
+│     f₂ = 0.004266929861826085 ° / min
 └ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 ┌ Debug: Iteration #2
 │   Estimation :
-│     a  = 7128.856266265137 km
-│     i  = 98.46515928332974 °
+│     a  = 7130.981705295342 km
+│     i  = 98.41061636567355 °
 │   Residues :
-│     f₁ = -0.0073785260175135425 ° / day
-│     f₂ = -0.0016144146737784304 ° / min
+│     f₁ = 2.676623528818922e-6 ° / day
+│     f₂ = -1.6797554520664448e-6 ° / min
 └ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
 ┌ Debug: Iteration #3
 │   Estimation :
-│     a  = 7130.983594940013 km
-│     i  = 98.41070350863473 °
+│     a  = 7130.983931054085 km
+│     i  = 98.41064861981883 °
 │   Residues :
-│     f₁ = -6.549620124363109e-6 ° / day
-│     f₂ = -2.6066638092459016e-7 ° / min
+│     f₁ = 3.592792729989469e-12 ° / day
+│     f₂ = -2.6423307986078726e-13 ° / min
 └ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
-┌ Debug: Iteration #4
-│   Estimation :
-│     a  = 7130.983932846698 km
-│     i  = 98.41064862339992 °
-│   Residues :
-│     f₁ = 8.290634845309341e-11 ° / day
-│     f₂ = -2.2648549702353193e-14 ° / min
-└ @ SatelliteAnalysis ~/.julia/dev/SatelliteAnalysis/src/sun_synchronous_orbits.jl
-(7.130983932846816e6, 1.7175898375139984, true)
+(7.130983931054438e6, 1.7175898374396166, true)
 ```
 
 ## References
@@ -1030,7 +1022,7 @@ function _sun_sync_orbit_from_angular_velocity(
     # Initial guess based on the unperturbed model. Notice that we will estimate
     # `1 / √(a / R₀)` and `cos(i)`
     isqrt_ā = (ω_d / k₅)^(1 // 3)
-    cos_i   = -Ω̇_d / isqrt_ā^7 / k₁
+    cos_i   = Ω̇_d / isqrt_ā^7 / k₁
 
     # By setting the initial values of `f1` and `f2` to `10tol`, we assure that the loop
     # will be executed at least one time.
