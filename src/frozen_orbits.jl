@@ -46,12 +46,12 @@ in **[1]**.
     `SatelliteToolboxGravityModels.jl` for more information. If it is `nothing`, the system
     will automatically fetch and load the EGM96 gravity model at the first call, keeping it
     in memory for the next ones.
-    (**Default** = `nothing`)
+    (**Default**: `nothing`)
 - `max_degree::Int`: Maximum gravity model degree used to compute the frozen eccentricity.
     If it is equal to or lower than 0, the maximum degree in `gravity_model` will be used.
     Otherwise, if it is lower than 3 or higher than the `gravity_model` maximum degree, it
     will be clamped accordingly.
-    (**Default** = 53)
+    (**Default**: 53)
 
 # References
 
@@ -138,7 +138,7 @@ function frozen_orbit(
     # of the coefficients in the gravity model to convert them.
     coefficient_norm = GravityModels.coefficient_norm(gm)
 
-    # We must using `BigInt` and `BigFloat` to compute for high degree.
+    # We must use `BigInt` and `BigFloat` to compute for high degree.
     ab  = big(a)
     ib  = big(i)
     num = zero(BigFloat)
@@ -149,7 +149,7 @@ function frozen_orbit(
 
     # Auxiliary variables to compute (R_e / a)^2p.
     fact = R_e / ab
-    prod = fact * fact # ............................................... (R_e / a)^2 (p = 0)
+    prod = fact * fact # ............................................ (R_e / a)^(2p) (p = 1)
 
     # Compute the numerator and denominator of the frozen eccentricity as indicated in Eq.
     # 38 [3, p. 1297].
@@ -253,7 +253,7 @@ defined in **[1, p. 642]**. The inclination is specified by its sine `sin_i` [-]
     Microcosm Press, Hawthorne, CA.
 """
 function _F_and_∂F_l0p(l::Integer, p::Integer, sin_i::BigFloat, cos_i::BigFloat)
-    # We must using `BigInt` and `BigFloat` to compute for high degree.
+    # We must use `BigInt` and `BigFloat` to compute for high degree.
     lb = big(l)
     pb = big(p)
 

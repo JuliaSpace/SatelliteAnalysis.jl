@@ -21,7 +21,7 @@ containing the WGS84 position of each ground facility `[(WGS84)]`:
 
     (latitude [rad], longitude [rad], altitude [m])
 
-Those geodetic information are transformed to an ECEF vector using the function
+This geodetic information is transformed to an ECEF vector using the function
 `geodetic_to_ecef`.
 
 !!! warning
@@ -32,7 +32,7 @@ Those geodetic information are transformed to an ECEF vector using the function
 # Keywords
 
 - `duration::Number`: Duration of the analysis [s].
-    (**Default** = 86400)
+    (**Default**: 86400)
 - `f_eci_to_ecef::Function`: Function to convert the orbit propagator position represented
     in the Earth-centered inertial (ECI) reference frame to the Earth-centered, Earth-fixed
     (ECEF) reference frame. The signature must be
@@ -45,23 +45,23 @@ Those geodetic information are transformed to an ECEF vector using the function
     [Julian Day]. By default, we use TEME as the ECI and PEF as the ECEF.
     (**Default**: `_default_eci_to_ecef`)
 - `initial_time::Number`: Initial time of the analysis after the propagator epoch [s].
-    (**Default** = 0)
+    (**Default**: 0)
 - `minimum_elevation::Number`: Minimum elevation angle for communication between the
     satellite and the ground facilities [rad].
-    (**Default** = 10°)
+    (**Default**: 10°)
 - `num_chunks::Integer`: Number of chunks the algorithm will divide the time vector to
     compute the accesses.
-    (**Default** = `Threads.nthreads()`)
+    (**Default**: `Threads.nthreads()`)
 - `reduction::Function`: A function that receives a boolean vector with the visibility
     between the satellite and each ground facility. It must return a boolean value
     indicating if the access must be computed or not. This is useful to merge access time
     between two or more facilities.
-    (**Default** = `any` *i.e.* compute the access if at least one ground
-    facilities is visible)
+    (**Default**: `any` *i.e.* compute the access if at least one ground
+    facility is visible)
 - `step::Number`: The step [s] used to propagate the orbit. Notice that we perform a cross
     tuning to accurately obtain the access time. However, if an access is lower than the
     step, it can be neglected.
-    (**Default** = 60)
+    (**Default**: 60)
 - `time_unit::Symbol`: Select the unit in which the duration will be computed. The possible
     values are:
     - `:s` for seconds (**Default**);

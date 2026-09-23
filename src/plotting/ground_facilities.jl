@@ -32,12 +32,12 @@ to **Makie.jl** documentation.
     used to compute the visibility circles, which selects the position of the ground
     facility markers. If it is `nothing`, the positions are estimated using the visibility
     circles.
-    (**Default** = `nothing`)
+    (**Default**: `nothing`)
 - `ground_facility_names::Union{Nothing, AbstractVector{<:AbstractString}}`: The user can
     provide a vector of strings with the length of `vgf_vc` to be plotted with the
     visibility circles. If this parameter is `nothing`, no ground facility name is added to
     the figure.
-    (**Default** = `nothing`)
+    (**Default**: `nothing`)
 - `theme::Union{Nothing, Symbol, Makie.Theme}`: Theme used to style the figure, which is
     applied locally. If it is a `Symbol`, it selects the variant of the theme created by the
     function `SatelliteAnalysis.makie_theme`, which can be `:light` or `:dark`. If it is a
@@ -108,12 +108,12 @@ visibility circle, which can be used, for example, to build a legend.
     used to compute the visibility circles, which selects the position of the ground
     facility markers. If it is `nothing`, the positions are estimated using the visibility
     circles.
-    (**Default** = `nothing`)
+    (**Default**: `nothing`)
 - `ground_facility_names::Union{Nothing, AbstractVector{<:AbstractString}}`: The user can
     provide a vector of strings with the length of `vgf_vc` to be plotted with the
     visibility circles. If this parameter is `nothing`, no ground facility name is added to
     the figure.
-    (**Default** = `nothing`)
+    (**Default**: `nothing`)
 
 All other `kwargs...` are passed to the function `lines!` that plots each visibility circle,
 allowing the selection of attributes such as `linestyle` and `linewidth`.

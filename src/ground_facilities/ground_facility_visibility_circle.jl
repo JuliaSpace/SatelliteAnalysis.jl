@@ -117,7 +117,7 @@ function ground_facility_visibility_circle(
     # Compute the distance `r` from the ground facility to the satellite considering the
     # minimum elevation angle. We obtained this equation from the law of cosines.
     #
-    # NOTE: Only one of the two answers make sense because `r` must be positive.
+    # NOTE: Only one of the two answers makes sense because `r` must be positive.
     sin_θ, cos_θ = sincos(minimum_elevation)
     r = -r_gf * sin_θ + √(satellite_position_norm^2 - (r_gf * cos_θ)^2)
 
@@ -127,7 +127,7 @@ function ground_facility_visibility_circle(
 
     for az in vazimuth
         # Given the local reference frame (NED) in the ground facility, compute the
-        # direction to the intersection of the visibiliy region considering the minimum
+        # direction to the intersection of the visibility region considering the minimum
         # elevation angle and the current azimuth.
         D_l_ned = angle_to_dcm(az, minimum_elevation, :ZY)
         D_ned_l = D_l_ned'

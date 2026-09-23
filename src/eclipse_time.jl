@@ -21,14 +21,14 @@ each day.
 # Keywords
 
 - `num_days::Integer`: Number of days in which the analysis will be performed.
-    (**Default** = 365)
+    (**Default**: 365)
 - `step::Union{Nothing, Number}`: The step [s] in which the propagation will occur. Notice
     that this function has a crossing estimation to accurately estimate the transition
     between the regions, including those entirely inside one step, such as a penumbra
     passage between the sunlight and the umbra. However, if this step is very large, we may
     miss a region if the lighting condition is the same in two consecutive instants. If it
     is `nothing`, it will be selected as the time in which the mean anomaly advances 0.5°.
-    (**Default** = `nothing`)
+    (**Default**: `nothing`)
 - `time_unit::Symbol`: Select the unit in which the results will be generated. The possible
     values are:
     - `:s` for seconds (**Default**);
@@ -230,7 +230,7 @@ function eclipse_time_summary(
     penumbra_time .*= time_factor
     umbra_time    .*= time_factor
 
-    # Create and returns the DataFrame.
+    # Create and return the DataFrame.
     df = DataFrame(;
         date = Date.(date),
         sunlight = sunlight_time,

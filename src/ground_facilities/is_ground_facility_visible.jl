@@ -58,7 +58,7 @@ end
 
 function is_ground_facility_visible(r_ned::AbstractVector, minimum_elevation::Number)
     # Check if the satellite is within the minimum elevation supported by the facility.
-    # Using the NED vector of the satellite, w.r.t. to the current ground facility, it is
+    # Using the NED vector of the satellite, w.r.t. the current ground facility, it is
     # sufficient to check the angle θ between `r_ned` and the local vertical (-Z axis),
     # then: el = π / 2 - θ.
     z = r_ned[3]

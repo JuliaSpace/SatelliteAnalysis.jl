@@ -20,7 +20,7 @@ a scratch space. The function returns a `String` with the file path.
 # Keywords
 
 - `force_download::Bool`: Download the file from `url` even if it already exists.
-    (**Default** = `false`)
+    (**Default**: `false`)
 """
 function fetch_country_polygons(
     url = "https://pkgstore.datahub.io/core/geo-countries/countries/archive/23f420f929e0e09c39d916b8aaa166fb/countries.geojson";

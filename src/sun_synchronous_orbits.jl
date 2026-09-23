@@ -58,20 +58,20 @@ This function returns a `DataFrame` with the following columns:
 - `maximum_altitude::Union{Nothing, Number}`: Maximum altitude [m] of the orbits in the
     output `DataFrame`. If it is `nothing`, the algorithm will not apply a higher limit to
     the orbital altitude.
-    (**Default** = `nothing`)
+    (**Default**: `nothing`)
 - `minimum_altitude::Union{Nothing, Number}`: Minimum altitude [m] of the orbits in the
     output `DataFrame`. If it is `nothing`, the algorithm will not apply a lower limit to
     the orbital altitude.
-    (**Default** = `nothing`)
+    (**Default**: `nothing`)
 - `time_unit::Symbol`: Unit for all the time values in the output `DataFrame`.  It can be
     `:s` for seconds, `:min` for minutes, or `:h` for hours.
-    (**Default** = `:min`)
+    (**Default**: `:min`)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
-    (**Default** = `GM_EARTH`)
+    (**Default**: `GM_EARTH`)
 - `J2::Number`: J₂ perturbation term.
-    (**Default** = `EGM_2008_J2`)
+    (**Default**: `EGM_2008_J2`)
 - `R0::Number`: Earth's equatorial radius [m].
-    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
+    (**Default**: `EARTH_EQUATORIAL_RADIUS`)
 - `we::Number`: Earth's angular speed [rad / s].
     (**Default**: `EARTH_ANGULAR_SPEED`)
 
@@ -250,25 +250,25 @@ The algorithm here considers only the perturbation terms up to J₂.
 !!! note
 
     Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
-    float-pointing number `T`.
+    floating-point number `T`.
 
 # Keywords
 
 - `max_iterations::Integer`: Maximum number of iterations in the Newton-Raphson method.
-    (**Default** = 30)
+    (**Default**: 30)
 - `no_warnings::Bool`: If `true`, no warnings will be printed.
-    (**Default** = `false`)
+    (**Default**: `false`)
 - `tolerance::Union{Nothing, NTuple{2, Number}}`: Residue tolerances to verify if the
     numerical method has converged. If it is `nothing`, `(√eps(T), √eps(T))` will be used,
     where `T` is the internal type for the computations. Notice that the residue function
     `f₁` unit is [deg / day], whereas the `f₂` unit is [deg / min].
-    (**Default** = `nothing`)
+    (**Default**: `nothing`)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
-    (**Default** = `GM_EARTH`)
+    (**Default**: `GM_EARTH`)
 - `J2::Number`: J₂ perturbation term.
-    (**Default** = `EGM_2008_J2`)
+    (**Default**: `EGM_2008_J2`)
 - `R0::Number`: Earth's equatorial radius [m].
-    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
+    (**Default**: `EARTH_EQUATORIAL_RADIUS`)
 
 # Returns
 
@@ -282,7 +282,7 @@ A Sun-synchronous orbit is defined as an orbit in which the precession of the ri
 ascension of the ascending node (RAAN) equals the Earth's orbit mean motion. In this case,
 the orbit plane will have the same orientation to the Sun at the ascending node.
 
-The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372] is:
+The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372]:
 
 ```
 ∂Ω      3                       n̄
@@ -456,24 +456,24 @@ The algorithm here considers only the perturbation terms up to J₂.
 !!! note
 
     Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
-    float-pointing number `T`.
+    floating-point number `T`.
 
 # Keywords
 
 - `max_iterations::Integer`: Maximum number of iterations in the Newton-Raphson method.
-    (**Default** = 30)
+    (**Default**: 30)
 - `no_warnings::Bool`: If `true`, no warnings will be printed.
-    (**Default** = `false`)
+    (**Default**: `false`)
 - `tolerance::Union{Nothing, Number}`: Residue tolerance to verify if the numerical method
     has converged. If it is `nothing`, `√eps(T)` will be used, where `T` is the internal
     type for the computations. Notice that the residue unit is [deg / day].
-    (**Default** = nothing)
+    (**Default**: nothing)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
-    (**Default** = `GM_EARTH`)
+    (**Default**: `GM_EARTH`)
 - `J2::Number`: J₂ perturbation term.
-    (**Default** = `EGM_2008_J2`)
+    (**Default**: `EGM_2008_J2`)
 - `R0::Number`: Earth's equatorial radius [m].
-    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
+    (**Default**: `EARTH_EQUATORIAL_RADIUS`)
 
 # Returns
 
@@ -487,7 +487,7 @@ A Sun-synchronous orbit is defined as an orbit in which the precession of the ri
 ascension of the ascending node (RAAN) equals the Earth's orbit mean motion. In this case,
 the orbit plane will have the same orientation to the Sun at the ascending node.
 
-The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372] is:
+The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372]:
 
 ```
 ∂Ω      3                       n̄
@@ -679,7 +679,7 @@ function sun_sync_orbit_semi_major_axis(
         isqrt_ā = new_isqrt_ā
 
         # If the maximum number of iterations allowed has been reached, indicate that the
-        # solution did not converged and exit loop.
+        # solution did not converge and exit loop.
         if (it >= max_iterations)
             @debug "The algorithm reached the maximum number of iterations without converging."
             converged = false
@@ -715,24 +715,24 @@ The algorithm here considers only the perturbation terms up to J₂.
 !!! note
 
     Internally, this function uses the precision obtained by promoting `T1` and `T2` to a
-    float-pointing number `T`.
+    floating-point number `T`.
 
 # Keywords
 
 - `max_iterations::Integer`: Maximum number of iterations in the Newton-Raphson method.
-    (**Default** = 30)
+    (**Default**: 30)
 - `no_warnings::Bool`: If `true`, no warnings will be printed.
-    (**Default** = `false`)
+    (**Default**: `false`)
 - `tolerance::Union{Nothing, Number}`: Residue tolerance to verify if the numerical method
     has converged. If it is `nothing`, `√eps(T)` will be used, where `T` is the internal
     type for the computations. Notice that the residue unit is [deg / day].
-    (**Default** = nothing)
+    (**Default**: nothing)
 - `m0::Number`: Standard gravitational parameter for Earth [m³ / s²].
-    (**Default** = `GM_EARTH`)
+    (**Default**: `GM_EARTH`)
 - `J2::Number`: J₂ perturbation term.
-    (**Default** = `EGM_2008_J2`)
+    (**Default**: `EGM_2008_J2`)
 - `R0::Number`: Earth's equatorial radius [m].
-    (**Default** = `EARTH_EQUATORIAL_RADIUS`)
+    (**Default**: `EARTH_EQUATORIAL_RADIUS`)
 
 # Returns
 
@@ -746,7 +746,7 @@ A Sun-synchronous orbit is defined as an orbit in which the precession of the ri
 ascension of the ascending node (RAAN) equals the Earth's orbit mean motion. In this case,
 the orbit plane will have the same orientation to the Sun at the ascending node.
 
-The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372] is:
+The RAAN time-derivative considering only the secular terms up to J₂ is [1, p. 372]:
 
 ```
 ∂Ω      3                       n̄
@@ -871,8 +871,6 @@ function sun_sync_orbit_inclination(
     # We will change the units of the desired values to improve the numerical stability.
     k₁ *= rs_to_dd
 
-    # We can reduce the numerical errors by switching the unit from [rad / s] to
-    # [deg / day].
     A = (3 * k₁ * k₂)
     B = k₁ * (1 - k₂)
 
@@ -924,7 +922,7 @@ function sun_sync_orbit_inclination(
         cos_i = new_cos_i
 
         # If the maximum number of iterations allowed has been reached, indicate that the
-        # solution did not converged and exit loop.
+        # solution did not converge and exit loop.
         if (it >= max_iterations)
             @debug "The algorithm reached the maximum number of iterations without converging."
             converged = false
@@ -967,7 +965,7 @@ absolute value of the returned inclination cosine is not larger than 1.
 
 !!! note
 
-    The type `T` is obtained by promoting `T1` and `T2` to a float-pointing number.
+    The type `T` is obtained by promoting `T1` and `T2` to a floating-point number.
 
 # Keywords
 
@@ -1093,7 +1091,7 @@ function _sun_sync_orbit_from_angular_velocity(
         isqrt_ā, cos_i = new_isqrt_ā, new_cos_i
 
         # If the maximum number of iterations allowed has been reached, then
-        # indicate that the solution did not converged and exit loop.
+        # indicate that the solution did not converge and exit loop.
         if (it >= max_iterations)
             converged = false
             break

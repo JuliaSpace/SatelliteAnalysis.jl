@@ -1,6 +1,6 @@
 ## Description #############################################################################
 #
-# Functions to create Makie themes for the SatelliteToolbox.jl ecosystem.
+# Functions to create Makie themes for SatelliteAnalysis.jl.
 #
 ############################################################################################
 

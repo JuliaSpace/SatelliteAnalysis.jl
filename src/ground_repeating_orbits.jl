@@ -26,7 +26,7 @@ the satellite position. The orbit is described by its semi-major axis `a` [m], e
 !!! note
 
     Internally, this function uses the precision obtained by promoting `T1`, `T2`, and `T3`
-    to a float-pointing number `T`.
+    to a floating-point number `T`.
 
 # Keywords
 
@@ -96,7 +96,7 @@ and orbit cycle `orbit_cycle` [day].
 !!! note
 
     Internally, this function uses the precision obtained by promoting `T1`, `T2`, and `T3`
-    to a float-pointing number `T`.
+    to a floating-point number `T`.
 
 # Keywords
 
@@ -197,7 +197,7 @@ repeating orbit. The orbit is described by its semi-major axis `a` [m], eccentri
 [-], inclination `i` [rad], and orbit cycle `orbit_cycle` [day]. Notice that this angle is
 measured perpendicularly to the ground tracks.
 
-The type `T` is obtained by promoting `T1`, `T2`, and `T3` to a float-pointing number.
+The type `T` is obtained by promoting `T1`, `T2`, and `T3` to a floating-point number.
 
 # Keywords
 
